@@ -621,6 +621,45 @@
       text-align: center;
       font-style: italic;
     }
+
+    /* Pinned Notifications */
+    .notification-banner {
+      background: var(--surface);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      border-left: 3px solid var(--yellow);
+    }
+
+    .notification-banner.warning {
+      border-left-color: var(--yellow);
+      background: rgba(234, 179, 8, 0.1);
+    }
+
+    .notification-banner.info {
+      border-left-color: #3b82f6;
+      background: rgba(59, 130, 246, 0.1);
+    }
+
+    .notification-banner.alert {
+      border-left-color: var(--red);
+      background: rgba(239, 68, 68, 0.1);
+    }
+
+    .notification-icon {
+      font-size: 1.25rem;
+      flex-shrink: 0;
+      margin-top: 0.1rem;
+    }
+
+    .notification-message {
+      flex: 1;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
   </style>
 </head>
 <body>
@@ -629,6 +668,11 @@
       <h1>Building Status</h1>
       <div class="updated">Updated Jan 6, 2026 • 2:45 PM</div>
     </header>
+
+    <!-- Pinned Notifications -->
+    <div id="notifications-container">
+      <!-- Will be populated from config.json -->
+    </div>
 
     <!-- Systems Status -->
     <div class="section">
@@ -782,6 +826,13 @@
       });
     }
 
+    // Icon mapping for notification types
+    const notificationIcons = {
+      warning: '⚠️',
+      info: 'ℹ️',
+      alert: '🚨'
+    };
+
     // Render helpful sections from config
     function renderHelpfulSections() {
       if (!config) return;
@@ -791,6 +842,30 @@
         const updatedEl = document.querySelector('.updated');
         if (updatedEl) {
           updatedEl.textContent = `Updated ${formatTimestamp(config.status.lastUpdated)}`;
+        }
+      }
+
+      // Render pinned notifications (filter out expired ones)
+      if (config.status?.pinnedNotifications) {
+        const now = new Date();
+        const activeNotifications = config.status.pinnedNotifications.filter(notification => {
+          if (!notification.expiresAt) return true; // No expiration
+          return new Date(notification.expiresAt) > now;
+        });
+
+        const notificationsContainer = document.getElementById('notifications-container');
+        if (activeNotifications.length > 0) {
+          notificationsContainer.innerHTML = activeNotifications.map(notification => {
+            const icon = notificationIcons[notification.type] || '📌';
+            return `
+              <div class="notification-banner ${notification.type}">
+                <span class="notification-icon">${icon}</span>
+                <div class="notification-message">${notification.message}</div>
+              </div>
+            `;
+          }).join('');
+        } else {
+          notificationsContainer.innerHTML = ''; // Empty state - no notifications
         }
       }
 

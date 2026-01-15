@@ -84,6 +84,13 @@
   "reportEmail": "your-email@example.com",
   "status": {
     "lastUpdated": "2026-01-15T14:45:00Z",
+    "pinnedNotifications": [
+      {
+        "type": "warning",
+        "message": "Heat will be off Tuesday 9am-12pm for annual inspection",
+        "expiresAt": "2026-01-20T12:00:00Z"
+      }
+    ],
     "systemStatus": {
       "heat": {
         "status": "issue",
