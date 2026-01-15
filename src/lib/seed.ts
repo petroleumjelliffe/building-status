@@ -1,6 +1,8 @@
 /**
  * Database seeding script
  * Populates the database with initial data from config.json
+ *
+ * Environment variables are loaded via dotenv-cli in the npm script
  */
 
 import { db } from './db';
