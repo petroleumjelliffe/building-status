@@ -141,6 +141,7 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
         {/* Garbage Schedule */}
         {data.garbageSchedule && (
           <div className="section">
+            <div className="section-header">Garbage & Recycling</div>
             <GarbageSchedule schedule={data.garbageSchedule} />
           </div>
         )}
@@ -153,11 +154,14 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
         )}
 
         {/* Report Issue */}
-        <div className="section report-section">
-          <a href={`mailto:${data.reportEmail}`} className="report-button">
-            📝 Report an Issue
-          </a>
-        </div>
+        <a
+          href={`mailto:${data.reportEmail}?subject=[Building Status] Issue Report&body=Building:%0A%0AUnit:%0A%0ACategory:%0A%0ADescription:%0A`}
+          className="share-btn"
+          style={{ textDecoration: 'none' }}
+        >
+          <span className="share-icon">✉️</span>
+          Report an Issue
+        </a>
 
         {/* Footer */}
         <footer className="page-footer">

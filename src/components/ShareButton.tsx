@@ -44,14 +44,14 @@ export function ShareButton({ url, title, text }: ShareButtonProps) {
   };
 
   return (
-    <button onClick={handleShare} className="share-button" aria-label="Share">
+    <button onClick={handleShare} className={`share-btn ${copied ? 'sharing' : ''}`} aria-label="Share">
       {copied ? (
         <>
-          ✓ Copied!
+          <span className="share-icon">✓</span> Copied!
         </>
       ) : (
         <>
-          📤 Share
+          <span className="share-icon">↗</span> Share
         </>
       )}
     </button>

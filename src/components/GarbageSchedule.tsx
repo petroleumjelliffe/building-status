@@ -10,34 +10,28 @@ interface GarbageScheduleProps {
  */
 export function GarbageSchedule({ schedule }: GarbageScheduleProps) {
   return (
-    <div className="garbage-schedule">
-      <h3>🗑️ Trash & Recycling</h3>
-
-      <div className="schedule-section">
-        <div className="schedule-header">
-          <span className="schedule-icon">🗑️</span>
-          <span className="schedule-type">Trash</span>
+    <>
+      <div className="garbage-grid">
+        <div className="garbage-card">
+          <div className="garbage-type">🗑️ Trash</div>
+          <div className="garbage-days">{schedule.trash.days.join(', ')}</div>
+          {schedule.trash.time && (
+            <div className="garbage-time">{schedule.trash.time}</div>
+          )}
         </div>
-        <div className="schedule-days">{schedule.trash.days.join(', ')}</div>
-        {schedule.trash.time && (
-          <div className="schedule-time">{schedule.trash.time}</div>
-        )}
-      </div>
 
-      <div className="schedule-section">
-        <div className="schedule-header">
-          <span className="schedule-icon">♻️</span>
-          <span className="schedule-type">Recycling</span>
+        <div className="garbage-card">
+          <div className="garbage-type">♻️ Recycling</div>
+          <div className="garbage-days">{schedule.recycling.days.join(', ')}</div>
+          {schedule.recycling.time && (
+            <div className="garbage-time">{schedule.recycling.time}</div>
+          )}
         </div>
-        <div className="schedule-days">{schedule.recycling.days.join(', ')}</div>
-        {schedule.recycling.time && (
-          <div className="schedule-time">{schedule.recycling.time}</div>
-        )}
       </div>
 
       {schedule.notes && (
-        <div className="schedule-notes">{schedule.notes}</div>
+        <div className="garbage-note">{schedule.notes}</div>
       )}
-    </div>
+    </>
   );
 }
