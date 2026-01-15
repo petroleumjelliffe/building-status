@@ -1,0 +1,85 @@
+{
+  "buildings": {
+    "712": {
+      "name": "712",
+      "units": ["A", "B", "C", "D"],
+      "floors": [4, 3, 2, 1]
+    },
+    "706": {
+      "name": "706",
+      "units": ["E", "F"],
+      "floors": [4, 3, 2, 1]
+    },
+    "702": {
+      "name": "702",
+      "units": ["G", "H", "I", "J"],
+      "floors": [4, 3, 2, 1]
+    }
+  },
+  "systems": [
+    {
+      "id": "heat",
+      "name": "Heat",
+      "icon": "🔥",
+      "label": "Heat"
+    },
+    {
+      "id": "water",
+      "name": "Water",
+      "icon": "💧",
+      "label": "Water"
+    },
+    {
+      "id": "laundry",
+      "name": "Laundry",
+      "icon": "🧺",
+      "label": "Laundry"
+    }
+  ],
+  "helpfulLinks": [
+    {
+      "title": "Pay Rent Online",
+      "url": "https://example.com/rent",
+      "icon": "💳"
+    },
+    {
+      "title": "Building Policies",
+      "url": "https://example.com/policies",
+      "icon": "📋"
+    },
+    {
+      "title": "Maintenance Portal",
+      "url": "https://example.com/maintenance",
+      "icon": "🔧"
+    }
+  ],
+  "contacts": [
+    {
+      "label": "Building Manager",
+      "phone": "555-123-4567",
+      "hours": "Mon-Fri 9am-5pm"
+    },
+    {
+      "label": "Emergency Maintenance",
+      "phone": "555-987-6543",
+      "hours": "24/7"
+    },
+    {
+      "label": "Non-Emergency",
+      "phone": "555-111-2222",
+      "hours": "Mon-Fri 9am-5pm"
+    }
+  ],
+  "garbageSchedule": {
+    "trash": {
+      "days": ["Tuesday", "Friday"],
+      "time": "7:00 AM"
+    },
+    "recycling": {
+      "days": ["Friday"],
+      "time": "7:00 AM"
+    },
+    "notes": "Set out by 7am on collection day"
+  },
+  "reportEmail": "building-status@example.com"
+}

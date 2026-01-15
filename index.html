@@ -497,6 +497,130 @@
       color: var(--text-muted);
       font-family: 'DM Mono', monospace;
     }
+
+    /* Helpful Links */
+    .links-grid {
+      display: grid;
+      gap: 0.5rem;
+    }
+
+    .link-card {
+      background: var(--surface);
+      border-radius: 8px;
+      padding: 0.875rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: var(--text);
+      border: 1px solid transparent;
+      transition: all 0.15s;
+    }
+
+    .link-card:hover {
+      border-color: var(--text-muted);
+      background: var(--surface-hover);
+    }
+
+    .link-icon {
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    .link-title {
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    .link-arrow {
+      margin-left: auto;
+      color: var(--text-muted);
+      font-size: 1rem;
+    }
+
+    /* Contacts */
+    .contact-card {
+      background: var(--surface);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .contact-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.25rem;
+    }
+
+    .contact-label {
+      font-weight: 500;
+      font-size: 0.95rem;
+    }
+
+    .contact-hours {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: 'DM Mono', monospace;
+    }
+
+    .contact-phone {
+      font-family: 'DM Mono', monospace;
+      font-size: 1rem;
+      color: var(--text);
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 0.25rem;
+    }
+
+    .contact-phone:hover {
+      color: var(--text-muted);
+    }
+
+    /* Garbage Schedule */
+    .garbage-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .garbage-card {
+      background: var(--surface);
+      border-radius: 8px;
+      padding: 0.875rem;
+      border-left: 3px solid var(--green);
+    }
+
+    .garbage-type {
+      font-weight: 500;
+      font-size: 0.85rem;
+      margin-bottom: 0.375rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .garbage-days {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.125rem;
+    }
+
+    .garbage-time {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .garbage-note {
+      background: var(--surface);
+      border-radius: 6px;
+      padding: 0.75rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-align: center;
+      font-style: italic;
+    }
   </style>
 </head>
 <body>
@@ -559,7 +683,7 @@
     <!-- Scheduled Maintenance -->
     <div class="section" id="maintenance-section">
       <div class="section-header">Scheduled Maintenance</div>
-      
+
       <div class="maintenance-card">
         <div class="maintenance-date">Thu, Jan 8</div>
         <div class="maintenance-desc">Plumber coming to repair Washer 2</div>
@@ -571,63 +695,118 @@
       </div>
     </div>
 
+    <!-- Garbage Schedule -->
+    <div class="section" id="garbage-section">
+      <div class="section-header">Garbage & Recycling</div>
+      <div class="garbage-grid" id="garbage-grid">
+        <!-- Will be populated from config.json -->
+      </div>
+      <div class="garbage-note" id="garbage-note">
+        <!-- Will be populated from config.json -->
+      </div>
+    </div>
+
+    <!-- Helpful Links -->
+    <div class="section" id="links-section">
+      <div class="section-header">Helpful Links</div>
+      <div class="links-grid" id="links-grid">
+        <!-- Will be populated from config.json -->
+      </div>
+    </div>
+
+    <!-- Emergency Contacts -->
+    <div class="section" id="contacts-section">
+      <div class="section-header">Important Contacts</div>
+      <div id="contacts-list">
+        <!-- Will be populated from config.json -->
+      </div>
+    </div>
+
     <div class="divider"></div>
 
-    <!-- Report Form -->
+    <!-- Report Issue -->
     <div class="form-section">
-      <div class="form-content" id="form-content">
-        <div class="form-title">Report an Issue</div>
-        
-        <form id="report-form">
-          <div class="form-group">
-            <label>Your Building</label>
-            <div class="tabs">
-              <button type="button" class="tab active" data-building="712">712</button>
-              <button type="button" class="tab" data-building="706">706</button>
-              <button type="button" class="tab" data-building="702">702</button>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label>Your Unit</label>
-            <div class="unit-grid" id="unit-grid">
-              <!-- Will be populated by JS based on selected building -->
-            </div>
-            <input type="hidden" id="unit" name="unit" required>
-          </div>
-
-          <div class="form-group">
-            <label for="category">What's the issue?</label>
-            <select id="category" name="category" required>
-              <option value="">Select a category...</option>
-              <option value="heat">🔥 Heat not working</option>
-              <option value="hot-water">🚿 No hot water</option>
-              <option value="water-leak">💧 Water leak</option>
-              <option value="laundry">🧺 Laundry machine broken</option>
-              <option value="hallway">💡 Hallway light out</option>
-              <option value="door">🚪 Door/lock issue</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="description">Details (optional)</label>
-            <textarea id="description" name="description" placeholder="Any additional details that would help us understand the issue..."></textarea>
-          </div>
-
-          <button type="submit">Submit Report</button>
-        </form>
-      </div>
-
-      <div class="success-message" id="success-message">
-        <div class="success-icon">✓</div>
-        <div class="success-title">Report Submitted</div>
-        <div class="success-detail">The board has been notified. We'll update the status here once we know more.</div>
-      </div>
+      <div class="form-title">Report an Issue</div>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+        Click the button below to email the building manager about an issue. Please include your building, unit, and a description of the problem.
+      </p>
+      <a
+        href="mailto:building-status@example.com?subject=[Building Status] Issue Report&body=Building:%0A%0AUnit:%0A%0ACategory:%0A%0ADescription:%0A"
+        class="share-btn"
+        id="report-btn"
+        style="text-decoration: none;">
+        <span class="share-icon">✉️</span>
+        Report an Issue
+      </a>
     </div>
   </div>
 
   <script>
+    // Load configuration
+    let config = null;
+
+    async function loadConfig() {
+      try {
+        const response = await fetch('config.json');
+        config = await response.json();
+        renderHelpfulSections();
+      } catch (error) {
+        console.error('Failed to load config:', error);
+      }
+    }
+
+    // Render helpful sections from config
+    function renderHelpfulSections() {
+      if (!config) return;
+
+      // Render garbage schedule
+      const garbageGrid = document.getElementById('garbage-grid');
+      garbageGrid.innerHTML = `
+        <div class="garbage-card">
+          <div class="garbage-type">🗑️ Trash</div>
+          <div class="garbage-days">${config.garbageSchedule.trash.days.join(', ')}</div>
+          <div class="garbage-time">${config.garbageSchedule.trash.time}</div>
+        </div>
+        <div class="garbage-card">
+          <div class="garbage-type">♻️ Recycling</div>
+          <div class="garbage-days">${config.garbageSchedule.recycling.days.join(', ')}</div>
+          <div class="garbage-time">${config.garbageSchedule.recycling.time}</div>
+        </div>
+      `;
+      document.getElementById('garbage-note').textContent = config.garbageSchedule.notes;
+
+      // Render helpful links
+      const linksGrid = document.getElementById('links-grid');
+      linksGrid.innerHTML = config.helpfulLinks.map(link => `
+        <a href="${link.url}" class="link-card" target="_blank" rel="noopener">
+          <span class="link-icon">${link.icon}</span>
+          <span class="link-title">${link.title}</span>
+          <span class="link-arrow">→</span>
+        </a>
+      `).join('');
+
+      // Render contacts
+      const contactsList = document.getElementById('contacts-list');
+      contactsList.innerHTML = config.contacts.map(contact => `
+        <div class="contact-card">
+          <div class="contact-header">
+            <span class="contact-label">${contact.label}</span>
+            <span class="contact-hours">${contact.hours}</span>
+          </div>
+          <a href="tel:${contact.phone}" class="contact-phone">${contact.phone}</a>
+        </div>
+      `).join('');
+
+      // Update mailto link with config email
+      const reportBtn = document.getElementById('report-btn');
+      if (reportBtn) {
+        reportBtn.href = `mailto:${config.reportEmail}?subject=[Building Status] Issue Report&body=Building:%0A%0AUnit:%0A%0ACategory:%0A%0ADescription:%0A`;
+      }
+    }
+
+    // Initialize config on page load
+    loadConfig();
+
     // Status image base URL
     const STATUS_IMAGE_BASE = 'https://petroleumjelliffe--d762e03aeb5911f09ff942dde27851f2.web.val.run';
 
@@ -725,90 +904,6 @@
       ]
     };
 
-    // Building unit configurations
-    const buildingUnits = {
-      '712': ['A', 'B', 'C', 'D'],
-      '706': ['E', 'F'],
-      '702': ['G', 'H', 'I', 'J']
-    };
-    const floors = [4, 3, 2, 1];
-
-    function renderUnitGrid(building) {
-      const grid = document.getElementById('unit-grid');
-      const units = buildingUnits[building];
-      
-      // Update grid columns based on number of units
-      grid.style.gridTemplateColumns = `repeat(${units.length}, 1fr)`;
-      
-      grid.innerHTML = floors.map(floor => 
-        units.map(unit => 
-          `<button type="button" class="unit-btn" data-unit="${floor}${unit}">${floor}${unit}</button>`
-        ).join('')
-      ).join('');
-
-      // Re-attach click handlers
-      grid.querySelectorAll('.unit-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-          grid.querySelectorAll('.unit-btn').forEach(b => b.classList.remove('selected'));
-          this.classList.add('selected');
-          selectedUnit = this.dataset.unit;
-          document.getElementById('unit').value = selectedUnit;
-        });
-      });
-    }
-
-    // Building tab selection
-    let selectedBuilding = '712';
-    document.querySelectorAll('.tab').forEach(tab => {
-      tab.addEventListener('click', function() {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        this.classList.add('active');
-        selectedBuilding = this.dataset.building;
-        selectedUnit = null;
-        document.getElementById('unit').value = '';
-        renderUnitGrid(selectedBuilding);
-      });
-    });
-
-    // Initial render
-    renderUnitGrid(selectedBuilding);
-
-    // Unit button selection
-    let selectedUnit = null;
-
-    // Form submission
-    document.getElementById('report-form').addEventListener('submit', function(e) {
-      e.preventDefault();
-      
-      if (!selectedUnit) {
-        alert('Please select your unit');
-        return;
-      }
-
-      const formData = {
-        building: selectedBuilding,
-        unit: document.getElementById('unit').value,
-        category: document.getElementById('category').value,
-        description: document.getElementById('description').value,
-        timestamp: new Date().toISOString()
-      };
-
-      // In production: send to backend/email service
-      console.log('Report submitted:', formData);
-
-      // Show success message
-      document.getElementById('form-content').classList.add('hide');
-      document.getElementById('success-message').classList.add('show');
-
-      // Reset after 5 seconds
-      setTimeout(() => {
-        document.getElementById('form-content').classList.remove('hide');
-        document.getElementById('success-message').classList.remove('show');
-        document.getElementById('report-form').reset();
-        document.querySelectorAll('.unit-btn').forEach(b => b.classList.remove('selected'));
-        selectedUnit = null;
-      }, 5000);
-    });
   </script>
 </body>
 </html>
