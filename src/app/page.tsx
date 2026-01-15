@@ -46,5 +46,14 @@ export default async function StatusPage() {
   const data = await getStatusData();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
-  return <StatusPageClient data={data} siteUrl={siteUrl} />;
+  // Format date on server to avoid hydration mismatch
+  const formattedDate = new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(data.lastUpdated);
+
+  return <StatusPageClient data={data} siteUrl={siteUrl} formattedDate={formattedDate} />;
 }

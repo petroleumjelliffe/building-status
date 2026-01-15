@@ -16,12 +16,13 @@ import { EditModeToggle } from './EditModeToggle';
 interface StatusPageClientProps {
   data: StatusPageData;
   siteUrl: string;
+  formattedDate: string;
 }
 
 /**
  * Client wrapper for the status page with edit mode functionality
  */
-export function StatusPageClient({ data, siteUrl }: StatusPageClientProps) {
+export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageClientProps) {
   const [isEditMode, setIsEditMode] = useState(false);
   const [password, setPassword] = useState('');
   const router = useRouter();
@@ -34,16 +35,6 @@ export function StatusPageClient({ data, siteUrl }: StatusPageClientProps) {
   const handleUpdate = () => {
     // Refresh the page data
     router.refresh();
-  };
-
-  const formatLastUpdated = (date: Date) => {
-    return new Intl.DateTimeFormat('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-    }).format(new Date(date));
   };
 
   return (
@@ -63,7 +54,7 @@ export function StatusPageClient({ data, siteUrl }: StatusPageClientProps) {
             </div>
           </div>
           <div className="updated">
-            Updated {formatLastUpdated(data.lastUpdated)}
+            Updated {formattedDate}
           </div>
         </header>
 
