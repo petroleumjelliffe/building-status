@@ -742,22 +742,126 @@
   </div>
 
   <script>
+    // Configuration endpoint (Val Town serverless function)
+    // Replace with your Val Town URL after deploying valtown-config-server.js
+    const CONFIG_URL = 'https://petroleumjelliffe-buildingstatusconfig.web.val.run';
+
     // Load configuration
     let config = null;
 
     async function loadConfig() {
       try {
-        const response = await fetch('config.json');
+        const response = await fetch(CONFIG_URL);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
         config = await response.json();
         renderHelpfulSections();
       } catch (error) {
         console.error('Failed to load config:', error);
+        // Fallback: try local config.json for development
+        try {
+          const fallbackResponse = await fetch('config.json');
+          config = await fallbackResponse.json();
+          renderHelpfulSections();
+        } catch (fallbackError) {
+          console.error('Failed to load fallback config:', fallbackError);
+        }
       }
+    }
+
+    // Format timestamp for display
+    function formatTimestamp(isoString) {
+      const date = new Date(isoString);
+      return date.toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit'
+      });
     }
 
     // Render helpful sections from config
     function renderHelpfulSections() {
       if (!config) return;
+
+      // Render last updated timestamp
+      if (config.status?.lastUpdated) {
+        const updatedEl = document.querySelector('.updated');
+        if (updatedEl) {
+          updatedEl.textContent = `Updated ${formatTimestamp(config.status.lastUpdated)}`;
+        }
+      }
+
+      // Render system status pills
+      if (config.status?.systemStatus) {
+        Object.keys(config.status.systemStatus).forEach(systemId => {
+          const systemData = config.status.systemStatus[systemId];
+          const pill = document.querySelector(`[data-system="${systemId}"]`);
+          if (pill) {
+            pill.className = `status-pill ${systemData.status}`;
+            pill.dataset.count = systemData.count;
+            const countEl = pill.querySelector('.status-count');
+            if (countEl) countEl.textContent = systemData.count;
+          }
+        });
+      }
+
+      // Render current issues
+      if (config.status?.currentIssues) {
+        const issuesSection = document.getElementById('issues-section');
+        if (config.status.currentIssues.length === 0) {
+          issuesSection.innerHTML = `
+            <div class="section-header">Current Issues</div>
+            <div class="all-clear">
+              <div class="all-clear-icon">✓</div>
+              <div class="all-clear-text">No issues reported</div>
+            </div>
+          `;
+        } else {
+          const issuesHtml = config.status.currentIssues.map(issue => `
+            <div class="issue-item ${issue.status}">
+              <div class="issue-header">
+                <span class="issue-category">${issue.icon} ${issue.category} — ${issue.location}</span>
+                <span class="issue-badge ${issue.status}">${issue.status}</span>
+              </div>
+              <div class="issue-detail">${issue.detail}</div>
+              <div class="issue-meta">Reported ${issue.reported}</div>
+            </div>
+          `).join('');
+
+          issuesSection.innerHTML = `
+            <div class="section-header">Current Issues</div>
+            ${issuesHtml}
+          `;
+        }
+      }
+
+      // Render scheduled maintenance
+      if (config.status?.scheduledMaintenance) {
+        const maintenanceSection = document.getElementById('maintenance-section');
+        if (config.status.scheduledMaintenance.length === 0) {
+          maintenanceSection.innerHTML = `
+            <div class="section-header">Scheduled Maintenance</div>
+            <div class="all-clear">
+              <div class="all-clear-text">No scheduled maintenance</div>
+            </div>
+          `;
+        } else {
+          const maintenanceHtml = config.status.scheduledMaintenance.map(item => `
+            <div class="maintenance-card">
+              <div class="maintenance-date">${item.date}</div>
+              <div class="maintenance-desc">${item.description}</div>
+            </div>
+          `).join('');
+
+          maintenanceSection.innerHTML = `
+            <div class="section-header">Scheduled Maintenance</div>
+            ${maintenanceHtml}
+          `;
+        }
+      }
 
       // Render garbage schedule
       const garbageGrid = document.getElementById('garbage-grid');

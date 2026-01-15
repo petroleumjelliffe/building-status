@@ -1,0 +1,15 @@
+# Sensitive configuration
+config.json
+
+# Val Town serverless function (keep private)
+valtown-config-server.js
+
+# Editor files
+.DS_Store
+.vscode/
+*.swp
+*.swo
+*~
+
+# Node modules (if added later)
+node_modules/
