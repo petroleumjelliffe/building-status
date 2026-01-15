@@ -677,66 +677,23 @@
     <!-- Systems Status -->
     <div class="section">
       <div class="section-header">Systems</div>
-      <div class="status-row">
-        <div class="status-pill issue" data-system="heat" data-count="2">
-          <span class="status-icon">🔥</span>
-          <span class="status-label">Heat</span>
-          <span class="status-count">2/3</span>
-        </div>
-        <div class="status-pill ok" data-system="water" data-count="3">
-          <span class="status-icon">💧</span>
-          <span class="status-label">Water</span>
-          <span class="status-count">3/3</span>
-        </div>
-        <div class="status-pill ok" data-system="laundry" data-count="2">
-          <span class="status-icon">🧺</span>
-          <span class="status-label">Laundry</span>
-          <span class="status-count">2/3</span>
-        </div>
+      <div class="status-row" id="systems-status">
+        <!-- Will be populated from config.json -->
       </div>
       <button class="share-btn" id="share-btn">
         <span class="share-icon">↗</span>
         Share Status
       </button>
     </div>
-    </div>
 
     <!-- Current Issues -->
     <div class="section" id="issues-section">
-      <div class="section-header">Current Issues</div>
-      
-      <div class="issue-item investigating">
-        <div class="issue-header">
-          <span class="issue-category">🔥 Heat — Bldg A</span>
-          <span class="issue-badge investigating">Investigating</span>
-        </div>
-        <div class="issue-detail">Boiler tech scheduled for tomorrow AM</div>
-        <div class="issue-meta">Reported 2 hrs ago</div>
-      </div>
-
-      <div class="issue-item">
-        <div class="issue-header">
-          <span class="issue-category">🧺 Washer 2 — Basement</span>
-          <span class="issue-badge reported">Out of Order</span>
-        </div>
-        <div class="issue-detail">Won't drain. Repair company contacted.</div>
-        <div class="issue-meta">Reported yesterday</div>
-      </div>
+      <!-- Will be populated from config.json -->
     </div>
 
     <!-- Scheduled Maintenance -->
     <div class="section" id="maintenance-section">
-      <div class="section-header">Scheduled Maintenance</div>
-
-      <div class="maintenance-card">
-        <div class="maintenance-date">Thu, Jan 8</div>
-        <div class="maintenance-desc">Plumber coming to repair Washer 2</div>
-      </div>
-
-      <div class="maintenance-card">
-        <div class="maintenance-date">Thu, Jan 15</div>
-        <div class="maintenance-desc">Annual fire extinguisher inspection — all buildings</div>
-      </div>
+      <!-- Will be populated from config.json -->
     </div>
 
     <!-- Garbage Schedule -->
@@ -787,7 +744,7 @@
 
   <script>
     // Configuration endpoint (Val Town serverless function)
-    const CONFIG_URL = 'https://petroleumjelliffe-building-status-config.web.val.run';
+    const CONFIG_URL = 'https://esm.town/v/Petroleumjelliffe/building-status-config@2-main/main.ts';
 
     // Load configuration
     let config = null;
@@ -869,17 +826,28 @@
       }
 
       // Render system status pills
-      if (config.status?.systemStatus) {
-        Object.keys(config.status.systemStatus).forEach(systemId => {
-          const systemData = config.status.systemStatus[systemId];
-          const pill = document.querySelector(`[data-system="${systemId}"]`);
-          if (pill) {
-            pill.className = `status-pill ${systemData.status}`;
-            pill.dataset.count = systemData.count;
-            const countEl = pill.querySelector('.status-count');
-            if (countEl) countEl.textContent = systemData.count;
-          }
-        });
+      if (config.status?.systemStatus && config.systems) {
+        const systemsContainer = document.getElementById('systems-status');
+        systemsContainer.innerHTML = config.systems.map(system => {
+          const statusData = config.status.systemStatus[system.id] || { status: 'ok', count: '3/3' };
+          return `
+            <div class="status-pill ${statusData.status}" data-system="${system.id}" data-count="${statusData.count}">
+              <span class="status-icon">${system.icon}</span>
+              <span class="status-label">${system.label}</span>
+              <span class="status-count">${statusData.count}</span>
+            </div>
+          `;
+        }).join('');
+
+        // Update Open Graph image based on current status
+        const ogImageTag = document.getElementById('og-image');
+        if (ogImageTag) {
+          const heat = config.status.systemStatus.heat?.count || '3/3';
+          const water = config.status.systemStatus.water?.count || '3/3';
+          const laundry = config.status.systemStatus.laundry?.count || '3/3';
+          const imageUrl = `https://petroleumjelliffe--d762e03aeb5911f09ff942dde27851f2.web.val.run/h${heat.replace('/', '')}w${water.replace('/', '')}l${laundry.replace('/', '')}.png`;
+          ogImageTag.setAttribute('content', imageUrl);
+        }
       }
 
       // Render current issues
@@ -1048,40 +1016,6 @@
 
     // Attach share handler
     document.getElementById('share-btn').addEventListener('click', shareStatus);
-
-    // Sample data - in production this would come from an API or JSON file
-    const data = {
-      lastUpdated: "Jan 6, 2026 • 2:45 PM",
-      issues: [
-        {
-          category: "Heat",
-          location: "Bldg A",
-          icon: "🔥",
-          status: "investigating",
-          detail: "Boiler tech scheduled for tomorrow AM",
-          reported: "2 hrs ago"
-        },
-        {
-          category: "Washer 2",
-          location: "Basement",
-          icon: "🧺",
-          status: "reported",
-          detail: "Won't drain. Repair company contacted.",
-          reported: "yesterday"
-        }
-      ],
-      maintenance: [
-        { date: "Thu, Jan 8", desc: "Plumber coming to repair Washer 2" },
-        { date: "Thu, Jan 15", desc: "Annual fire extinguisher inspection — all buildings" }
-      ],
-      systems: [
-        { name: "Heat", status: "issue", detail: "Bldg A — issue reported" },
-        { name: "Hot Water", status: "ok", detail: "All buildings" },
-        { name: "Laundry", status: "ok", detail: "2 of 3 washers operational" },
-        { name: "Common Areas", status: "ok", detail: "All lights, doors working" }
-      ]
-    };
-
   </script>
 </body>
 </html>
