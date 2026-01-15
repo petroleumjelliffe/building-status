@@ -967,7 +967,7 @@
     // Generate status image URL
     function getStatusImageUrl() {
       const { heat, water, laundry } = getCurrentStatus();
-      return `${STATUS_IMAGE_BASE}/h${heat}w${water}l${laundry}.png`;
+      return `${STATUS_IMAGE_BASE}/h${heat.replace('/3', '')}w${water.replace('/3', '')}l${laundry.replace('/3', '')}.png`;
     }
 
     // Share functionality
