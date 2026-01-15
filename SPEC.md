@@ -27,6 +27,212 @@ A simple, shareable status page for apartment building residents to view system 
 
 ---
 
+## Configuration-Driven Architecture
+
+All content on the status page is dynamically loaded from a JSON configuration file served by Val Town. This allows building managers to update content without touching code.
+
+### Configuration Structure
+
+The entire page is rendered from a single config object with the following structure:
+
+#### Buildings Configuration
+```json
+{
+  "buildings": {
+    "712": {
+      "name": "712",
+      "units": ["A", "B", "C", "D"],
+      "floors": [4, 3, 2, 1]
+    }
+  }
+}
+```
+- **Purpose**: Defines building layouts for the report form
+- **Display**: Used in building/unit selection interface
+- **Editable by**: Manager (via Val Town config edit)
+
+#### Systems Configuration
+```json
+{
+  "systems": [
+    {
+      "id": "heat",
+      "name": "Heat",
+      "icon": "🔥",
+      "label": "Heat"
+    }
+  ]
+}
+```
+- **Purpose**: Defines which systems are tracked
+- **Display**: Rendered as status pills in Systems section
+- **Dynamic behavior**: Status color changes based on `status.systemStatus[id].status`
+
+#### Helpful Links
+```json
+{
+  "helpfulLinks": [
+    {
+      "title": "Building Policies",
+      "url": "https://example.com/policies",
+      "icon": "📋"
+    }
+  ]
+}
+```
+- **Display**: Rendered as clickable link cards
+- **When empty**: Section hidden
+- **Behavior**: Opens in new tab
+
+#### Contacts
+```json
+{
+  "contacts": [
+    {
+      "label": "Bujar - Superintendent",
+      "phone": "555-123-4567",
+      "hours": "Mon-Fri 9am-5pm"
+    }
+  ]
+}
+```
+- **Display**: Contact cards with tap-to-call phone numbers
+- **Format**: Phone link for mobile devices
+- **Privacy**: Kept private via Val Town (not in public GitHub repo)
+
+#### Garbage Schedule
+```json
+{
+  "garbageSchedule": {
+    "trash": {
+      "days": ["Tuesday", "Friday"],
+      "time": "7:00 AM"
+    },
+    "recycling": {
+      "days": ["Friday"],
+      "time": "7:00 AM"
+    },
+    "notes": "Set out by 7am on collection day"
+  }
+}
+```
+- **Display**: Two-column grid with trash and recycling cards
+- **Note field**: Rendered below grid in italic style
+- **Time field**: Optional - can be omitted
+
+#### Report Email
+```json
+{
+  "reportEmail": "building-status@example.com"
+}
+```
+- **Purpose**: Email address for issue reports
+- **Display**: Used in mailto: link on "Report an Issue" button
+- **Privacy**: Kept private via Val Town
+
+#### Status Data
+```json
+{
+  "status": {
+    "lastUpdated": "2026-01-15T14:45:00Z",
+    "pinnedNotifications": [
+      {
+        "type": "warning",
+        "message": "Heat will be off Tuesday 9am-12pm",
+        "expiresAt": "2026-01-20T12:00:00Z"
+      }
+    ],
+    "systemStatus": {
+      "heat": {
+        "status": "issue",
+        "count": "2/3",
+        "note": "Bldg A"
+      }
+    },
+    "currentIssues": [
+      {
+        "category": "Heat",
+        "location": "Bldg A",
+        "icon": "🔥",
+        "status": "investigating",
+        "detail": "Boiler tech scheduled for tomorrow AM",
+        "reported": "2 hrs ago"
+      }
+    ],
+    "scheduledMaintenance": [
+      {
+        "date": "Thu, Jan 8",
+        "description": "Plumber coming to repair Washer 2"
+      }
+    ]
+  }
+}
+```
+
+**lastUpdated**
+- **Format**: ISO 8601 timestamp
+- **Display**: Formatted as "Updated Jan 15, 2026 • 2:45 PM" in header
+- **Manager action**: Update this timestamp whenever config changes
+
+**pinnedNotifications**
+- **Display**: Colored banner at top of page
+- **Types**: warning (yellow), info (blue), alert (red)
+- **Auto-expiration**: Notifications with `expiresAt` automatically hide after that date
+- **When empty**: No banner shown
+- **Icons**: ⚠️ for warning, ℹ️ for info, 🚨 for alert
+
+**systemStatus**
+- **Keys**: Match system IDs from `systems` array
+- **status values**: "ok" (green), "issue" (yellow), "down" (red)
+- **count format**: "working/total" (e.g., "2/3")
+- **note field**: Optional additional context
+- **Display**: Affects status pill color and Open Graph image
+
+**currentIssues**
+- **Display**: Issue cards in "Current Issues" section
+- **status values**: "reported" (red badge), "investigating" (yellow badge)
+- **When empty**: Shows "No issues reported" with checkmark
+- **Fields**:
+  - `category`: Issue type (text)
+  - `location`: Where the issue is (text)
+  - `icon`: Emoji for visual recognition
+  - `status`: Current state
+  - `detail`: Description and next steps
+  - `reported`: Relative time (e.g., "2 hrs ago")
+
+**scheduledMaintenance**
+- **Display**: Maintenance cards in "Scheduled Maintenance" section
+- **When empty**: Shows "No scheduled maintenance"
+- **date format**: Human-readable (e.g., "Thu, Jan 8")
+- **Fields**:
+  - `date`: When it will happen
+  - `description`: What work is being done
+
+### Dynamic Content Rendering
+
+All sections render automatically when the page loads:
+1. **Header**: lastUpdated timestamp formatted
+2. **Pinned Notifications**: Filtered for non-expired items
+3. **Systems Status**: Pills colored based on systemStatus
+4. **Current Issues**: List or "all clear" message
+5. **Scheduled Maintenance**: List or "none scheduled" message
+6. **Garbage Schedule**: Days/times from config
+7. **Helpful Links**: Link cards (section hidden if empty array)
+8. **Important Contacts**: Contact cards with phone links
+9. **Report Button**: mailto: uses reportEmail
+
+### Open Graph Social Media Image
+
+The page dynamically updates its social sharing preview image based on current system status:
+
+**URL Format**: `https://[val-town-url]/h{heat}w{water}l{laundry}.png`
+- Example: `/h23w33l33.png` means heat=2/3, water=3/3, laundry=3/3
+- Slashes are removed from counts for URL compatibility
+- Updates automatically when systemStatus changes in config
+- Used in meta tag `og:image` for social media previews
+
+---
+
 ## Feature Specifications
 
 ### 1. Status Page (Resident View)
