@@ -10,8 +10,8 @@ export interface SystemStatusData {
   id: number;
   systemId: string;
   status: SystemStatus;
-  count?: string;
-  note?: string;
+  count: string | null;
+  note: string | null;
   updatedAt: Date;
 }
 
@@ -19,11 +19,11 @@ export interface Issue {
   id: number;
   category: string;
   location: string;
-  icon?: string;
+  icon: string | null;
   status: IssueStatus;
   detail: string;
   reportedAt: Date;
-  resolvedAt?: Date | null;
+  resolvedAt: Date | null;
 }
 
 export interface Maintenance {
@@ -37,7 +37,7 @@ export interface Announcement {
   id: number;
   type: AnnouncementType;
   message: string;
-  expiresAt?: Date | null;
+  expiresAt: Date | null;
   createdAt: Date;
 }
 

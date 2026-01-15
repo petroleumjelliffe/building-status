@@ -1,6 +1,6 @@
 import { db } from './db';
 import { systemStatus, issues, maintenance, announcements, config } from './schema';
-import { eq, gte } from 'drizzle-orm';
+import { eq, gte, or, isNull } from 'drizzle-orm';
 import type { StatusPageData, SystemStatus, SystemStatusData } from '@/types';
 
 /**
@@ -21,11 +21,14 @@ export async function getStatusData(): Promise<StatusPageData> {
     emailConfig,
   ] = await Promise.all([
     db.select().from(systemStatus),
-    db.select().from(issues).where(eq(issues.resolvedAt, null as any)), // Only unresolved
+    db.select().from(issues).where(isNull(issues.resolvedAt)), // Only unresolved
     db.select().from(maintenance),
     db.select().from(announcements).where(
-      gte(announcements.expiresAt, new Date())
-    ), // Only non-expired or permanent
+      or(
+        isNull(announcements.expiresAt),
+        gte(announcements.expiresAt, new Date())
+      )
+    ), // Only non-expired or permanent (null expiresAt)
     getConfigValue('contacts'),
     getConfigValue('helpfulLinks'),
     getConfigValue('garbageSchedule'),
@@ -36,9 +39,9 @@ export async function getStatusData(): Promise<StatusPageData> {
 
   return {
     systemStatus: systemStatusData as SystemStatusData[],
-    issues: issuesData,
+    issues: issuesData as any, // TODO: Properly type Drizzle query results
     maintenance: maintenanceData,
-    announcements: announcementsData,
+    announcements: announcementsData as any, // TODO: Properly type Drizzle query results
     contacts: contactsConfig || [],
     helpfulLinks: linksConfig || [],
     garbageSchedule: garbageConfig || { trash: { days: [] }, recycling: { days: [] }, notes: '' },
