@@ -287,6 +287,13 @@ h1 {
   font-style: italic;
 }
 
+/* Issues and Maintenance Lists */
+.issues-list,
+.maintenance-list {
+  display: flex;
+  flex-direction: column;
+}
+
 .all-clear {
   background: var(--surface);
   border-radius: 8px;
@@ -493,6 +500,10 @@ button[type="submit"]:active {
   border-left-color: var(--yellow);
 }
 
+.issue-item.resolved {
+  border-left-color: var(--green);
+}
+
 .issue-header {
   display: flex;
   justify-content: space-between;
@@ -522,6 +533,11 @@ button[type="submit"]:active {
 .issue-badge.investigating {
   background: #eab30833;
   color: var(--yellow);
+}
+
+.issue-badge.resolved {
+  background: #22c55e33;
+  color: var(--green);
 }
 
 .issue-detail {

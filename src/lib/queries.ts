@@ -7,6 +7,9 @@ import type { StatusPageData, SystemStatus, SystemStatusData } from '@/types';
  * Get all status data for the main page
  */
 export async function getStatusData(): Promise<StatusPageData> {
+  // Calculate 24 hours ago for visibility window
+  const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
   // Fetch all data in parallel
   const [
     systemStatusData,
@@ -21,7 +24,13 @@ export async function getStatusData(): Promise<StatusPageData> {
     emailConfig,
   ] = await Promise.all([
     db.select().from(systemStatus),
-    db.select().from(issues).where(isNull(issues.resolvedAt)), // Only unresolved
+    // Show unresolved issues OR resolved issues from last 24 hours
+    db.select().from(issues).where(
+      or(
+        isNull(issues.resolvedAt),
+        gte(issues.resolvedAt, twentyFourHoursAgo)
+      )
+    ),
     db.select().from(maintenance).where(isNull(maintenance.completedAt)), // Only incomplete
     db.select().from(announcements).where(
       or(

@@ -55,30 +55,31 @@ export function MaintenanceCard({ maintenance, editable, password, onUpdate }: M
   return (
     <>
       <div className="maintenance-card">
-        <div className="maintenance-icon">🛠️</div>
-        <div className="maintenance-content">
-          <div className="maintenance-date">{maintenance.date}</div>
-          <div className="maintenance-description">{maintenance.description}</div>
-        </div>
-        {editable && password && (
-          <div style={{ display: 'flex', gap: '0.5rem', marginLeft: 'auto' }}>
-            <button
-              className="btn-icon"
-              onClick={() => setIsEditModalOpen(true)}
-              title="Edit maintenance"
-            >
-              ✏️
-            </button>
-            <button
-              className="btn-icon"
-              onClick={handleComplete}
-              disabled={isCompleting}
-              title="Mark as completed"
-            >
-              {isCompleting ? '⏳' : '✓'}
-            </button>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+          <div style={{ flex: 1 }}>
+            <div className="maintenance-date">{maintenance.date}</div>
+            <div className="maintenance-desc">{maintenance.description}</div>
           </div>
-        )}
+          {editable && password && (
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                className="btn-icon"
+                onClick={() => setIsEditModalOpen(true)}
+                title="Edit maintenance"
+              >
+                ✏️
+              </button>
+              <button
+                className="btn-icon"
+                onClick={handleComplete}
+                disabled={isCompleting}
+                title="Mark as completed"
+              >
+                {isCompleting ? '⏳' : '✓'}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {editable && password && (

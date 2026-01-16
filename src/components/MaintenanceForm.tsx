@@ -67,7 +67,7 @@ export function MaintenanceForm({ maintenance, password, onSubmit, onCancel }: M
 
       <div className="form-group">
         <label htmlFor="date" className="form-label">
-          Date *
+          Date
         </label>
         <input
           id="date"
@@ -75,24 +75,21 @@ export function MaintenanceForm({ maintenance, password, onSubmit, onCancel }: M
           className="form-input"
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          placeholder="e.g. Thu, Jan 16 or Next Tuesday"
+          placeholder="e.g. Thu, Jan 16"
           required
         />
-        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-          Flexible format - will be displayed exactly as entered
-        </div>
       </div>
 
       <div className="form-group">
         <label htmlFor="description" className="form-label">
-          Description *
+          Description
         </label>
         <textarea
           id="description"
           className="form-textarea"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Describe the scheduled maintenance..."
+          placeholder="Describe the maintenance..."
           required
         />
       </div>
@@ -103,7 +100,7 @@ export function MaintenanceForm({ maintenance, password, onSubmit, onCancel }: M
           className="btn btn-primary"
           disabled={isSubmitting}
         >
-          {isSubmitting ? 'Saving...' : (maintenance ? 'Update Maintenance' : 'Create Maintenance')}
+          {isSubmitting ? 'Saving...' : (maintenance ? 'Save' : 'Add Maintenance')}
         </button>
         <button
           type="button"

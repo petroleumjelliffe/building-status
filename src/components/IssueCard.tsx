@@ -19,6 +19,7 @@ interface IssueCardProps {
 export function IssueCard({ issue, editable, password, onUpdate }: IssueCardProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isResolving, setIsResolving] = useState(false);
+  const isResolved = issue.resolvedAt !== null;
 
   const handleResolve = async () => {
     if (!password || !confirm('Mark this issue as resolved?')) return;
@@ -54,23 +55,27 @@ export function IssueCard({ issue, editable, password, onUpdate }: IssueCardProp
 
   return (
     <>
-      <div className="issue-card">
+      <div
+        className={`issue-item ${isResolved ? 'resolved' : issue.status === 'investigating' ? 'investigating' : ''}`}
+        style={isResolved ? { opacity: 0.6 } : undefined}
+      >
         <div className="issue-header">
-          {issue.icon && <span className="issue-icon">{issue.icon}</span>}
-          <div className="issue-title">
-            <h3>{issue.category}</h3>
-            <span className="issue-location">{issue.location}</span>
+          <div className="issue-category">
+            {issue.icon && <span>{issue.icon} </span>}
+            {issue.category} - {issue.location}
           </div>
-          <span className={`issue-status status-${issue.status}`}>
-            {issue.status}
+          <span className={`issue-badge ${isResolved ? 'resolved' : issue.status}`}>
+            {isResolved ? 'resolved' : issue.status}
           </span>
         </div>
-        <p className="issue-detail">{issue.detail}</p>
+        <div className="issue-detail">{issue.detail}</div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
-          <time className="issue-time">
-            Reported {new Date(issue.reportedAt).toLocaleDateString()}
-          </time>
-          {editable && password && (
+          <div className="issue-meta">
+            {isResolved && issue.resolvedAt
+              ? `Resolved ${new Date(issue.resolvedAt).toLocaleDateString()}`
+              : `Reported ${new Date(issue.reportedAt).toLocaleDateString()}`}
+          </div>
+          {editable && password && !isResolved && (
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <button
                 className="btn-icon"
@@ -92,7 +97,7 @@ export function IssueCard({ issue, editable, password, onUpdate }: IssueCardProp
         </div>
       </div>
 
-      {editable && password && (
+      {editable && password && !isResolved && (
         <Modal
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}

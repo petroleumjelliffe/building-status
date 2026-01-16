@@ -17,8 +17,6 @@ interface IssueFormProps {
 export function IssueForm({ issue, password, onSubmit, onCancel }: IssueFormProps) {
   const [category, setCategory] = useState(issue?.category || '');
   const [location, setLocation] = useState(issue?.location || '');
-  const [icon, setIcon] = useState(issue?.icon || '');
-  const [status, setStatus] = useState<IssueStatus>(issue?.status || 'reported');
   const [detail, setDetail] = useState(issue?.detail || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -44,9 +42,8 @@ export function IssueForm({ issue, password, onSubmit, onCancel }: IssueFormProp
           password,
           category,
           location,
-          icon: icon || undefined,
-          status,
           detail,
+          status: issue ? undefined : 'reported', // New issues default to 'reported'
         }),
       });
 
@@ -73,7 +70,7 @@ export function IssueForm({ issue, password, onSubmit, onCancel }: IssueFormProp
 
       <div className="form-group">
         <label htmlFor="category" className="form-label">
-          Category *
+          Category
         </label>
         <input
           id="category"
@@ -81,14 +78,14 @@ export function IssueForm({ issue, password, onSubmit, onCancel }: IssueFormProp
           className="form-input"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          placeholder="e.g. Plumbing, Electrical, HVAC"
+          placeholder="e.g. Plumbing, Electrical"
           required
         />
       </div>
 
       <div className="form-group">
         <label htmlFor="location" className="form-label">
-          Location *
+          Location
         </label>
         <input
           id="location"
@@ -102,47 +99,15 @@ export function IssueForm({ issue, password, onSubmit, onCancel }: IssueFormProp
       </div>
 
       <div className="form-group">
-        <label htmlFor="icon" className="form-label">
-          Icon (emoji)
-        </label>
-        <input
-          id="icon"
-          type="text"
-          className="form-input"
-          value={icon}
-          onChange={(e) => setIcon(e.target.value)}
-          placeholder="e.g. 🔧"
-          maxLength={10}
-        />
-      </div>
-
-      <div className="form-group">
-        <label htmlFor="status" className="form-label">
-          Status *
-        </label>
-        <select
-          id="status"
-          className="form-select"
-          value={status}
-          onChange={(e) => setStatus(e.target.value as IssueStatus)}
-          required
-        >
-          <option value="reported">Reported</option>
-          <option value="investigating">Investigating</option>
-          <option value="resolved">Resolved</option>
-        </select>
-      </div>
-
-      <div className="form-group">
         <label htmlFor="detail" className="form-label">
-          Details *
+          Description
         </label>
         <textarea
           id="detail"
           className="form-textarea"
           value={detail}
           onChange={(e) => setDetail(e.target.value)}
-          placeholder="Describe the issue in detail..."
+          placeholder="Describe the issue..."
           required
         />
       </div>
@@ -153,7 +118,7 @@ export function IssueForm({ issue, password, onSubmit, onCancel }: IssueFormProp
           className="btn btn-primary"
           disabled={isSubmitting}
         >
-          {isSubmitting ? 'Saving...' : (issue ? 'Update Issue' : 'Create Issue')}
+          {isSubmitting ? 'Saving...' : (issue ? 'Save' : 'Add Issue')}
         </button>
         <button
           type="button"
