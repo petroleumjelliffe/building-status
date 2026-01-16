@@ -141,6 +141,8 @@ export function StatusPill({
   return (
     <div
       className={`status-pill ${status} ${editable ? 'editable' : ''}`}
+      data-system={systemId}
+      data-count={count || '3/3'}
       onClick={handleClick}
       role={editable ? 'button' : undefined}
       tabIndex={editable ? 0 : undefined}
