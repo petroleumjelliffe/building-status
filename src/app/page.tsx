@@ -16,6 +16,17 @@ export async function generateMetadata(): Promise<Metadata> {
     ? 'Some systems experiencing issues'
     : 'All systems operational';
 
+  // Generate dynamic status image URL
+  const heat = data.systemStatus.find((s) => s.systemId === 'heat');
+  const water = data.systemStatus.find((s) => s.systemId === 'water');
+  const laundry = data.systemStatus.find((s) => s.systemId === 'laundry');
+
+  const h = heat?.count?.split('/')[0] || '3';
+  const w = water?.count?.split('/')[0] || '3';
+  const l = laundry?.count?.split('/')[0] || '3';
+
+  const statusImageUrl = `https://petroleumjelliffe--d762e03aeb5911f09ff942dde27851f2.web.val.run/h${h}w${w}l${l}.png`;
+
   return {
     title: 'Building Status',
     description: `Current building status: ${statusText}. Heat, Water, and Laundry systems.`,
@@ -27,9 +38,9 @@ export async function generateMetadata(): Promise<Metadata> {
       type: 'website',
       images: [
         {
-          url: `${siteUrl}/og-image.png`,
-          width: 1200,
-          height: 630,
+          url: statusImageUrl,
+          width: 600,
+          height: 315,
           alt: 'Building Status',
         },
       ],
@@ -38,6 +49,7 @@ export async function generateMetadata(): Promise<Metadata> {
       card: 'summary_large_image',
       title: 'Building Status',
       description: statusText,
+      images: [statusImageUrl],
     },
   };
 }
