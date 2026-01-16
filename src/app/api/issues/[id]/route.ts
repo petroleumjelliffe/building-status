@@ -4,6 +4,8 @@ import { updateIssue } from '@/lib/queries';
 import { revalidatePath } from 'next/cache';
 import type { UpdateIssueRequest } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * PUT /api/issues/[id]
  * Update an existing issue

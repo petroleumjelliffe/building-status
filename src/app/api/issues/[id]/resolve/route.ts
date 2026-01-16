@@ -3,6 +3,8 @@ import { validateSessionToken } from '@/lib/auth';
 import { resolveIssue } from '@/lib/queries';
 import { revalidatePath } from 'next/cache';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * POST /api/issues/[id]/resolve
  * Mark an issue as resolved (soft delete)

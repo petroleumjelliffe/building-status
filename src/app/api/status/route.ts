@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getStatusData } from '@/lib/queries';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/status
  * Returns all status data for the building status page

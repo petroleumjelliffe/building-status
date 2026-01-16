@@ -4,6 +4,8 @@ import { validateSessionToken } from '@/lib/auth';
 import { updateSystemStatus } from '@/lib/queries';
 import type { SystemStatus } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * POST /api/status/update
  * Updates a system status

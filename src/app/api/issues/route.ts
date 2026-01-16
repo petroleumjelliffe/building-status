@@ -4,6 +4,8 @@ import { createIssue } from '@/lib/queries';
 import { revalidatePath } from 'next/cache';
 import type { CreateIssueRequest } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * POST /api/issues
  * Create a new issue

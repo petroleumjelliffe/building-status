@@ -4,6 +4,8 @@ import { updateMaintenance } from '@/lib/queries';
 import { revalidatePath } from 'next/cache';
 import type { UpdateMaintenanceRequest } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * PUT /api/maintenance/[id]
  * Update an existing maintenance item

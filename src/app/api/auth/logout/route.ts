@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { revokeSession } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 export interface LogoutResponse {
   success: boolean;
 }

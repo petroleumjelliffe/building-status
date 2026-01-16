@@ -4,6 +4,8 @@ import { createMaintenance } from '@/lib/queries';
 import { revalidatePath } from 'next/cache';
 import type { CreateMaintenanceRequest } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * POST /api/maintenance
  * Create a new maintenance item

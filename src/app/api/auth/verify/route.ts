@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { validateSessionToken } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 export interface VerifyResponse {
   valid: boolean;
 }

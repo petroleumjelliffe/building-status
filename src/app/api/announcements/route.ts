@@ -4,6 +4,8 @@ import { validateSessionToken } from '@/lib/auth';
 import { createAnnouncement, updateAnnouncement } from '@/lib/queries';
 import type { AnnouncementType } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * POST /api/announcements
  * Creates or updates an announcement

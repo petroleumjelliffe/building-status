@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createSession } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 export interface LoginRequest {
   password: string;
 }
