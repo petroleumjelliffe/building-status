@@ -40,5 +40,8 @@
     "status-page",
     "nextjs",
     "typescript"
-  ]
+  ],
+  "engines": {
+    "node": ">=18.18.0"
+  }
 }
