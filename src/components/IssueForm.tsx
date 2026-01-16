@@ -37,9 +37,9 @@ export function IssueForm({ issue, password, onSubmit, onCancel }: IssueFormProp
         method,
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${password}`, // password is actually sessionToken
         },
         body: JSON.stringify({
-          password,
           category,
           location,
           detail,

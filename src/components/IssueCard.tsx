@@ -30,8 +30,9 @@ export function IssueCard({ issue, editable, password, onUpdate }: IssueCardProp
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${password}`, // password is actually sessionToken
         },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({}),
       });
 
       if (response.ok) {

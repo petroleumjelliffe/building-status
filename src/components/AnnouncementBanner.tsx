@@ -41,9 +41,9 @@ export function AnnouncementBanner({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${password}`, // password is actually sessionToken
         },
         body: JSON.stringify({
-          password,
           id: announcement.id,
           type: nextType,
           message: announcement.message,
@@ -77,9 +77,9 @@ export function AnnouncementBanner({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${password}`, // password is actually sessionToken
         },
         body: JSON.stringify({
-          password,
           id: announcement.id,
           type: announcement.type,
           message: editedMessage,

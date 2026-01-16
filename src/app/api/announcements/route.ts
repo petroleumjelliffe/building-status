@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
-import { verifyPassword } from '@/lib/auth';
+import { validateSessionToken } from '@/lib/auth';
 import { createAnnouncement, updateAnnouncement } from '@/lib/queries';
 import type { AnnouncementType } from '@/types';
 
@@ -8,8 +8,8 @@ import type { AnnouncementType } from '@/types';
  * POST /api/announcements
  * Creates or updates an announcement
  *
+ * Headers: Authorization: Bearer <token>
  * Body: {
- *   password: string,
  *   id?: number,  // If provided, updates existing announcement
  *   type: 'warning' | 'info' | 'alert',
  *   message: string,
@@ -18,30 +18,22 @@ import type { AnnouncementType } from '@/types';
  */
 export async function POST(request: Request) {
   try {
+    // Verify session token
+    const authHeader = request.headers.get('Authorization');
+    const token = authHeader?.replace('Bearer ', '');
+
+    if (!validateSessionToken(token)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Unauthorized - Invalid or missing session token',
+        },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
-    const { password, id, type, message, expiresAt } = body;
-
-    // Verify password
-    if (!password || typeof password !== 'string') {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Password is required',
-        },
-        { status: 401 }
-      );
-    }
-
-    const isValid = await verifyPassword(password);
-    if (!isValid) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Invalid password',
-        },
-        { status: 401 }
-      );
-    }
+    const { id, type, message, expiresAt } = body;
 
     // Validate inputs
     const validTypes: AnnouncementType[] = ['warning', 'info', 'alert'];

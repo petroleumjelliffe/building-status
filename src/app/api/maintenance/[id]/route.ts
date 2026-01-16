@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { verifyPassword } from '@/lib/auth';
+import { validateSessionToken } from '@/lib/auth';
 import { updateMaintenance } from '@/lib/queries';
 import { revalidatePath } from 'next/cache';
 import type { UpdateMaintenanceRequest } from '@/types';
@@ -7,29 +7,34 @@ import type { UpdateMaintenanceRequest } from '@/types';
 /**
  * PUT /api/maintenance/[id]
  * Update an existing maintenance item
+ *
+ * Headers: Authorization: Bearer <token>
  */
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Verify session token
+    const authHeader = request.headers.get('Authorization');
+    const token = authHeader?.replace('Bearer ', '');
+
+    if (!validateSessionToken(token)) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized - Invalid or missing session token' },
+        { status: 401 }
+      );
+    }
+
     const body: UpdateMaintenanceRequest = await request.json();
-    const { password, date, description } = body;
-    const id = parseInt(params.id);
+    const { date, description } = body;
+    const { id: idString } = await params;
+    const id = parseInt(idString);
 
     if (isNaN(id)) {
       return NextResponse.json(
         { success: false, error: 'Invalid maintenance ID' },
         { status: 400 }
-      );
-    }
-
-    // Verify password
-    const isValid = await verifyPassword(password);
-    if (!isValid) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid password' },
-        { status: 401 }
       );
     }
 

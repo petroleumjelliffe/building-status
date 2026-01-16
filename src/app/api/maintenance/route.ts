@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { verifyPassword } from '@/lib/auth';
+import { validateSessionToken } from '@/lib/auth';
 import { createMaintenance } from '@/lib/queries';
 import { revalidatePath } from 'next/cache';
 import type { CreateMaintenanceRequest } from '@/types';
@@ -7,20 +7,24 @@ import type { CreateMaintenanceRequest } from '@/types';
 /**
  * POST /api/maintenance
  * Create a new maintenance item
+ *
+ * Headers: Authorization: Bearer <token>
  */
 export async function POST(request: Request) {
   try {
-    const body: CreateMaintenanceRequest = await request.json();
-    const { password, date, description } = body;
+    // Verify session token
+    const authHeader = request.headers.get('Authorization');
+    const token = authHeader?.replace('Bearer ', '');
 
-    // Verify password
-    const isValid = await verifyPassword(password);
-    if (!isValid) {
+    if (!validateSessionToken(token)) {
       return NextResponse.json(
-        { success: false, error: 'Invalid password' },
+        { success: false, error: 'Unauthorized - Invalid or missing session token' },
         { status: 401 }
       );
     }
+
+    const body: CreateMaintenanceRequest = await request.json();
+    const { date, description } = body;
 
     // Validate required fields
     if (!date || !description) {

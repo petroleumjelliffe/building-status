@@ -36,9 +36,9 @@ export function MaintenanceForm({ maintenance, password, onSubmit, onCancel }: M
         method,
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${password}`, // password is actually sessionToken
         },
         body: JSON.stringify({
-          password,
           date,
           description,
         }),

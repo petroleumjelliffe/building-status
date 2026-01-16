@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { verifyPassword } from '@/lib/auth';
+import { validateSessionToken } from '@/lib/auth';
 import { createIssue } from '@/lib/queries';
 import { revalidatePath } from 'next/cache';
 import type { CreateIssueRequest } from '@/types';
@@ -7,20 +7,24 @@ import type { CreateIssueRequest } from '@/types';
 /**
  * POST /api/issues
  * Create a new issue
+ *
+ * Headers: Authorization: Bearer <token>
  */
 export async function POST(request: Request) {
   try {
-    const body: CreateIssueRequest = await request.json();
-    const { password, category, location, detail, status, icon } = body;
+    // Verify session token
+    const authHeader = request.headers.get('Authorization');
+    const token = authHeader?.replace('Bearer ', '');
 
-    // Verify password
-    const isValid = await verifyPassword(password);
-    if (!isValid) {
+    if (!validateSessionToken(token)) {
       return NextResponse.json(
-        { success: false, error: 'Invalid password' },
+        { success: false, error: 'Unauthorized - Invalid or missing session token' },
         { status: 401 }
       );
     }
+
+    const body: CreateIssueRequest = await request.json();
+    const { category, location, detail, status, icon } = body;
 
     // Validate required fields
     if (!category || !location || !detail || !status) {

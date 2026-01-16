@@ -29,8 +29,9 @@ export function MaintenanceCard({ maintenance, editable, password, onUpdate }: M
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${password}`, // password is actually sessionToken
         },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({}),
       });
 
       if (response.ok) {

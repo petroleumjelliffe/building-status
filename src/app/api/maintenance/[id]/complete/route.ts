@@ -1,35 +1,37 @@
 import { NextResponse } from 'next/server';
-import { verifyPassword } from '@/lib/auth';
+import { validateSessionToken } from '@/lib/auth';
 import { completeMaintenance } from '@/lib/queries';
 import { revalidatePath } from 'next/cache';
-import type { CompleteMaintenanceRequest } from '@/types';
 
 /**
  * POST /api/maintenance/[id]/complete
  * Mark a maintenance item as completed (soft delete)
+ *
+ * Headers: Authorization: Bearer <token>
  */
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const body: CompleteMaintenanceRequest = await request.json();
-    const { password } = body;
-    const id = parseInt(params.id);
+    // Verify session token
+    const authHeader = request.headers.get('Authorization');
+    const token = authHeader?.replace('Bearer ', '');
+
+    if (!validateSessionToken(token)) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized - Invalid or missing session token' },
+        { status: 401 }
+      );
+    }
+
+    const { id: idString } = await params;
+    const id = parseInt(idString);
 
     if (isNaN(id)) {
       return NextResponse.json(
         { success: false, error: 'Invalid maintenance ID' },
         { status: 400 }
-      );
-    }
-
-    // Verify password
-    const isValid = await verifyPassword(password);
-    if (!isValid) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid password' },
-        { status: 401 }
       );
     }
 

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { verifyPassword } from '@/lib/auth';
+import { validateSessionToken } from '@/lib/auth';
 import { updateIssue } from '@/lib/queries';
 import { revalidatePath } from 'next/cache';
 import type { UpdateIssueRequest } from '@/types';
@@ -7,29 +7,33 @@ import type { UpdateIssueRequest } from '@/types';
 /**
  * PUT /api/issues/[id]
  * Update an existing issue
+ *
+ * Headers: Authorization: Bearer <token>
  */
 export async function PUT(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
+    // Verify session token
+    const authHeader = request.headers.get('Authorization');
+    const token = authHeader?.replace('Bearer ', '');
+
+    if (!validateSessionToken(token)) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized - Invalid or missing session token' },
+        { status: 401 }
+      );
+    }
+
     const body: UpdateIssueRequest = await request.json();
-    const { password, category, location, detail, status, icon } = body;
+    const { category, location, detail, status, icon } = body;
     const id = parseInt(params.id);
 
     if (isNaN(id)) {
       return NextResponse.json(
         { success: false, error: 'Invalid issue ID' },
         { status: 400 }
-      );
-    }
-
-    // Verify password
-    const isValid = await verifyPassword(password);
-    if (!isValid) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid password' },
-        { status: 401 }
       );
     }
 

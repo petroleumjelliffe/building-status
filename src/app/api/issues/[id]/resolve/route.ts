@@ -1,35 +1,36 @@
 import { NextResponse } from 'next/server';
-import { verifyPassword } from '@/lib/auth';
+import { validateSessionToken } from '@/lib/auth';
 import { resolveIssue } from '@/lib/queries';
 import { revalidatePath } from 'next/cache';
-import type { ResolveIssueRequest } from '@/types';
 
 /**
  * POST /api/issues/[id]/resolve
  * Mark an issue as resolved (soft delete)
+ *
+ * Headers: Authorization: Bearer <token>
  */
 export async function POST(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    const body: ResolveIssueRequest = await request.json();
-    const { password } = body;
+    // Verify session token
+    const authHeader = request.headers.get('Authorization');
+    const token = authHeader?.replace('Bearer ', '');
+
+    if (!validateSessionToken(token)) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized - Invalid or missing session token' },
+        { status: 401 }
+      );
+    }
+
     const id = parseInt(params.id);
 
     if (isNaN(id)) {
       return NextResponse.json(
         { success: false, error: 'Invalid issue ID' },
         { status: 400 }
-      );
-    }
-
-    // Verify password
-    const isValid = await verifyPassword(password);
-    if (!isValid) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid password' },
-        { status: 401 }
       );
     }
 
