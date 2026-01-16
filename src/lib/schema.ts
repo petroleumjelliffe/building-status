@@ -28,6 +28,7 @@ export const maintenance = pgTable('maintenance', {
   date: varchar('date', { length: 50 }).notNull(), // Human-readable like "Thu, Jan 8"
   description: text('description').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
+  completedAt: timestamp('completed_at'), // null = not completed, timestamp = completed
 });
 
 // Pinned announcements with auto-expiration

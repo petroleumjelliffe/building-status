@@ -31,6 +31,7 @@ export interface Maintenance {
   date: string;
   description: string;
   createdAt: Date;
+  completedAt: Date | null;
 }
 
 export interface Announcement {
@@ -121,4 +122,48 @@ export interface AuthRequest {
 export interface AuthResponse {
   success: boolean;
   error?: string;
+}
+
+// Issue CRUD request types
+export interface CreateIssueRequest {
+  password: string;
+  category: string;
+  location: string;
+  icon?: string;
+  status: IssueStatus;
+  detail: string;
+}
+
+export interface UpdateIssueRequest {
+  password: string;
+  id: number;
+  category?: string;
+  location?: string;
+  icon?: string;
+  status?: IssueStatus;
+  detail?: string;
+}
+
+export interface ResolveIssueRequest {
+  password: string;
+  id: number;
+}
+
+// Maintenance CRUD request types
+export interface CreateMaintenanceRequest {
+  password: string;
+  date: string;
+  description: string;
+}
+
+export interface UpdateMaintenanceRequest {
+  password: string;
+  id: number;
+  date?: string;
+  description?: string;
+}
+
+export interface CompleteMaintenanceRequest {
+  password: string;
+  id: number;
 }

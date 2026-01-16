@@ -12,6 +12,9 @@ import { GarbageSchedule } from './GarbageSchedule';
 import { HelpfulLinks } from './HelpfulLinks';
 import { ShareButton } from './ShareButton';
 import { EditModeToggle } from './EditModeToggle';
+import { Modal } from './Modal';
+import { IssueForm } from './IssueForm';
+import { MaintenanceForm } from './MaintenanceForm';
 
 interface StatusPageClientProps {
   data: StatusPageData;
@@ -25,6 +28,8 @@ interface StatusPageClientProps {
 export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageClientProps) {
   const [isEditMode, setIsEditMode] = useState(false);
   const [password, setPassword] = useState('');
+  const [isAddIssueModalOpen, setIsAddIssueModalOpen] = useState(false);
+  const [isAddMaintenanceModalOpen, setIsAddMaintenanceModalOpen] = useState(false);
   const router = useRouter();
 
   const handleEditModeChange = (enabled: boolean, pwd: string) => {
@@ -35,6 +40,16 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
   const handleUpdate = () => {
     // Refresh the page data
     router.refresh();
+  };
+
+  const handleAddIssueSuccess = () => {
+    setIsAddIssueModalOpen(false);
+    handleUpdate();
+  };
+
+  const handleAddMaintenanceSuccess = () => {
+    setIsAddMaintenanceModalOpen(false);
+    handleUpdate();
   };
 
   return (
@@ -95,11 +110,28 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
 
         {/* Current Issues */}
         <div className="section">
-          <div className="section-header">Current Issues</div>
+          <div className="section-header">
+            Current Issues
+            {isEditMode && password && (
+              <button
+                className="btn btn-secondary"
+                onClick={() => setIsAddIssueModalOpen(true)}
+                style={{ marginLeft: 'auto', fontSize: '0.875rem', padding: '0.5rem 1rem' }}
+              >
+                + Add Issue
+              </button>
+            )}
+          </div>
           {data.issues.length > 0 ? (
             <div className="issues-list">
               {data.issues.map((issue) => (
-                <IssueCard key={issue.id} issue={issue} />
+                <IssueCard
+                  key={issue.id}
+                  issue={issue}
+                  editable={isEditMode}
+                  password={password}
+                  onUpdate={handleUpdate}
+                />
               ))}
             </div>
           ) : (
@@ -112,11 +144,28 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
 
         {/* Scheduled Maintenance */}
         <div className="section">
-          <div className="section-header">Scheduled Maintenance</div>
+          <div className="section-header">
+            Scheduled Maintenance
+            {isEditMode && password && (
+              <button
+                className="btn btn-secondary"
+                onClick={() => setIsAddMaintenanceModalOpen(true)}
+                style={{ marginLeft: 'auto', fontSize: '0.875rem', padding: '0.5rem 1rem' }}
+              >
+                + Add Maintenance
+              </button>
+            )}
+          </div>
           {data.maintenance.length > 0 ? (
             <div className="maintenance-list">
               {data.maintenance.map((item) => (
-                <MaintenanceCard key={item.id} maintenance={item} />
+                <MaintenanceCard
+                  key={item.id}
+                  maintenance={item}
+                  editable={isEditMode}
+                  password={password}
+                  onUpdate={handleUpdate}
+                />
               ))}
             </div>
           ) : (
@@ -172,6 +221,35 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
           </p>
         </footer>
       </div>
+
+      {/* Modals */}
+      {isEditMode && password && (
+        <>
+          <Modal
+            isOpen={isAddIssueModalOpen}
+            onClose={() => setIsAddIssueModalOpen(false)}
+            title="Add New Issue"
+          >
+            <IssueForm
+              password={password}
+              onSubmit={handleAddIssueSuccess}
+              onCancel={() => setIsAddIssueModalOpen(false)}
+            />
+          </Modal>
+
+          <Modal
+            isOpen={isAddMaintenanceModalOpen}
+            onClose={() => setIsAddMaintenanceModalOpen(false)}
+            title="Add Scheduled Maintenance"
+          >
+            <MaintenanceForm
+              password={password}
+              onSubmit={handleAddMaintenanceSuccess}
+              onCancel={() => setIsAddMaintenanceModalOpen(false)}
+            />
+          </Modal>
+        </>
+      )}
     </>
   );
 }

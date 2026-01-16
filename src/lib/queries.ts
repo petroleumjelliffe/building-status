@@ -22,7 +22,7 @@ export async function getStatusData(): Promise<StatusPageData> {
   ] = await Promise.all([
     db.select().from(systemStatus),
     db.select().from(issues).where(isNull(issues.resolvedAt)), // Only unresolved
-    db.select().from(maintenance),
+    db.select().from(maintenance).where(isNull(maintenance.completedAt)), // Only incomplete
     db.select().from(announcements).where(
       or(
         isNull(announcements.expiresAt),
@@ -154,4 +154,103 @@ export async function updateAnnouncement(
  */
 export async function deleteAnnouncement(id: number): Promise<void> {
   await db.delete(announcements).where(eq(announcements.id, id));
+}
+
+/**
+ * Create a new issue
+ */
+export async function createIssue(
+  category: string,
+  location: string,
+  detail: string,
+  status: string,
+  icon?: string
+): Promise<number> {
+  const result = await db
+    .insert(issues)
+    .values({
+      category,
+      location,
+      detail,
+      status,
+      icon,
+      reportedAt: new Date(),
+    })
+    .returning({ id: issues.id });
+
+  return result[0].id;
+}
+
+/**
+ * Update an issue
+ */
+export async function updateIssue(
+  id: number,
+  updates: {
+    category?: string;
+    location?: string;
+    detail?: string;
+    status?: string;
+    icon?: string;
+  }
+): Promise<void> {
+  await db
+    .update(issues)
+    .set(updates)
+    .where(eq(issues.id, id));
+}
+
+/**
+ * Resolve an issue (soft delete)
+ */
+export async function resolveIssue(id: number): Promise<void> {
+  await db
+    .update(issues)
+    .set({ resolvedAt: new Date() })
+    .where(eq(issues.id, id));
+}
+
+/**
+ * Create a new maintenance item
+ */
+export async function createMaintenance(
+  date: string,
+  description: string
+): Promise<number> {
+  const result = await db
+    .insert(maintenance)
+    .values({
+      date,
+      description,
+      createdAt: new Date(),
+    })
+    .returning({ id: maintenance.id });
+
+  return result[0].id;
+}
+
+/**
+ * Update a maintenance item
+ */
+export async function updateMaintenance(
+  id: number,
+  updates: {
+    date?: string;
+    description?: string;
+  }
+): Promise<void> {
+  await db
+    .update(maintenance)
+    .set(updates)
+    .where(eq(maintenance.id, id));
+}
+
+/**
+ * Complete a maintenance item (soft delete)
+ */
+export async function completeMaintenance(id: number): Promise<void> {
+  await db
+    .update(maintenance)
+    .set({ completedAt: new Date() })
+    .where(eq(maintenance.id, id));
 }
