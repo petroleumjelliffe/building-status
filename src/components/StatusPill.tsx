@@ -56,6 +56,13 @@ export function StatusPill({
     const nextStatus: SystemStatus =
       nextCurrent === total ? 'ok' : nextCurrent === 0 ? 'down' : 'issue';
 
+    console.log('[StatusPill] Updating status:', {
+      systemId,
+      tokenPreview: password.substring(0, 8) + '...',
+      nextStatus,
+      nextCount,
+    });
+
     try {
       const response = await fetch('/api/status/update', {
         method: 'POST',

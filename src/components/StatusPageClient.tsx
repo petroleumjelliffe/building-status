@@ -40,6 +40,11 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
   // Check for existing session on mount
   useEffect(() => {
     const session = getSession();
+    console.log('[StatusPageClient] Session on mount:', session ? {
+      tokenPreview: session.token.substring(0, 8) + '...',
+      expiresAt: new Date(session.expiresAt).toISOString(),
+    } : 'No session');
+
     if (session) {
       // Verify token with server
       fetch('/api/auth/verify', {
@@ -47,16 +52,18 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
       })
         .then(res => res.json())
         .then(data => {
+          console.log('[StatusPageClient] Token verification result:', data);
           if (data.valid) {
             setIsLoggedIn(true);
             setSessionToken(session.token);
           } else {
             // Invalid token, clear session
+            console.log('[StatusPageClient] Invalid token, clearing session');
             clearSession();
           }
         })
         .catch(error => {
-          console.error('Error verifying session:', error);
+          console.error('[StatusPageClient] Error verifying session:', error);
           clearSession();
         });
     }
@@ -66,6 +73,7 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
   }, []);
 
   const handleLoginSuccess = (token: string) => {
+    console.log('[StatusPageClient] Login successful, token:', token.substring(0, 8) + '...');
     setIsLoggedIn(true);
     setSessionToken(token);
     setIsLoginModalOpen(false);

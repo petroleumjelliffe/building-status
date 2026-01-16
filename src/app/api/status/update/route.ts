@@ -22,11 +22,15 @@ export async function POST(request: Request) {
     const authHeader = request.headers.get('Authorization');
     const token = authHeader?.replace('Bearer ', '');
 
+    console.log('Auth header:', authHeader);
+    console.log('Token:', token);
+    console.log('Token valid:', validateSessionToken(token));
+
     if (!validateSessionToken(token)) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Unauthorized',
+          error: 'Unauthorized - Invalid or missing session token',
         },
         { status: 401 }
       );

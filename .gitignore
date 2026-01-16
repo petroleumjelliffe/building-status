@@ -29,6 +29,9 @@ next-env.d.ts
 .env.production.local
 .env.development.local
 
+# Session storage (development)
+.sessions.json
+
 # Database
 drizzle/*.db
 drizzle/*.db-journal
