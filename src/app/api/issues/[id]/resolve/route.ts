@@ -11,7 +11,7 @@ import { revalidatePath } from 'next/cache';
  */
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verify session token
@@ -25,7 +25,8 @@ export async function POST(
       );
     }
 
-    const id = parseInt(params.id);
+    const { id: idString } = await params;
+    const id = parseInt(idString);
 
     if (isNaN(id)) {
       return NextResponse.json(

@@ -12,7 +12,7 @@ import type { UpdateIssueRequest } from '@/types';
  */
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verify session token
@@ -28,7 +28,8 @@ export async function PUT(
 
     const body: UpdateIssueRequest = await request.json();
     const { category, location, detail, status, icon } = body;
-    const id = parseInt(params.id);
+    const { id: idString } = await params;
+    const id = parseInt(idString);
 
     if (isNaN(id)) {
       return NextResponse.json(
