@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { StatusPageData } from '@/types';
 import { StatusPill } from './StatusPill';
@@ -11,10 +11,13 @@ import { ContactCard } from './ContactCard';
 import { GarbageSchedule } from './GarbageSchedule';
 import { HelpfulLinks } from './HelpfulLinks';
 import { ShareButton } from './ShareButton';
-import { EditModeToggle } from './EditModeToggle';
+import { EditToggle } from './EditToggle';
+import { HamburgerMenu } from './HamburgerMenu';
+import { LoginModal } from './LoginModal';
 import { Modal } from './Modal';
 import { IssueForm } from './IssueForm';
 import { MaintenanceForm } from './MaintenanceForm';
+import { getSession, clearSession, getEditMode, setEditMode as saveEditMode } from '@/lib/session';
 
 interface StatusPageClientProps {
   data: StatusPageData;
@@ -23,18 +26,75 @@ interface StatusPageClientProps {
 }
 
 /**
- * Client wrapper for the status page with edit mode functionality
+ * Client wrapper for the status page with authentication and edit mode
  */
 export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageClientProps) {
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [password, setPassword] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const [editMode, setEditMode] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isAddIssueModalOpen, setIsAddIssueModalOpen] = useState(false);
   const [isAddMaintenanceModalOpen, setIsAddMaintenanceModalOpen] = useState(false);
   const router = useRouter();
 
-  const handleEditModeChange = (enabled: boolean, pwd: string) => {
-    setIsEditMode(enabled);
-    setPassword(pwd);
+  // Check for existing session on mount
+  useEffect(() => {
+    const session = getSession();
+    if (session) {
+      // Verify token with server
+      fetch('/api/auth/verify', {
+        headers: { 'Authorization': `Bearer ${session.token}` }
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.valid) {
+            setIsLoggedIn(true);
+            setSessionToken(session.token);
+          } else {
+            // Invalid token, clear session
+            clearSession();
+          }
+        })
+        .catch(error => {
+          console.error('Error verifying session:', error);
+          clearSession();
+        });
+    }
+
+    // Edit mode always starts OFF, even if logged in
+    setEditMode(false);
+  }, []);
+
+  const handleLoginSuccess = (token: string) => {
+    setIsLoggedIn(true);
+    setSessionToken(token);
+    setIsLoginModalOpen(false);
+  };
+
+  const handleLogout = async () => {
+    if (sessionToken) {
+      // Invalidate token on server
+      try {
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${sessionToken}` }
+        });
+      } catch (error) {
+        console.error('Error logging out:', error);
+      }
+    }
+
+    // Clear client-side session
+    clearSession();
+    setIsLoggedIn(false);
+    setSessionToken(null);
+    setEditMode(false);
+  };
+
+  const handleEditToggle = () => {
+    const newEditMode = !editMode;
+    setEditMode(newEditMode);
+    saveEditMode(newEditMode);
   };
 
   const handleUpdate = () => {
@@ -52,19 +112,31 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
     handleUpdate();
   };
 
+  // editable prop = logged in AND edit mode ON
+  const isEditable = isLoggedIn && editMode;
+
   return (
     <>
-      <div className="container">
+      <div className={`container ${editMode ? 'page-container edit-mode' : 'page-container'}`}>
         {/* Header */}
         <header className="page-header">
           <div className="header-content">
             <h1>Building Status</h1>
             <div className="header-actions">
-              <EditModeToggle onEditModeChange={handleEditModeChange} />
+              <EditToggle
+                isLoggedIn={isLoggedIn}
+                editMode={editMode}
+                onToggle={handleEditToggle}
+              />
               <ShareButton
                 url={siteUrl}
                 title="Building Status"
                 text="Check the current status of our building systems"
+              />
+              <HamburgerMenu
+                isLoggedIn={isLoggedIn}
+                onLoginClick={() => setIsLoginModalOpen(true)}
+                onLogoutClick={handleLogout}
               />
             </div>
           </div>
@@ -77,8 +149,8 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
         {data.announcements.length > 0 && (
           <AnnouncementBanner
             announcements={data.announcements}
-            editable={isEditMode}
-            password={password}
+            editable={isEditable}
+            password={sessionToken || ''}
             onUpdate={handleUpdate}
           />
         )}
@@ -99,8 +171,8 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
                   count={statusData?.count || null}
                   icon={system.icon}
                   label={system.label}
-                  editable={isEditMode}
-                  password={password}
+                  editable={isEditable}
+                  password={sessionToken || ''}
                   onUpdate={handleUpdate}
                 />
               );
@@ -112,7 +184,7 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
         <div className="section">
           <div className="section-header">
             Current Issues
-            {isEditMode && password && (
+            {isEditable && sessionToken && (
               <button
                 className="btn btn-secondary"
                 onClick={() => setIsAddIssueModalOpen(true)}
@@ -128,8 +200,8 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
                 <IssueCard
                   key={issue.id}
                   issue={issue}
-                  editable={isEditMode}
-                  password={password}
+                  editable={isEditable}
+                  password={sessionToken || ''}
                   onUpdate={handleUpdate}
                 />
               ))}
@@ -146,7 +218,7 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
         <div className="section">
           <div className="section-header">
             Scheduled Maintenance
-            {isEditMode && password && (
+            {isEditable && sessionToken && (
               <button
                 className="btn btn-secondary"
                 onClick={() => setIsAddMaintenanceModalOpen(true)}
@@ -162,8 +234,8 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
                 <MaintenanceCard
                   key={item.id}
                   maintenance={item}
-                  editable={isEditMode}
-                  password={password}
+                  editable={isEditable}
+                  password={sessionToken || ''}
                   onUpdate={handleUpdate}
                 />
               ))}
@@ -222,8 +294,15 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
         </footer>
       </div>
 
-      {/* Modals */}
-      {isEditMode && password && (
+      {/* Login Modal */}
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        onSuccess={handleLoginSuccess}
+      />
+
+      {/* Add Issue/Maintenance Modals */}
+      {isEditable && sessionToken && (
         <>
           <Modal
             isOpen={isAddIssueModalOpen}
@@ -231,7 +310,7 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
             title="Add New Issue"
           >
             <IssueForm
-              password={password}
+              password={sessionToken}
               onSubmit={handleAddIssueSuccess}
               onCancel={() => setIsAddIssueModalOpen(false)}
             />
@@ -243,7 +322,7 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
             title="Add Scheduled Maintenance"
           >
             <MaintenanceForm
-              password={password}
+              password={sessionToken}
               onSubmit={handleAddMaintenanceSuccess}
               onCancel={() => setIsAddMaintenanceModalOpen(false)}
             />

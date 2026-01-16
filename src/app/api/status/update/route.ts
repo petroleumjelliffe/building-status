@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
-import { verifyPassword } from '@/lib/auth';
+import { validateSessionToken } from '@/lib/auth';
 import { updateSystemStatus } from '@/lib/queries';
 import type { SystemStatus } from '@/types';
 
@@ -8,8 +8,8 @@ import type { SystemStatus } from '@/types';
  * POST /api/status/update
  * Updates a system status
  *
+ * Headers: Authorization: Bearer <token>
  * Body: {
- *   password: string,
  *   systemId: string,
  *   status: 'ok' | 'issue' | 'down',
  *   count?: string,
@@ -18,30 +18,22 @@ import type { SystemStatus } from '@/types';
  */
 export async function POST(request: Request) {
   try {
+    // Verify session token
+    const authHeader = request.headers.get('Authorization');
+    const token = authHeader?.replace('Bearer ', '');
+
+    if (!validateSessionToken(token)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Unauthorized',
+        },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
-    const { password, systemId, status, count, note } = body;
-
-    // Verify password
-    if (!password || typeof password !== 'string') {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Password is required',
-        },
-        { status: 401 }
-      );
-    }
-
-    const isValid = await verifyPassword(password);
-    if (!isValid) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Invalid password',
-        },
-        { status: 401 }
-      );
-    }
+    const { systemId, status, count, note } = body;
 
     // Validate inputs
     if (!systemId || typeof systemId !== 'string') {

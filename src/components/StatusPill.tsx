@@ -10,7 +10,7 @@ interface StatusPillProps {
   icon: string;
   label: string;
   editable: boolean;
-  password?: string;
+  password?: string; // sessionToken passed as password prop for now
   onUpdate?: () => void;
 }
 
@@ -26,7 +26,7 @@ export function StatusPill({
   icon,
   label,
   editable,
-  password,
+  password, // This is actually the sessionToken
   onUpdate,
 }: StatusPillProps) {
   const [isEditingTotal, setIsEditingTotal] = useState(false);
@@ -61,9 +61,9 @@ export function StatusPill({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${password}`, // password is actually sessionToken
         },
         body: JSON.stringify({
-          password,
           systemId,
           status: nextStatus,
           count: nextCount,
@@ -108,9 +108,9 @@ export function StatusPill({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${password}`, // password is actually sessionToken
         },
         body: JSON.stringify({
-          password,
           systemId,
           status: nextStatus,
           count: nextCount,
