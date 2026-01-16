@@ -6,17 +6,17 @@ services:
   - type: web
     name: building-status
     runtime: node
-    region: oregon
+    region: virginia
     plan: free
     branch: next-ts-migration
-    buildCommand: npm install && npm run build
+    buildCommand: rm -rf .next && npm install && npm run build
     startCommand: npm run start
     envVars:
       - key: NODE_ENV
         value: production
       - key: DATABASE_URL
         fromDatabase:
-          name: building-status-db
+          name: building-status-prod
           property: connectionString
       - key: EDITOR_PASSWORD_HASH
         sync: false  # Must be set manually in Render dashboard
@@ -25,25 +25,15 @@ services:
     autoDeploy: true
     healthCheckPath: /
 
+# Exported from Render on 2026-01-16T19:57:16Z
+version: "1"
 databases:
-  # PostgreSQL Database
-  - name: building-status-db
-    databaseName: building_status
-    region: oregon
-    plan: free
-    ipAllowList: []  # Allow connections from anywhere (safe for free tier)
-
-# After initial deployment:
-# 1. Set environment variables in Render dashboard:
-#    - EDITOR_PASSWORD_HASH (generate with: node -e "const bcrypt = require('bcryptjs'); bcrypt.hash('your-password', 10).then(console.log);")
-#    - NEXT_PUBLIC_SITE_URL (your render URL: https://building-status.onrender.com)
-#
-# 2. Run database migrations:
-#    - Connect via SSH: render ssh building-status
-#    - Run: npm run db:migrate
-#    - Run: npm run db:seed
-#
-# 3. Database management:
-#    - Get connection string from Render dashboard
-#    - Connect locally: psql <connection-string>
-#    - Or use Render's built-in database browser
+- name: building-status-prod
+  databaseName: building_status_prod
+  user: building_status_prod_user
+  plan: free
+  region: virginia
+  ipAllowList:
+  - source: 0.0.0.0/0
+    description: everywhere
+  postgresMajorVersion: "18"
