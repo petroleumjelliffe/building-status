@@ -11,5 +11,27 @@ valtown-config-server.js
 *.swo
 *~
 
-# Node modules (if added later)
+# Node modules
 node_modules/
+
+# Next.js
+.next/
+out/
+.vercel/
+
+# Build files
+*.tsbuildinfo
+next-env.d.ts
+
+# Environment variables
+.env
+.env.local
+.env.production.local
+.env.development.local
+
+# Session storage (development)
+.sessions.json
+
+# Database
+drizzle/*.db
+drizzle/*.db-journal

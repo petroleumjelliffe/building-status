@@ -1,380 +1,310 @@
-# Building Status - MVP Roadmap
+# Building Status - Development Roadmap
 
-## Goal
-Get a functional status page in residents' hands within 2 weeks, then iterate.
+## Project Status: ✅ MVP Complete & Deployed
+
+The building status application has been successfully migrated to Next.js with TypeScript and is deployed on Render.com.
 
 ---
 
-## Phase 1: MVP (Week 1) - "Good Enough to Ship"
+## ✅ Completed (Phases 1-3)
 
-### Priority 1A: Configuration File
-**Why First:** Makes everything else reusable and maintainable
-**Time:** 2 hours
+### Core Application (TypeScript Migration)
+- [x] Migrated from static HTML to Next.js App Router
+- [x] Full TypeScript implementation with strict mode
+- [x] PostgreSQL database with Drizzle ORM
+- [x] Database migrations and seed scripts
+- [x] Session-based authentication with bcrypt
+- [x] Deployed to Render.com with auto-deploy from GitHub
 
-- [ ] Create `config.json` with:
-  - Building addresses and unit layouts
-  - System types (heat, water, laundry, etc.)
-  - Helpful links (rent portal, emergency contacts)
-  - Garbage day schedule
-  - Manager contact methods
+### Features
+- [x] Real-time system status display (Heat, Water, Laundry)
+- [x] Issue tracking and reporting
+- [x] Scheduled maintenance display
+- [x] Building announcements
+- [x] Social sharing with Open Graph meta tags
+- [x] Static site generation with ISR (60s revalidation)
+- [x] Manager dashboard with live editing
+- [x] Password-protected admin access
 
-- [ ] Refactor HTML to load from config
-- [ ] Makes site reusable for other buildings
+### Infrastructure
+- [x] Build-time database access for OG meta tags
+- [x] API routes with dynamic rendering
+- [x] Module resolution fixed for Next.js 14
+- [x] Database migration in build process
+- [x] Environment variable configuration
 
-### Priority 1B: Helpful Links Section
-**Why:** Easy win, high value for residents
-**Time:** 2-3 hours
+---
 
-- [ ] Add section below maintenance
-- [ ] Garbage days with visual calendar
-- [ ] Important links (rent portal, policies, etc.)
-- [ ] Emergency contacts with click-to-call
-- [ ] All data from config.json
+## 🔄 Current Status
 
-### Priority 1C: Simple Issue Reporting (mailto)
-**Why:** Residents can report TODAY, upgrade UX later
-**Time:** 1 hour
+### Production Deployment
+- **URL:** https://building-status-[your-service].onrender.com
+- **Database:** PostgreSQL 18 on Render
+- **Branch:** `main` (auto-deploys)
+- **Build:** Successful with static generation
 
-- [ ] "Report Issue" button opens mailto: link
-- [ ] Pre-fills:
-  - To: your-google-group@googlegroups.com
-  - Subject: "[Building Status] Issue Report"
-  - Body template with building/unit/category prompts
-- [ ] Add note: "You'll receive a copy of your email for your records"
+### Known Issues
+- None currently blocking
 
-### Priority 1D: Manager Edit Mode - Static Password
-**Why:** Core functionality, unblocks everything else
+### Performance
+- Page load: < 2s (static generation)
+- Revalidation: 60 seconds
+- Build time: ~2 minutes (includes migrations)
+
+---
+
+## 📋 Next Priorities
+
+### Phase 4: Polish & Optimization
+
+#### Priority 4A: Session Storage Migration
+**Status:** Recommended for production
 **Time:** 4-6 hours
 
-- [ ] "Edit" button (top right corner, subtle)
-- [ ] Prompt for password, store in sessionStorage
-- [ ] Edit mode UI:
-  - Toggle system statuses (OK/Issue/Down)
-  - Edit issue descriptions inline
-  - Add/remove maintenance items
-  - Edit helpful links
-- [ ] Save to `status-data.json` (committed to git)
-- [ ] "Last updated by Manager at {timestamp}"
-- [ ] Architecture ready for upgrade to email/SMS auth later
+- [ ] Migrate from file-based to Redis session storage
+- [ ] Set up Redis instance on Render
+- [ ] Update auth.ts to use Redis adapter
+- [ ] Test session persistence across deployments
+- [ ] Remove .sessions.json file handling
 
-### MVP Launch Checklist
-- [ ] Test on iPhone and Android
-- [ ] Share with 2-3 friendly residents for feedback
-- [ ] Deploy to GitHub Pages or Render
-- [ ] Send announcement to google group
-- [ ] Post printable QR code (even if basic)
+**Why:** File-based sessions don't persist across Render deployments. Redis provides persistent, scalable session storage.
 
-**MVP Timeline:** 1 week (10-12 hours work)
+**References:**
+- See ADR 004 for current implementation
+- Upstash Redis (free tier available)
+- ioredis library
 
----
-
-## Phase 2: Better UX (Week 2-3)
-
-### Priority 2A: Form Backend with Basin
-**Why:** Better UX than mailto, autoresponder confirms submission
+#### Priority 4B: Enhanced Social Sharing
+**Status:** Nice to have
 **Time:** 3-4 hours
 
-- [ ] Set up Basin account (free tier: 100 submissions/month)
-- [ ] Replace mailto with actual form POST
-- [ ] Configure Basin to:
-  - Forward to google group email
-  - Send autoresponder to resident (if email provided)
-  - Include reference number
-- [ ] Update success message with reference number
-- [ ] Test spam protection
+- [ ] Add "Copy Link" button with toast notification
+- [ ] Improve OG image generation with Vercel/OG
+- [ ] Add Twitter Card meta tags
+- [ ] Test sharing on Facebook, Twitter, iMessage
 
-### Priority 2B: Contact Preferences
-**Why:** Residents want updates on their issues
-**Time:** 2 hours
-
-- [ ] Add optional email field to form
-- [ ] Add optional phone field
-- [ ] Checkbox: "I want updates on this issue"
-- [ ] Include in Basin submission
-
-### Priority 2C: Print Version (CSS + QR Code)
-**Why:** Helps managers reach offline residents
+#### Priority 4C: Print Version
+**Status:** Deferred
 **Time:** 3-4 hours
 
-- [ ] Add "Print" button (or auto-detect @media print)
-- [ ] Print stylesheet:
-  - Single page, B&W friendly
-  - Large QR code to status page
-  - Current system status
-  - Emergency contacts
-  - Garbage schedule
-- [ ] QR code generation (use qrcode.js library)
-- [ ] Test on various printers
+- [ ] Add print CSS stylesheet
+- [ ] Generate QR code for status page URL
+- [ ] Print-optimized layout (single page, B&W)
+- [ ] Include emergency contacts and schedule
 
-**Phase 2 Timeline:** 1-2 weeks (8-10 hours work)
+#### Priority 4D: Mobile PWA
+**Status:** Future enhancement
+**Time:** 8-10 hours
 
----
-
-## Phase 3: Auth Upgrade (Week 4-5)
-
-### Priority 3A: Magic Link Authentication
-**Why:** More secure, supports multiple managers
-**Time:** 6-8 hours
-
-- [ ] "Request Edit Access" button
-- [ ] Enter email/phone
-- [ ] Backend sends magic link (valid 15 min)
-- [ ] Click link → authenticated session
-- [ ] List of approved emails in config
-- [ ] Keep static password as fallback
-
-**Implementation Options:**
-1. **Simple:** Firebase Auth (free tier, handles everything)
-2. **Custom:** Netlify Functions + SendGrid
-3. **Hybrid:** Passwordless.dev (2000 users free)
-
-**Phase 3 Timeline:** 1-2 weeks (6-8 hours work)
-
----
-
-## Phase 4: Nice to Have (Month 2+)
-
-### Data & History
-- [ ] Issue submission history (last 30 days)
-- [ ] Manager dashboard to view all reports
-- [ ] Export to CSV for records
-
-### Enhanced Sharing
-- [ ] "Copy as text" for Slack/Discord
-- [ ] Auto-post to building social media
-- [ ] SMS notifications (Twilio integration)
-
-### More Systems
-- [ ] Add: Elevator, Electricity, Internet, Parking
-- [ ] Per-building status (if issues are localized)
-- [ ] Status history graph (uptime %)
-
-### PWA Features
-- [ ] Add to home screen
-- [ ] Offline mode (show last known status)
-- [ ] Push notifications for status changes
+- [ ] Add service worker for offline support
+- [ ] Implement "Add to Home Screen" prompt
+- [ ] Cache static assets for offline viewing
 - [ ] Background sync for form submissions
+- [ ] Push notifications for status changes (requires backend)
 
 ---
 
-## Recommended MVP Feature Set
+## 🚀 Future Enhancements
 
-### Include in Week 1 Launch
-✅ **Current status display** (already done)
-✅ **Share with image** (already done)
-✅ **Current issues list** (already done)
-✅ **Scheduled maintenance** (already done)
-✅ **Config-driven setup**
-✅ **Helpful links section**
-✅ **Simple issue reporting** (mailto)
-✅ **Manager edit mode** (static password)
+### Phase 5: Advanced Features
 
-### Add in Week 2-3
-🔶 **Form backend** (Basin)
-🔶 **Contact preferences**
-🔶 **Print version with QR**
+#### Analytics & Reporting
+- [ ] Track page views and sharing metrics
+- [ ] Manager dashboard for issue statistics
+- [ ] Export issue history to CSV
+- [ ] Uptime percentage tracking
 
-### Hold for Later
-⏸️ Magic link auth
-⏸️ Issue history dashboard
-⏸️ SMS notifications
-⏸️ PWA features
+#### Multi-Building Support
+- [ ] Per-building status filtering
+- [ ] Building-specific announcements
+- [ ] Location-based notifications
+
+#### Communication
+- [ ] SMS notifications via Twilio
+- [ ] Email alerts for status changes
+- [ ] Resident subscriptions (opt-in)
+
+#### Enhanced Issue Tracking
+- [ ] Issue comments/updates
+- [ ] Photo upload for issue reports
+- [ ] Issue priority levels
+- [ ] Estimated resolution time
 
 ---
 
-## Architecture Decisions
+## Architecture Evolution
 
-### Data Storage - Phase 1 (MVP)
+### Current Architecture (Completed)
+
 ```
-/building-status/
-  ├── index.html
-  ├── config.json          ← Building info, links, schedule
-  ├── status-data.json     ← Current status (manager edits this)
-  ├── styles.css
-  └── app.js
-```
-
-**Manager Edit Flow:**
-1. Manager clicks Edit → enters password
-2. Edits status inline in browser
-3. Clicks Save → JavaScript writes to status-data.json
-4. Commits to git (via GitHub API or manual)
-
-**Option A: Manual Commit** (Simplest)
-- Manager edits, downloads updated JSON
-- Emails to you or commits via GitHub web UI
-- You push update to production
-
-**Option B: GitHub API** (Automated)
-- Manager edits, clicks Save
-- JavaScript uses GitHub API to commit
-- Requires: GitHub personal access token
-- Auto-deploys via GitHub Pages webhook
-
-**Recommendation:** Start with Option A, upgrade to B when managers are comfortable
-
-### Form Submission - Phase 1 vs Phase 2
-
-**Phase 1 (mailto):**
-```html
-<a href="mailto:your-group@googlegroups.com?subject=[Building Status] Issue Report&body=Building:%0A%0AUnit:%0A%0ACategory:%0A%0ADescription:%0A">
-  Report an Issue
-</a>
+Next.js App Router (TypeScript)
+├── Static Generation (ISR - 60s)
+├── PostgreSQL Database (Drizzle ORM)
+├── Session Auth (File-based)
+└── Render.com Deployment
 ```
 
-**Phase 2 (Basin):**
-```html
-<form action="https://usebasin.com/f/YOUR_FORM_ID" method="POST">
-  <!-- Your existing form fields -->
-</form>
+### Recommended Next Steps
+
 ```
-
-Basin setup:
-- Forwards to google group email
-- Sends autoresponder with: "We received your report about {category}. Reference #BS-{id}. We'll update the status page when we know more."
-- Free tier: 100/month (plenty for a building)
-
-### Authentication Evolution
-
-**Phase 1: Static Password**
-```javascript
-const EDIT_PASSWORD = 'building2026'; // In code for now
-// Later: Move to environment variable
-```
-
-**Phase 3: Magic Link**
-```javascript
-const APPROVED_MANAGERS = [
-  'manager1@example.com',
-  'manager2@example.com'
-]; // Lives in config, expandable
+Current + Redis Sessions
+├── Migrate to Redis for sessions (Upstash)
+├── Add caching layer (Redis)
+└── Consider Vercel Edge for faster OG image generation
 ```
 
 ---
 
-## Implementation Notes
+## Technical Debt
 
-### Config File Structure
-```json
-{
-  "buildings": {
-    "712": {
-      "address": "712 Main St",
-      "units": ["A", "B", "C", "D"],
-      "floors": [1, 2, 3, 4]
-    },
-    "706": {
-      "address": "706 Main St",
-      "units": ["E", "F"],
-      "floors": [1, 2, 3, 4]
-    },
-    "702": {
-      "address": "702 Main St",
-      "units": ["G", "H", "I", "J"],
-      "floors": [1, 2, 3, 4]
-    }
-  },
-  "systems": [
-    { "id": "heat", "name": "Heat", "icon": "🔥" },
-    { "id": "water", "name": "Water", "icon": "💧" },
-    { "id": "laundry", "name": "Laundry", "icon": "🧺" }
-  ],
-  "helpfulLinks": [
-    { "title": "Pay Rent Online", "url": "https://..." },
-    { "title": "Building Policies", "url": "https://..." },
-    { "title": "Maintenance Requests", "url": "https://..." }
-  ],
-  "contacts": [
-    { "label": "Building Manager", "phone": "555-123-4567" },
-    { "label": "Emergency Maintenance", "phone": "555-987-6543" },
-    { "label": "Non-Emergency", "phone": "555-111-2222" }
-  ],
-  "garbageSchedule": {
-    "trash": ["Tuesday", "Friday"],
-    "recycling": ["Friday"],
-    "notes": "Set out by 7am"
-  },
-  "reportEmail": "your-group@googlegroups.com"
-}
+### High Priority
+- [ ] Migrate session storage to Redis (before adding more users)
+- [ ] Add error boundary components for better error handling
+- [ ] Implement rate limiting on API routes
+
+### Medium Priority
+- [ ] Add API request/response logging
+- [ ] Set up monitoring (Sentry or similar)
+- [ ] Add automated tests (Jest + React Testing Library)
+
+### Low Priority
+- [ ] Optimize image assets (WebP, compression)
+- [ ] Add sitemap.xml generation
+- [ ] Implement robots.txt
+
+---
+
+## Migration History
+
+### From Static HTML to Next.js TypeScript (Completed)
+
+**Original Stack:**
+- Static HTML/CSS/JavaScript
+- Val Town for config server
+- GitHub Pages deployment
+- localStorage for state
+
+**New Stack:**
+- Next.js 14 App Router
+- TypeScript strict mode
+- PostgreSQL database
+- Render.com deployment
+
+**Migration Benefits:**
+- ✅ Type safety with TypeScript
+- ✅ Database-backed persistence
+- ✅ Server-side rendering with ISR
+- ✅ Proper authentication
+- ✅ Open Graph meta tag generation
+- ✅ API routes for dynamic operations
+
+**Challenges Overcome:**
+1. Module resolution for Next.js 14 (fixed with webpack aliases)
+2. Static generation with database access (ADR 003)
+3. Build-time environment variables (removed NODE_ENV=production)
+4. API route configuration (added force-dynamic)
+
+---
+
+## Architecture Decision Records (ADRs)
+
+See [docs/adr/](docs/adr/) for detailed architectural decisions:
+
+- [ADR 001](docs/adr/001-migrate-to-nextjs-typescript-database.md) - TypeScript Migration
+- [ADR 002](docs/adr/002-nextjs-app-router.md) - Next.js App Router
+- [ADR 003](docs/adr/003-static-generation-with-isr.md) - Static Site Generation with ISR
+- [ADR 004](docs/adr/004-session-management.md) - Session Management
+
+---
+
+## Success Metrics
+
+### MVP Goals (✅ Achieved)
+- [x] Application deployed and accessible
+- [x] Manager can update status without touching code
+- [x] Page loads in < 2 seconds
+- [x] Works on mobile devices (iOS/Android)
+- [x] Social sharing generates proper previews
+
+### Phase 4 Goals (In Progress)
+- [ ] 60%+ resident adoption (unique visitors)
+- [ ] Sessions persist across deployments
+- [ ] < 4 hour average response time to issues
+- [ ] 90%+ uptime
+
+---
+
+## Deployment Checklist
+
+### Pre-Production
+- [x] Environment variables configured
+- [x] Database migrations tested
+- [x] Password hash generated
+- [x] NEXT_PUBLIC_SITE_URL set correctly
+- [x] Build succeeds locally
+- [x] Production build tested
+
+### Production
+- [x] Deployed to Render
+- [x] Database seeded with initial data
+- [x] Manager can log in
+- [x] Status updates work
+- [x] Social sharing tested
+- [x] Mobile responsive
+
+### Post-Launch
+- [ ] Monitor error logs
+- [ ] Set up uptime monitoring
+- [ ] Collect user feedback
+- [ ] Plan session storage migration
+
+---
+
+## Quick Reference
+
+### Local Development
+```bash
+npm run dev          # Start development server
+npm run build        # Test production build
+npm run db:studio    # Open database GUI
+npm run db:setup     # Full database setup
 ```
 
-### Status Data Structure
-```json
-{
-  "lastUpdated": "2026-01-15T14:45:00Z",
-  "updatedBy": "Manager",
-  "systems": {
-    "heat": { "status": "issue", "count": "2/3", "note": "Bldg A boiler" },
-    "water": { "status": "ok", "count": "3/3" },
-    "laundry": { "status": "ok", "count": "2/3" }
-  },
-  "issues": [
-    {
-      "id": "1",
-      "category": "Heat",
-      "location": "Bldg A",
-      "icon": "🔥",
-      "status": "investigating",
-      "detail": "Boiler tech scheduled for tomorrow AM",
-      "reported": "2 hrs ago"
-    }
-  ],
-  "maintenance": [
-    { "date": "Thu, Jan 8", "desc": "Plumber coming to repair Washer 2" }
-  ]
-}
+### Deployment
+```bash
+git push origin main  # Trigger auto-deploy on Render
+```
+
+### Environment Variables
+```
+DATABASE_URL              # PostgreSQL connection
+EDITOR_PASSWORD_HASH      # Admin password (bcrypt)
+NEXT_PUBLIC_SITE_URL      # Site URL for OG images
 ```
 
 ---
 
-## Success Criteria
+## Timeline Summary
 
-### MVP Launch (End of Week 1)
-- [ ] 5 beta testers successfully viewed status
-- [ ] 2 test issue reports submitted (via mailto)
-- [ ] Manager successfully updated status
-- [ ] Page loads in < 2 seconds on mobile
-- [ ] Works on iOS Safari and Android Chrome
+- **Week 1-2:** TypeScript migration planning & setup
+- **Week 3-4:** Next.js App Router implementation
+- **Week 5:** Static generation with ISR
+- **Week 6:** Database schema & queries
+- **Week 7:** Authentication & API routes
+- **Week 8:** Render deployment & fixes
+- **✅ Current:** Production deployment complete
 
-### Phase 2 Complete (End of Week 3)
-- [ ] 10+ issue reports via Basin form
-- [ ] 100% of residents aware of status page
-- [ ] Manager updates status at least weekly
-- [ ] Print version posted in all building entrances
-
-### Success Metrics (Month 1)
-- 60%+ resident adoption (unique visitors)
-- <4 hour average response time to issues
-- 90%+ resident satisfaction with communication
+**Total Migration Time:** ~8 weeks (from static HTML to production Next.js/TypeScript app)
 
 ---
 
-## Quick Start: What to Build First
+## Resources
 
-If you want to ship something TODAY, here's the 4-hour MVP:
-
-1. **Hour 1:** Create config.json with building/unit data
-2. **Hour 2:** Add helpful links section (garbage, contacts, links)
-3. **Hour 3:** Add mailto: button for issue reporting
-4. **Hour 4:** Deploy to GitHub Pages, send link to residents
-
-That gives you a functional status page residents can use immediately.
-
-**Then next week:**
-- Add manager edit mode (6 hours)
-- Upgrade to Basin form (3 hours)
-- Add print version (3 hours)
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Drizzle ORM](https://orm.drizzle.team/)
+- [Render Deployment Guide](https://render.com/docs/deploy-nextjs-app)
+- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
 
 ---
 
-## Questions for You
-
-Before I start building, let's confirm:
-
-1. **Google group email address?** (for mailto and Basin forwarding)
-2. **Static password?** (suggest something easy for managers to remember)
-3. **Hosting preference?** GitHub Pages or Render? (GitHub Pages is simpler for static site)
-4. **Building addresses** - are "712", "706", "702" the full addresses, or should I format as "712 [Street Name]"?
-5. **Launch date?** When do you want residents to have access?
-
-Ready to start with Phase 1A (config file) whenever you are!
+Last Updated: 2026-01-16

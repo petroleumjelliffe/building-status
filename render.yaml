@@ -1,0 +1,40 @@
+# Render Blueprint for Building Status
+# https://render.com/docs/blueprint-spec
+
+# Exported from Render on 2026-01-16T20:15:55Z
+version: "1"
+services:
+- type: web
+  name: building-status
+  runtime: node
+  repo: https://github.com/petroleumjelliffe/building-status
+  branch: next-ts-migration
+  plan: free
+  envVars:
+  - key: DATABASE_URL
+    fromDatabase:
+      name: building-status-prod
+      property: connectionString
+  - key: NODE_ENV
+    value: production
+  - key: EDITOR_PASSWORD_HASH
+    sync: false
+  - key: NEXT_PUBLIC_SITE_URL
+    sync: false
+  region: virginia
+  buildCommand: rm -rf .next && npm install && npm run build
+  startCommand: npm run start
+  autoDeployTrigger: commit
+
+# Exported from Render on 2026-01-16T19:57:16Z
+version: "1"
+databases:
+- name: building-status-prod
+  databaseName: building_status_prod
+  user: building_status_prod_user
+  plan: free
+  region: virginia
+  ipAllowList:
+  - source: 0.0.0.0/0
+    description: everywhere
+  postgresMajorVersion: "18"
