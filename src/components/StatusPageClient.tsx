@@ -17,6 +17,7 @@ import { LoginModal } from './LoginModal';
 import { Modal } from './Modal';
 import { IssueForm } from './IssueForm';
 import { MaintenanceForm } from './MaintenanceForm';
+import { CalendarSubscribe } from './CalendarSubscribe';
 import { getSession, clearSession, getEditMode, setEditMode as saveEditMode } from '@/lib/session';
 
 interface StatusPageClientProps {
@@ -291,6 +292,9 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
           <span className="share-icon">✉️</span>
           Report an Issue
         </a>
+
+        {/* Calendar Subscribe */}
+        <CalendarSubscribe siteUrl={siteUrl} />
 
         {/* Footer */}
         <footer className="page-footer">

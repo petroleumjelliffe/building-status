@@ -1,7 +1,7 @@
 import { db } from './db';
-import { systemStatus, issues, maintenance, announcements, config } from './schema';
-import { eq, gte, or, isNull } from 'drizzle-orm';
-import type { StatusPageData, SystemStatus, SystemStatusData } from '@/types';
+import { systemStatus, issues, maintenance, announcements, config, events } from './schema';
+import { eq, gte, or, isNull, and, lte, asc, desc, ne } from 'drizzle-orm';
+import type { StatusPageData, SystemStatus, SystemStatusData, CalendarEvent, EventType, EventStatus } from '@/types';
 
 /**
  * Get all status data for the main page
@@ -262,4 +262,168 @@ export async function completeMaintenance(id: number): Promise<void> {
     .update(maintenance)
     .set({ completedAt: new Date() })
     .where(eq(maintenance.id, id));
+}
+
+// ============================================
+// Calendar Events CRUD
+// ============================================
+
+/**
+ * Get upcoming events (for calendar feed and display)
+ * Includes events starting in the past 7 days up to 90 days in the future
+ */
+export async function getUpcomingEvents(types?: EventType[]): Promise<CalendarEvent[]> {
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const ninetyDaysFromNow = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000);
+
+  let query = db
+    .select()
+    .from(events)
+    .where(
+      and(
+        gte(events.startsAt, sevenDaysAgo),
+        lte(events.startsAt, ninetyDaysFromNow),
+        ne(events.status, 'cancelled')
+      )
+    )
+    .orderBy(asc(events.startsAt));
+
+  const result = await query;
+
+  // Filter by type if specified
+  if (types && types.length > 0) {
+    return result.filter(e => types.includes(e.type as EventType)) as CalendarEvent[];
+  }
+
+  return result as CalendarEvent[];
+}
+
+/**
+ * Get all scheduled (not completed/cancelled) events for display
+ */
+export async function getScheduledEvents(): Promise<CalendarEvent[]> {
+  const result = await db
+    .select()
+    .from(events)
+    .where(
+      or(
+        eq(events.status, 'scheduled'),
+        eq(events.status, 'in_progress')
+      )
+    )
+    .orderBy(asc(events.startsAt));
+
+  return result as CalendarEvent[];
+}
+
+/**
+ * Get a single event by ID
+ */
+export async function getEventById(id: number): Promise<CalendarEvent | null> {
+  const result = await db
+    .select()
+    .from(events)
+    .where(eq(events.id, id));
+
+  return result[0] as CalendarEvent || null;
+}
+
+/**
+ * Create a new calendar event
+ */
+export async function createEvent(
+  type: EventType,
+  title: string,
+  startsAt: Date,
+  options?: {
+    description?: string;
+    endsAt?: Date;
+    allDay?: boolean;
+    timezone?: string;
+    recurrenceRule?: string;
+    notifyBeforeMinutes?: number[];
+    createdBy?: string;
+  }
+): Promise<number> {
+  const result = await db
+    .insert(events)
+    .values({
+      type,
+      title,
+      startsAt,
+      description: options?.description,
+      endsAt: options?.endsAt,
+      allDay: options?.allDay ?? false,
+      timezone: options?.timezone ?? 'America/New_York',
+      recurrenceRule: options?.recurrenceRule,
+      notifyBeforeMinutes: options?.notifyBeforeMinutes,
+      status: 'scheduled',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      createdBy: options?.createdBy,
+    })
+    .returning({ id: events.id });
+
+  return result[0].id;
+}
+
+/**
+ * Update an existing calendar event
+ */
+export async function updateEvent(
+  id: number,
+  updates: {
+    type?: EventType;
+    title?: string;
+    description?: string;
+    startsAt?: Date;
+    endsAt?: Date | null;
+    allDay?: boolean;
+    timezone?: string;
+    recurrenceRule?: string | null;
+    status?: EventStatus;
+    notifyBeforeMinutes?: number[] | null;
+  }
+): Promise<void> {
+  await db
+    .update(events)
+    .set({
+      ...updates,
+      updatedAt: new Date(),
+    })
+    .where(eq(events.id, id));
+}
+
+/**
+ * Mark an event as completed
+ */
+export async function completeEvent(id: number): Promise<void> {
+  await db
+    .update(events)
+    .set({
+      status: 'completed',
+      completedAt: new Date(),
+      updatedAt: new Date(),
+    })
+    .where(eq(events.id, id));
+}
+
+/**
+ * Mark an event as cancelled
+ */
+export async function cancelEvent(id: number): Promise<void> {
+  await db
+    .update(events)
+    .set({
+      status: 'cancelled',
+      updatedAt: new Date(),
+    })
+    .where(eq(events.id, id));
+}
+
+/**
+ * Delete an event permanently
+ */
+export async function deleteEvent(id: number): Promise<void> {
+  await db.delete(events).where(eq(events.id, id));
 }

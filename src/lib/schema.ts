@@ -1,4 +1,4 @@
-import { pgTable, serial, varchar, text, timestamp, jsonb } from 'drizzle-orm/pg-core';
+import { pgTable, serial, varchar, text, timestamp, jsonb, boolean, integer } from 'drizzle-orm/pg-core';
 
 // System status for each building
 export const systemStatus = pgTable('system_status', {
@@ -22,13 +22,42 @@ export const issues = pgTable('issues', {
   resolvedAt: timestamp('resolved_at'),
 });
 
-// Scheduled maintenance
+// Scheduled maintenance (legacy - will be replaced by events)
 export const maintenance = pgTable('maintenance', {
   id: serial('id').primaryKey(),
   date: varchar('date', { length: 50 }).notNull(), // Human-readable like "Thu, Jan 8"
   description: text('description').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   completedAt: timestamp('completed_at'), // null = not completed, timestamp = completed
+});
+
+// Calendar events (replaces maintenance with proper timestamps)
+export const events = pgTable('events', {
+  id: serial('id').primaryKey(),
+  type: varchar('type', { length: 20 }).notNull(), // 'maintenance', 'announcement', 'outage'
+  title: varchar('title', { length: 200 }).notNull(),
+  description: text('description'),
+
+  // Timing (stored in UTC)
+  startsAt: timestamp('starts_at').notNull(),
+  endsAt: timestamp('ends_at'),
+  allDay: boolean('all_day').default(false),
+  timezone: varchar('timezone', { length: 50 }).default('America/New_York'),
+
+  // Recurrence (RFC 5545 RRULE format)
+  recurrenceRule: text('recurrence_rule'),
+
+  // Status tracking
+  status: varchar('status', { length: 20 }).default('scheduled'), // 'scheduled', 'in_progress', 'completed', 'cancelled'
+  completedAt: timestamp('completed_at'),
+
+  // Notification settings (array of minutes before event)
+  notifyBeforeMinutes: integer('notify_before_minutes').array(),
+
+  // Metadata
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  createdBy: varchar('created_by', { length: 100 }),
 });
 
 // Pinned announcements with auto-expiration

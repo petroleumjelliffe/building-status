@@ -857,6 +857,21 @@ button[type="submit"]:active {
   margin-top: 1rem;
 }
 
+.form-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.form-checkbox input[type="checkbox"] {
+  width: 1.125rem;
+  height: 1.125rem;
+  accent-color: var(--yellow);
+  cursor: pointer;
+}
+
 .btn {
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
@@ -1070,4 +1085,109 @@ button[type="submit"]:active {
   letter-spacing: 0.05em;
   z-index: 1000;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Calendar Subscribe Widget */
+.calendar-subscribe {
+  margin-top: 1rem;
+}
+
+.calendar-subscribe-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.calendar-subscribe-btn:hover {
+  background: var(--surface-hover);
+  border-color: var(--text-muted);
+}
+
+.calendar-subscribe-btn .calendar-icon {
+  font-size: 1.1rem;
+}
+
+.calendar-subscribe-btn .chevron {
+  transition: transform 0.2s;
+  font-size: 0.8rem;
+}
+
+.calendar-subscribe-btn .chevron.open {
+  transform: rotate(180deg);
+}
+
+.calendar-subscribe-options {
+  margin-top: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  animation: slideDown 0.15s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.calendar-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background: var(--surface);
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  text-decoration: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: 'DM Sans', -apple-system, sans-serif;
+}
+
+.calendar-option:last-child {
+  border-bottom: none;
+}
+
+.calendar-option:hover {
+  background: var(--surface-hover);
+}
+
+.calendar-option .option-icon {
+  font-size: 1.25rem;
+  width: 1.5rem;
+  text-align: center;
+}
+
+.calendar-option .option-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.calendar-option .option-text strong {
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.calendar-option .option-text small {
+  color: var(--text-muted);
+  font-size: 0.75rem;
 }

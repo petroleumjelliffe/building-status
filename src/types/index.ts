@@ -6,6 +6,10 @@ export type IssueStatus = 'reported' | 'investigating' | 'resolved';
 
 export type AnnouncementType = 'warning' | 'info' | 'alert';
 
+export type EventType = 'maintenance' | 'announcement' | 'outage';
+
+export type EventStatus = 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
+
 export interface SystemStatusData {
   id: number;
   systemId: string;
@@ -32,6 +36,29 @@ export interface Maintenance {
   description: string;
   createdAt: Date;
   completedAt: Date | null;
+}
+
+export interface CalendarEvent {
+  id: number;
+  type: EventType;
+  title: string;
+  description: string | null;
+
+  startsAt: Date;
+  endsAt: Date | null;
+  allDay: boolean | null;
+  timezone: string | null;
+
+  recurrenceRule: string | null;
+
+  status: EventStatus | null;
+  completedAt: Date | null;
+
+  notifyBeforeMinutes: number[] | null;
+
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: string | null;
 }
 
 export interface Announcement {
@@ -164,6 +191,45 @@ export interface UpdateMaintenanceRequest {
 }
 
 export interface CompleteMaintenanceRequest {
+  password: string;
+  id: number;
+}
+
+// Calendar Event CRUD request types
+export interface CreateEventRequest {
+  password: string;
+  type: EventType;
+  title: string;
+  description?: string;
+  startsAt: string; // ISO string
+  endsAt?: string; // ISO string
+  allDay?: boolean;
+  timezone?: string;
+  recurrenceRule?: string;
+  notifyBeforeMinutes?: number[];
+}
+
+export interface UpdateEventRequest {
+  password: string;
+  id: number;
+  type?: EventType;
+  title?: string;
+  description?: string;
+  startsAt?: string;
+  endsAt?: string | null;
+  allDay?: boolean;
+  timezone?: string;
+  recurrenceRule?: string | null;
+  status?: EventStatus;
+  notifyBeforeMinutes?: number[] | null;
+}
+
+export interface CompleteEventRequest {
+  password: string;
+  id: number;
+}
+
+export interface CancelEventRequest {
   password: string;
   id: number;
 }
