@@ -20,6 +20,7 @@ import { Modal } from './Modal';
 import { IssueForm } from './IssueForm';
 import { MaintenanceForm } from './MaintenanceForm';
 import { EventForm } from './EventForm';
+import { ContactForm } from './ContactForm';
 import { CalendarSubscribe } from './CalendarSubscribe';
 import { EmptyState } from './EmptyState';
 import { getSession, clearSession, getEditMode, setEditMode as saveEditMode } from '@/lib/session';
@@ -40,6 +41,7 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isAddIssueModalOpen, setIsAddIssueModalOpen] = useState(false);
   const [isAddEventModalOpen, setIsAddEventModalOpen] = useState(false);
+  const [isAddContactModalOpen, setIsAddContactModalOpen] = useState(false);
   const router = useRouter();
 
   // Check for existing session on mount
@@ -122,6 +124,11 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
 
   const handleAddEventSuccess = () => {
     setIsAddEventModalOpen(false);
+    handleUpdate();
+  };
+
+  const handleAddContactSuccess = () => {
+    setIsAddContactModalOpen(false);
     handleUpdate();
   };
 
@@ -266,27 +273,59 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
         </Section>
 
         {/* Emergency Contacts */}
-        {data.contacts.length > 0 && (
-          <Section title="Emergency Contacts" icon="📞">
-            <div className="contacts-grid">
-              {data.contacts.map((contact, index) => (
-                <ContactCard key={index} contact={contact} />
-              ))}
-            </div>
+        {(data.contacts.length > 0 || isEditable) && (
+          <Section
+            title="Emergency Contacts"
+            icon="📞"
+            action={
+              isEditable && sessionToken ? (
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => setIsAddContactModalOpen(true)}
+                  style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
+                >
+                  + Add Contact
+                </button>
+              ) : undefined
+            }
+          >
+            {data.contacts.length > 0 ? (
+              <div className="contacts-grid">
+                {data.contacts.map((contact) => (
+                  <ContactCard
+                    key={contact.id}
+                    contact={contact}
+                    editable={isEditable}
+                    sessionToken={sessionToken || ''}
+                    onUpdate={handleUpdate}
+                  />
+                ))}
+              </div>
+            ) : (
+              <EmptyState message="No emergency contacts" />
+            )}
           </Section>
         )}
 
         {/* Garbage Schedule */}
         {data.garbageSchedule && (
           <Section title="Garbage & Recycling">
-            <GarbageSchedule schedule={data.garbageSchedule} />
+            <GarbageSchedule
+              schedule={data.garbageSchedule}
+              editable={isEditable}
+              sessionToken={sessionToken || ''}
+              onUpdate={handleUpdate}
+            />
           </Section>
         )}
 
         {/* Helpful Links */}
-        {data.helpfulLinks.length > 0 && (
-          <HelpfulLinks links={data.helpfulLinks} />
-        )}
+        <HelpfulLinks
+          links={data.helpfulLinks}
+          editable={isEditable}
+          sessionToken={sessionToken || ''}
+          onUpdate={handleUpdate}
+        />
 
         {/* Calendar Subscribe */}
         <CalendarSubscribe siteUrl={siteUrl} />
@@ -308,7 +347,7 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
         onSuccess={handleLoginSuccess}
       />
 
-      {/* Add Issue/Event Modals */}
+      {/* Add Issue/Event/Contact Modals */}
       {isEditable && sessionToken && (
         <>
           <Modal
@@ -332,6 +371,18 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
               sessionToken={sessionToken}
               onSubmit={handleAddEventSuccess}
               onCancel={() => setIsAddEventModalOpen(false)}
+            />
+          </Modal>
+
+          <Modal
+            isOpen={isAddContactModalOpen}
+            onClose={() => setIsAddContactModalOpen(false)}
+            title="Add Emergency Contact"
+          >
+            <ContactForm
+              sessionToken={sessionToken}
+              onSubmit={handleAddContactSuccess}
+              onCancel={() => setIsAddContactModalOpen(false)}
             />
           </Modal>
         </>

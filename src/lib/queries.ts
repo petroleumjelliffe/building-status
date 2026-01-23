@@ -436,3 +436,143 @@ export async function cancelEvent(id: number): Promise<void> {
 export async function deleteEvent(id: number): Promise<void> {
   await db.delete(events).where(eq(events.id, id));
 }
+
+// ============================================
+// Emergency Contacts CRUD
+// ============================================
+
+/**
+ * Get all emergency contacts
+ */
+export async function getContacts(): Promise<any[]> {
+  return await getConfigValue('contacts') || [];
+}
+
+/**
+ * Create a new contact
+ */
+export async function createContact(
+  label: string,
+  phone: string,
+  hours: string
+): Promise<string> {
+  const contacts = await getContacts();
+  const id = `contact-${Date.now()}`;
+  const newContact = { id, label, phone, hours };
+
+  await setConfigValue('contacts', [...contacts, newContact]);
+  return id;
+}
+
+/**
+ * Update a contact
+ */
+export async function updateContact(
+  id: string,
+  updates: {
+    label?: string;
+    phone?: string;
+    hours?: string;
+  }
+): Promise<void> {
+  const contacts = await getContacts();
+  const updatedContacts = contacts.map(contact =>
+    contact.id === id ? { ...contact, ...updates } : contact
+  );
+
+  await setConfigValue('contacts', updatedContacts);
+}
+
+/**
+ * Delete a contact
+ */
+export async function deleteContact(id: string): Promise<void> {
+  const contacts = await getContacts();
+  const filteredContacts = contacts.filter(contact => contact.id !== id);
+
+  await setConfigValue('contacts', filteredContacts);
+}
+
+// ============================================
+// Helpful Links CRUD
+// ============================================
+
+/**
+ * Get all helpful links
+ */
+export async function getHelpfulLinks(): Promise<any[]> {
+  return await getConfigValue('helpfulLinks') || [];
+}
+
+/**
+ * Create a new helpful link
+ */
+export async function createHelpfulLink(
+  title: string,
+  url: string,
+  icon: string
+): Promise<string> {
+  const links = await getHelpfulLinks();
+  const id = `link-${Date.now()}`;
+  const newLink = { id, title, url, icon };
+
+  await setConfigValue('helpfulLinks', [...links, newLink]);
+  return id;
+}
+
+/**
+ * Update a helpful link
+ */
+export async function updateHelpfulLink(
+  id: string,
+  updates: {
+    title?: string;
+    url?: string;
+    icon?: string;
+  }
+): Promise<void> {
+  const links = await getHelpfulLinks();
+  const updatedLinks = links.map(link =>
+    link.id === id ? { ...link, ...updates } : link
+  );
+
+  await setConfigValue('helpfulLinks', updatedLinks);
+}
+
+/**
+ * Delete a helpful link
+ */
+export async function deleteHelpfulLink(id: string): Promise<void> {
+  const links = await getHelpfulLinks();
+  const filteredLinks = links.filter(link => link.id !== id);
+
+  await setConfigValue('helpfulLinks', filteredLinks);
+}
+
+// ============================================
+// Garbage Schedule
+// ============================================
+
+/**
+ * Get garbage schedule
+ */
+export async function getGarbageSchedule(): Promise<any> {
+  return await getConfigValue('garbageSchedule') || {
+    trash: { days: [], time: '' },
+    recycling: { days: [], time: '' },
+    notes: ''
+  };
+}
+
+/**
+ * Update garbage schedule
+ */
+export async function updateGarbageSchedule(
+  schedule: {
+    trash: { days: string[]; time?: string };
+    recycling: { days: string[]; time?: string };
+    notes: string;
+  }
+): Promise<void> {
+  await setConfigValue('garbageSchedule', schedule);
+}

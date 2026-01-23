@@ -96,9 +96,21 @@ async function seed() {
     // 5. Seed static configuration
     console.log('  ⚙️  Seeding static configuration...');
 
+    // Add IDs to contacts if they don't have them
+    const contacts = (configData.contacts || []).map((contact: any, index: number) => ({
+      id: contact.id || `contact-${index + 1}`,
+      ...contact,
+    }));
+
+    // Add IDs to helpful links if they don't have them
+    const helpfulLinks = (configData.helpfulLinks || []).map((link: any, index: number) => ({
+      id: link.id || `link-${index + 1}`,
+      ...link,
+    }));
+
     const configEntries = [
-      { key: 'contacts', value: configData.contacts || [] },
-      { key: 'helpfulLinks', value: configData.helpfulLinks || [] },
+      { key: 'contacts', value: contacts },
+      { key: 'helpfulLinks', value: helpfulLinks },
       { key: 'garbageSchedule', value: configData.garbageSchedule || {} },
       { key: 'buildings', value: configData.buildings || {} },
       { key: 'systems', value: systems },
