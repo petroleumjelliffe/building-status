@@ -2,6 +2,11 @@
  * Database seeding script
  * Populates the database with initial data from config.json
  *
+ * IMPORTANT: config.json is used ONLY for initial database seeding.
+ * After running `npm run db:seed`, all data lives in the database.
+ * config.json should NOT be committed to git (it's in .gitignore).
+ * Use config.example.json as a template to create your local config.json.
+ *
  * Environment variables are loaded via dotenv-cli in the npm script
  */
 

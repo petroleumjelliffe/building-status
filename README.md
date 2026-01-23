@@ -56,7 +56,17 @@ A real-time status page for apartment building facilities with server-side rende
    node -e "const bcrypt = require('bcryptjs'); bcrypt.hash('your-password', 10).then(console.log)"
    ```
 
-4. **Set up the database**
+4. **Configure building data**
+
+   Create `config.json` from the example template (contains your contact info and building-specific data):
+   ```bash
+   cp config.example.json config.json
+   # Edit config.json with your building information
+   ```
+
+   **Note:** `config.json` is gitignored to protect PII. It's only used for initial database seeding. After setup, all data lives in the database.
+
+5. **Set up the database**
    ```bash
    npm run db:setup
    ```
@@ -64,9 +74,9 @@ A real-time status page for apartment building facilities with server-side rende
    This runs:
    - `db:generate` - Generates migrations from schema
    - `db:migrate` - Applies migrations to database
-   - `db:seed` - Seeds initial data (systems, config)
+   - `db:seed` - Seeds initial data from config.json (one-time)
 
-5. **Start development server**
+6. **Start development server**
    ```bash
    npm run dev
    ```

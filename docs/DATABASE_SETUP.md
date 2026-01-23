@@ -73,10 +73,18 @@ npm run db:migrate
 
 ## Seed Database
 
+**IMPORTANT:** Create your local `config.json` from `config.example.json` first. This file contains your building-specific data and contact information (PII). It should NEVER be committed to git (it's in `.gitignore`).
+
 ```bash
-# Seed with data from config.json
+# Copy example and edit with your data
+cp config.example.json config.json
+# Edit config.json with your building information, contacts, links, etc.
+
+# Seed with data from config.json (one-time setup)
 npm run db:seed
 ```
+
+After seeding, all data lives in the database. You can edit contacts, links, and other configuration through the admin interface or database directly. The `config.json` file is only used for initial setup.
 
 ## Verify Database
 
