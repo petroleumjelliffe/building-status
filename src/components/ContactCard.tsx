@@ -77,9 +77,16 @@ export function ContactCard({ contact, editable, sessionToken, onUpdate }: Conta
     <>
       <Card variant="contact" editable={editable} actions={actions}>
         <div className="contact-label">{contact.label}</div>
-        <a href={`tel:${contact.phone.replace(/\D/g, '')}`} className="contact-phone">
-          {contact.phone}
-        </a>
+        {contact.phone && (
+          <a href={`tel:${contact.phone.replace(/\D/g, '')}`} className="contact-phone">
+            {contact.phone}
+          </a>
+        )}
+        {contact.email && (
+          <a href={`mailto:${contact.email}`} className="contact-phone">
+            {contact.email}
+          </a>
+        )}
         <div className="contact-hours">{contact.hours}</div>
       </Card>
 

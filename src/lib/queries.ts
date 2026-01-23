@@ -453,12 +453,13 @@ export async function getContacts(): Promise<any[]> {
  */
 export async function createContact(
   label: string,
-  phone: string,
-  hours: string
+  hours: string,
+  phone?: string,
+  email?: string
 ): Promise<string> {
   const contacts = await getContacts();
   const id = `contact-${Date.now()}`;
-  const newContact = { id, label, phone, hours };
+  const newContact = { id, label, phone, email, hours };
 
   await setConfigValue('contacts', [...contacts, newContact]);
   return id;
@@ -472,6 +473,7 @@ export async function updateContact(
   updates: {
     label?: string;
     phone?: string;
+    email?: string;
     hours?: string;
   }
 ): Promise<void> {

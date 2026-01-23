@@ -72,7 +72,8 @@ export interface Announcement {
 export interface Contact {
   id: string;
   label: string;
-  phone: string;
+  phone?: string;
+  email?: string;
   hours: string;
 }
 
@@ -241,7 +242,8 @@ export interface CancelEventRequest {
 export interface CreateContactRequest {
   password: string;
   label: string;
-  phone: string;
+  phone?: string;
+  email?: string;
   hours: string;
 }
 
@@ -250,6 +252,7 @@ export interface UpdateContactRequest {
   id: string;
   label?: string;
   phone?: string;
+  email?: string;
   hours?: string;
 }
 

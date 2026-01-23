@@ -30,10 +30,10 @@ export async function PUT(
 
     const { id } = params;
     const body: UpdateContactRequest = await request.json();
-    const { label, phone, hours } = body;
+    const { label, phone, email, hours } = body;
 
     // Update contact
-    await updateContact(id, { label, phone, hours });
+    await updateContact(id, { label, phone, email, hours });
 
     // Revalidate the status page
     revalidatePath('/');

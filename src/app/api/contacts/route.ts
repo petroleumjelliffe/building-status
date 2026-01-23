@@ -26,18 +26,26 @@ export async function POST(request: Request) {
     }
 
     const body: CreateContactRequest = await request.json();
-    const { label, phone, hours } = body;
+    const { label, phone, email, hours } = body;
 
     // Validate required fields
-    if (!label || !phone || !hours) {
+    if (!label || !hours) {
       return NextResponse.json(
         { success: false, error: 'Missing required fields' },
         { status: 400 }
       );
     }
 
+    // Validate that at least one of phone or email is provided
+    if (!phone && !email) {
+      return NextResponse.json(
+        { success: false, error: 'At least one of phone or email is required' },
+        { status: 400 }
+      );
+    }
+
     // Create contact
-    const id = await createContact(label, phone, hours);
+    const id = await createContact(label, hours, phone, email);
 
     // Revalidate the status page
     revalidatePath('/');

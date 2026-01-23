@@ -42,6 +42,7 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
   const [isAddIssueModalOpen, setIsAddIssueModalOpen] = useState(false);
   const [isAddEventModalOpen, setIsAddEventModalOpen] = useState(false);
   const [isAddContactModalOpen, setIsAddContactModalOpen] = useState(false);
+  const [isCalendarSubscribeOpen, setIsCalendarSubscribeOpen] = useState(false);
   const router = useRouter();
 
   // Check for existing session on mount
@@ -252,7 +253,15 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
               >
                 + Add Event
               </button>
-            ) : undefined
+            ) : (
+              <button
+                className="btn btn-secondary"
+                onClick={() => setIsCalendarSubscribeOpen(true)}
+                style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
+              >
+                📅 Subscribe
+              </button>
+            )
           }
         >
           {data.events.length > 0 ? (
@@ -327,9 +336,6 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
           onUpdate={handleUpdate}
         />
 
-        {/* Calendar Subscribe */}
-        <CalendarSubscribe siteUrl={siteUrl} />
-
         {/* Footer */}
         <footer className="page-footer">
           <p>
@@ -387,6 +393,15 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
           </Modal>
         </>
       )}
+
+      {/* Calendar Subscribe Modal */}
+      <Modal
+        isOpen={isCalendarSubscribeOpen}
+        onClose={() => setIsCalendarSubscribeOpen(false)}
+        title="Subscribe to Calendar"
+      >
+        <CalendarSubscribe siteUrl={siteUrl} />
+      </Modal>
     </>
   );
 }

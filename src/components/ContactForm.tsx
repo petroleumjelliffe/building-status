@@ -17,6 +17,7 @@ interface ContactFormProps {
 export function ContactForm({ contact, sessionToken, onSubmit, onCancel }: ContactFormProps) {
   const [label, setLabel] = useState(contact?.label || '');
   const [phone, setPhone] = useState(contact?.phone || '');
+  const [email, setEmail] = useState(contact?.email || '');
   const [hours, setHours] = useState(contact?.hours || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -24,6 +25,13 @@ export function ContactForm({ contact, sessionToken, onSubmit, onCancel }: Conta
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    // Validate that at least one of phone or email is provided
+    if (!phone && !email) {
+      setError('Please provide at least a phone number or email address');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -39,7 +47,12 @@ export function ContactForm({ contact, sessionToken, onSubmit, onCancel }: Conta
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${sessionToken}`,
         },
-        body: JSON.stringify({ label, phone, hours }),
+        body: JSON.stringify({
+          label,
+          phone: phone || undefined,
+          email: email || undefined,
+          hours
+        }),
       });
 
       if (response.ok) {
@@ -80,7 +93,7 @@ export function ContactForm({ contact, sessionToken, onSubmit, onCancel }: Conta
 
       <div className="form-group">
         <label htmlFor="phone" className="form-label">
-          Phone Number
+          Phone Number (optional)
         </label>
         <input
           id="phone"
@@ -89,7 +102,20 @@ export function ContactForm({ contact, sessionToken, onSubmit, onCancel }: Conta
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           placeholder="e.g. (555) 123-4567"
-          required
+        />
+      </div>
+
+      <div className="form-group">
+        <label htmlFor="email" className="form-label">
+          Email (optional)
+        </label>
+        <input
+          id="email"
+          type="email"
+          className="form-input"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="e.g. contact@example.com"
         />
       </div>
 
