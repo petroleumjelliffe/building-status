@@ -312,6 +312,33 @@ h1 {
   font-weight: 500;
 }
 
+.empty-state {
+  background: var(--surface);
+  border-radius: 8px;
+  padding: 1.25rem;
+  text-align: center;
+}
+
+.empty-state-text {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.report-issue-link {
+  display: block;
+  margin-top: 0.75rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.report-issue-link:hover {
+  color: var(--text);
+  text-decoration: underline;
+}
+
 .maintenance-card {
   background: var(--surface);
   border-radius: 8px;

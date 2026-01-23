@@ -17,7 +17,9 @@ import { LoginModal } from './LoginModal';
 import { Modal } from './Modal';
 import { IssueForm } from './IssueForm';
 import { MaintenanceForm } from './MaintenanceForm';
+import { EventForm } from './EventForm';
 import { CalendarSubscribe } from './CalendarSubscribe';
+import { EmptyState } from './EmptyState';
 import { getSession, clearSession, getEditMode, setEditMode as saveEditMode } from '@/lib/session';
 
 interface StatusPageClientProps {
@@ -35,7 +37,7 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
   const [editMode, setEditMode] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isAddIssueModalOpen, setIsAddIssueModalOpen] = useState(false);
-  const [isAddMaintenanceModalOpen, setIsAddMaintenanceModalOpen] = useState(false);
+  const [isAddEventModalOpen, setIsAddEventModalOpen] = useState(false);
   const router = useRouter();
 
   // Check for existing session on mount
@@ -116,8 +118,8 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
     handleUpdate();
   };
 
-  const handleAddMaintenanceSuccess = () => {
-    setIsAddMaintenanceModalOpen(false);
+  const handleAddEventSuccess = () => {
+    setIsAddEventModalOpen(false);
     handleUpdate();
   };
 
@@ -216,10 +218,16 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
               ))}
             </div>
           ) : (
-            <div className="all-clear">
-              <div className="all-clear-icon">✓</div>
-              <div className="all-clear-text">No issues reported</div>
-            </div>
+            <EmptyState message="No issues reported" />
+          )}
+          {/* Report Issue link - visible when not in edit mode */}
+          {!isEditable && (
+            <a
+              href={`mailto:${data.reportEmail}?subject=[Building Status] Issue Report&body=Building:%0A%0AUnit:%0A%0ACategory:%0A%0ADescription:%0A`}
+              className="report-issue-link"
+            >
+              Report an issue
+            </a>
           )}
         </div>
 
@@ -230,10 +238,10 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
             {isEditable && sessionToken && (
               <button
                 className="btn btn-secondary"
-                onClick={() => setIsAddMaintenanceModalOpen(true)}
+                onClick={() => setIsAddEventModalOpen(true)}
                 style={{ marginLeft: 'auto', fontSize: '0.875rem', padding: '0.5rem 1rem' }}
               >
-                + Add Maintenance
+                + Add Event
               </button>
             )}
           </div>
@@ -250,9 +258,7 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
               ))}
             </div>
           ) : (
-            <div className="all-clear">
-              <div className="all-clear-text">No scheduled maintenance</div>
-            </div>
+            <EmptyState message="No scheduled maintenance" />
           )}
         </div>
 
@@ -283,16 +289,6 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
           </div>
         )}
 
-        {/* Report Issue */}
-        <a
-          href={`mailto:${data.reportEmail}?subject=[Building Status] Issue Report&body=Building:%0A%0AUnit:%0A%0ACategory:%0A%0ADescription:%0A`}
-          className="share-btn"
-          style={{ textDecoration: 'none' }}
-        >
-          <span className="share-icon">✉️</span>
-          Report an Issue
-        </a>
-
         {/* Calendar Subscribe */}
         <CalendarSubscribe siteUrl={siteUrl} />
 
@@ -313,7 +309,7 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
         onSuccess={handleLoginSuccess}
       />
 
-      {/* Add Issue/Maintenance Modals */}
+      {/* Add Issue/Event Modals */}
       {isEditable && sessionToken && (
         <>
           <Modal
@@ -329,14 +325,14 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
           </Modal>
 
           <Modal
-            isOpen={isAddMaintenanceModalOpen}
-            onClose={() => setIsAddMaintenanceModalOpen(false)}
-            title="Add Scheduled Maintenance"
+            isOpen={isAddEventModalOpen}
+            onClose={() => setIsAddEventModalOpen(false)}
+            title="Add Event"
           >
-            <MaintenanceForm
-              password={sessionToken}
-              onSubmit={handleAddMaintenanceSuccess}
-              onCancel={() => setIsAddMaintenanceModalOpen(false)}
+            <EventForm
+              sessionToken={sessionToken}
+              onSubmit={handleAddEventSuccess}
+              onCancel={() => setIsAddEventModalOpen(false)}
             />
           </Modal>
         </>
