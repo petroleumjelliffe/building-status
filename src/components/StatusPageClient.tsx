@@ -23,6 +23,7 @@ import { EventForm } from './EventForm';
 import { ContactForm } from './ContactForm';
 import { CalendarSubscribe } from './CalendarSubscribe';
 import { EmptyState } from './EmptyState';
+import { SettingsForm } from './SettingsForm';
 import { getSession, clearSession, getEditMode, setEditMode as saveEditMode } from '@/lib/session';
 
 interface StatusPageClientProps {
@@ -43,6 +44,7 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
   const [isAddEventModalOpen, setIsAddEventModalOpen] = useState(false);
   const [isAddContactModalOpen, setIsAddContactModalOpen] = useState(false);
   const [isCalendarSubscribeOpen, setIsCalendarSubscribeOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const router = useRouter();
 
   // Check for existing session on mount
@@ -130,6 +132,11 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
 
   const handleAddContactSuccess = () => {
     setIsAddContactModalOpen(false);
+    handleUpdate();
+  };
+
+  const handleSettingsSuccess = () => {
+    setIsSettingsModalOpen(false);
     handleUpdate();
   };
 
@@ -341,6 +348,27 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
           onUpdate={handleUpdate}
         />
 
+        {/* Settings */}
+        {isEditable && (
+          <Section
+            title="Settings"
+            icon="⚙️"
+            action={
+              <button
+                className="btn btn-secondary"
+                onClick={() => setIsSettingsModalOpen(true)}
+                style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
+              >
+                Edit
+              </button>
+            }
+          >
+            <div style={{ padding: '0.5rem 0' }}>
+              <strong>Report Email:</strong> {data.reportEmail}
+            </div>
+          </Section>
+        )}
+
         {/* Footer */}
         <footer className="page-footer">
           <p>
@@ -394,6 +422,19 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
               sessionToken={sessionToken}
               onSubmit={handleAddContactSuccess}
               onCancel={() => setIsAddContactModalOpen(false)}
+            />
+          </Modal>
+
+          <Modal
+            isOpen={isSettingsModalOpen}
+            onClose={() => setIsSettingsModalOpen(false)}
+            title="Site Settings"
+          >
+            <SettingsForm
+              reportEmail={data.reportEmail}
+              sessionToken={sessionToken}
+              onSubmit={handleSettingsSuccess}
+              onCancel={() => setIsSettingsModalOpen(false)}
             />
           </Modal>
         </>

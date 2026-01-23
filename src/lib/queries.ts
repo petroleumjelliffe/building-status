@@ -578,3 +578,7 @@ export async function updateGarbageSchedule(
 ): Promise<void> {
   await setConfigValue('garbageSchedule', schedule);
 }
+
+export async function updateReportEmail(email: string): Promise<void> {
+  await setConfigValue('reportEmail', email);
+}
