@@ -138,28 +138,30 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
 
   return (
     <>
+      {/* Pinned Title Bar */}
+      <div className="title-bar">
+        <div className="title-bar-content">
+          <h1>Building Status</h1>
+          <HamburgerMenu
+            isLoggedIn={isLoggedIn}
+            onLoginClick={() => setIsLoginModalOpen(true)}
+            onLogoutClick={handleLogout}
+          />
+        </div>
+      </div>
+
       <div className={`container ${editMode ? 'page-container edit-mode' : 'page-container'}`}>
-        {/* Header */}
-        <header className="page-header">
-          <div className="header-content">
-            <h1>Building Status</h1>
-            <div className="header-actions">
-              <EditToggle
-                isLoggedIn={isLoggedIn}
-                editMode={editMode}
-                onToggle={handleEditToggle}
-              />
-              <HamburgerMenu
-                isLoggedIn={isLoggedIn}
-                onLoginClick={() => setIsLoginModalOpen(true)}
-                onLogoutClick={handleLogout}
-              />
-            </div>
-          </div>
+        {/* Sub-header with edit toggle and updated time */}
+        <div className="page-subheader">
+          <EditToggle
+            isLoggedIn={isLoggedIn}
+            editMode={editMode}
+            onToggle={handleEditToggle}
+          />
           <div className="updated">
             Updated {formattedDate}
           </div>
-        </header>
+        </div>
 
         {/* Announcements */}
         {data.announcements.length > 0 && (
@@ -216,7 +218,15 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
               >
                 + Add Issue
               </button>
-            ) : undefined
+            ) : (
+              <a
+                href={`mailto:${data.reportEmail}?subject=[Building Status] Issue Report&body=Building:%0A%0AUnit:%0A%0ACategory:%0A%0ADescription:%0A`}
+                className="btn btn-secondary"
+                style={{ fontSize: '0.875rem', padding: '0.5rem 1rem', textDecoration: 'none' }}
+              >
+                Report Issue
+              </a>
+            )
           }
         >
           {data.issues.length > 0 ? (
@@ -233,15 +243,6 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
             </div>
           ) : (
             <EmptyState message="No issues reported" />
-          )}
-          {/* Report Issue link - visible when not in edit mode */}
-          {!isEditable && (
-            <a
-              href={`mailto:${data.reportEmail}?subject=[Building Status] Issue Report&body=Building:%0A%0AUnit:%0A%0ACategory:%0A%0ADescription:%0A`}
-              className="report-issue-link"
-            >
-              Report an issue
-            </a>
           )}
         </Section>
 
