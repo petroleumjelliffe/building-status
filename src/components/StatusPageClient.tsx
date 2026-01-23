@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { StatusPageData } from '@/types';
+import { Section } from './Section';
 import { StatusPill } from './StatusPill';
 import { AnnouncementBanner } from './AnnouncementBanner';
 import { IssueCard } from './IssueCard';
@@ -168,8 +169,7 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
         )}
 
         {/* System Status */}
-        <div className="section">
-          <div className="section-header">Systems</div>
+        <Section title="Systems">
           <div className="status-row">
             {data.systems.map((system) => {
               const statusData = data.systemStatus.find(
@@ -190,22 +190,23 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
               );
             })}
           </div>
-        </div>
+        </Section>
 
         {/* Current Issues */}
-        <div className="section">
-          <div className="section-header">
-            Current Issues
-            {isEditable && sessionToken && (
+        <Section
+          title="Current Issues"
+          action={
+            isEditable && sessionToken ? (
               <button
                 className="btn btn-secondary"
                 onClick={() => setIsAddIssueModalOpen(true)}
-                style={{ marginLeft: 'auto', fontSize: '0.875rem', padding: '0.5rem 1rem' }}
+                style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
               >
                 + Add Issue
               </button>
-            )}
-          </div>
+            ) : undefined
+          }
+        >
           {data.issues.length > 0 ? (
             <div className="issues-list">
               {data.issues.map((issue) => (
@@ -230,22 +231,23 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
               Report an issue
             </a>
           )}
-        </div>
+        </Section>
 
         {/* Upcoming Events */}
-        <div className="section">
-          <div className="section-header">
-            Upcoming Events
-            {isEditable && sessionToken && (
+        <Section
+          title="Upcoming Events"
+          action={
+            isEditable && sessionToken ? (
               <button
                 className="btn btn-secondary"
                 onClick={() => setIsAddEventModalOpen(true)}
-                style={{ marginLeft: 'auto', fontSize: '0.875rem', padding: '0.5rem 1rem' }}
+                style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
               >
                 + Add Event
               </button>
-            )}
-          </div>
+            ) : undefined
+          }
+        >
           {data.events.length > 0 ? (
             <div className="events-list">
               {data.events.map((event) => (
@@ -261,33 +263,29 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
           ) : (
             <EmptyState message="No upcoming events" />
           )}
-        </div>
+        </Section>
 
         {/* Emergency Contacts */}
         {data.contacts.length > 0 && (
-          <div className="section">
-            <div className="section-header">📞 Emergency Contacts</div>
+          <Section title="Emergency Contacts" icon="📞">
             <div className="contacts-grid">
               {data.contacts.map((contact, index) => (
                 <ContactCard key={index} contact={contact} />
               ))}
             </div>
-          </div>
+          </Section>
         )}
 
         {/* Garbage Schedule */}
         {data.garbageSchedule && (
-          <div className="section">
-            <div className="section-header">Garbage & Recycling</div>
+          <Section title="Garbage & Recycling">
             <GarbageSchedule schedule={data.garbageSchedule} />
-          </div>
+          </Section>
         )}
 
         {/* Helpful Links */}
         {data.helpfulLinks.length > 0 && (
-          <div className="section">
-            <HelpfulLinks links={data.helpfulLinks} />
-          </div>
+          <HelpfulLinks links={data.helpfulLinks} />
         )}
 
         {/* Calendar Subscribe */}

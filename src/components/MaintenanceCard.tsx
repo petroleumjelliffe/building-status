@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import type { Maintenance } from '@/types';
+import { Card } from './Card';
 import { Modal } from './Modal';
 import { MaintenanceForm } from './MaintenanceForm';
 
@@ -53,35 +54,37 @@ export function MaintenanceCard({ maintenance, editable, password, onUpdate }: M
     onUpdate?.();
   };
 
+  // Action buttons for edit mode
+  const actions = editable && password ? (
+    <>
+      <button
+        className="btn-icon"
+        onClick={() => setIsEditModalOpen(true)}
+        title="Edit maintenance"
+      >
+        ✏️
+      </button>
+      <button
+        className="btn-icon"
+        onClick={handleComplete}
+        disabled={isCompleting}
+        title="Mark as completed"
+      >
+        {isCompleting ? '⏳' : '✓'}
+      </button>
+    </>
+  ) : undefined;
+
   return (
     <>
-      <div className="maintenance-card">
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
-          <div style={{ flex: 1 }}>
-            <div className="maintenance-date">{maintenance.date}</div>
-            <div className="maintenance-desc">{maintenance.description}</div>
-          </div>
-          {editable && password && (
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button
-                className="btn-icon"
-                onClick={() => setIsEditModalOpen(true)}
-                title="Edit maintenance"
-              >
-                ✏️
-              </button>
-              <button
-                className="btn-icon"
-                onClick={handleComplete}
-                disabled={isCompleting}
-                title="Mark as completed"
-              >
-                {isCompleting ? '⏳' : '✓'}
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
+      <Card
+        variant="maintenance"
+        editable={editable}
+        actions={actions}
+      >
+        <div className="maintenance-date">{maintenance.date}</div>
+        <div className="maintenance-desc">{maintenance.description}</div>
+      </Card>
 
       {editable && password && (
         <Modal

@@ -1,4 +1,5 @@
 import type { GarbageSchedule as GarbageScheduleType } from '@/types';
+import { Card } from './Card';
 
 interface GarbageScheduleProps {
   schedule: GarbageScheduleType;
@@ -12,21 +13,21 @@ export function GarbageSchedule({ schedule }: GarbageScheduleProps) {
   return (
     <>
       <div className="garbage-grid">
-        <div className="garbage-card">
+        <Card variant="garbage">
           <div className="garbage-type">🗑️ Trash</div>
           <div className="garbage-days">{schedule.trash.days.join(', ')}</div>
           {schedule.trash.time && (
             <div className="garbage-time">{schedule.trash.time}</div>
           )}
-        </div>
+        </Card>
 
-        <div className="garbage-card">
+        <Card variant="garbage">
           <div className="garbage-type">♻️ Recycling</div>
           <div className="garbage-days">{schedule.recycling.days.join(', ')}</div>
           {schedule.recycling.time && (
             <div className="garbage-time">{schedule.recycling.time}</div>
           )}
-        </div>
+        </Card>
       </div>
 
       {schedule.notes && (

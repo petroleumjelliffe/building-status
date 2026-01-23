@@ -1,4 +1,5 @@
 import type { HelpfulLink } from '@/types';
+import { Card } from './Card';
 
 interface HelpfulLinksProps {
   links: HelpfulLink[];
@@ -15,16 +16,14 @@ export function HelpfulLinks({ links }: HelpfulLinksProps) {
       <h3>🔗 Helpful Links</h3>
       <div className="links-grid">
         {links.map((link, index) => (
-          <a
+          <Card
             key={index}
-            href={link.url}
-            className="link-card"
-            target="_blank"
-            rel="noopener noreferrer"
+            variant="link"
+            onClick={() => window.open(link.url, '_blank', 'noopener,noreferrer')}
           >
             <span className="link-icon">{link.icon}</span>
             <span className="link-title">{link.title}</span>
-          </a>
+          </Card>
         ))}
       </div>
     </div>

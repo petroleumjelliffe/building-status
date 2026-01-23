@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import type { CalendarEvent } from '@/types';
+import { Card } from './Card';
 import { Modal } from './Modal';
 import { EventForm } from './EventForm';
 
@@ -103,9 +104,34 @@ export function EventCard({ event, editable, sessionToken, onUpdate }: EventCard
 
   const isRecurring = !!event.recurrenceRule;
 
+  // Action buttons for edit mode
+  const actions = editable && sessionToken ? (
+    <>
+      <button
+        className="btn-icon"
+        onClick={() => setIsEditModalOpen(true)}
+        title="Edit event"
+      >
+        ✏️
+      </button>
+      <button
+        className="btn-icon"
+        onClick={handleComplete}
+        disabled={isCompleting}
+        title="Mark as completed"
+      >
+        {isCompleting ? '⏳' : '✓'}
+      </button>
+    </>
+  ) : undefined;
+
   return (
     <>
-      <div className="event-card">
+      <Card
+        variant="event"
+        editable={editable}
+        actions={actions}
+      >
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
           <div className="event-icon">{getEventTypeIcon(event.type)}</div>
           <div style={{ flex: 1 }}>
@@ -118,27 +144,8 @@ export function EventCard({ event, editable, sessionToken, onUpdate }: EventCard
               <div className="event-description">{event.description}</div>
             )}
           </div>
-          {editable && sessionToken && (
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button
-                className="btn-icon"
-                onClick={() => setIsEditModalOpen(true)}
-                title="Edit event"
-              >
-                ✏️
-              </button>
-              <button
-                className="btn-icon"
-                onClick={handleComplete}
-                disabled={isCompleting}
-                title="Mark as completed"
-              >
-                {isCompleting ? '⏳' : '✓'}
-              </button>
-            </div>
-          )}
         </div>
-      </div>
+      </Card>
 
       {editable && sessionToken && (
         <Modal

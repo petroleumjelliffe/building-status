@@ -1,4 +1,5 @@
 import type { Contact } from '@/types';
+import { Card } from './Card';
 
 interface ContactCardProps {
   contact: Contact;
@@ -9,12 +10,12 @@ interface ContactCardProps {
  */
 export function ContactCard({ contact }: ContactCardProps) {
   return (
-    <div className="contact-card">
+    <Card variant="contact">
       <div className="contact-label">{contact.label}</div>
       <a href={`tel:${contact.phone.replace(/\D/g, '')}`} className="contact-phone">
         {contact.phone}
       </a>
       <div className="contact-hours">{contact.hours}</div>
-    </div>
+    </Card>
   );
 }
