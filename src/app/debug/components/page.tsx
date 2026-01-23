@@ -126,18 +126,24 @@ export default function ComponentDebugPage() {
 
   const sampleContacts: Contact[] = [
     {
+      id: 'contact-1',
       label: 'Building Manager',
       phone: '555-123-4567',
+      email: 'manager@example.com',
       hours: 'Mon-Fri 9am-5pm',
     },
     {
+      id: 'contact-2',
       label: 'Emergency Maintenance',
       phone: '555-987-6543',
+      email: null,
       hours: '24/7',
     },
     {
+      id: 'contact-3',
       label: 'Non-Emergency',
       phone: '555-111-2222',
+      email: null,
       hours: 'Mon-Fri 9am-5pm',
     },
   ];
@@ -156,16 +162,19 @@ export default function ComponentDebugPage() {
 
   const sampleLinks: HelpfulLink[] = [
     {
+      id: 'link-1',
       title: 'Pay Rent Online',
       url: 'https://example.com/rent',
       icon: '💳',
     },
     {
+      id: 'link-2',
       title: 'Building Policies',
       url: 'https://example.com/policies',
       icon: '📋',
     },
     {
+      id: 'link-3',
       title: 'Maintenance Portal',
       url: 'https://example.com/maintenance',
       icon: '🔧',
