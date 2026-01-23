@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { Section } from '@/components/Section';
+import { Card } from '@/components/Card';
 import { IssueCard } from '@/components/IssueCard';
 import { EventCard } from '@/components/EventCard';
 import { MaintenanceCard } from '@/components/MaintenanceCard';
@@ -188,9 +190,100 @@ export default function ComponentDebugPage() {
         </label>
       </div>
 
+      {/* New Base Components */}
+      <section style={{ marginBottom: '3rem' }}>
+        <h2 style={{ marginBottom: '1rem', color: '#333' }}>New Base Components</h2>
+        <p style={{ color: '#666', marginBottom: '1.5rem', fontSize: '0.875rem' }}>
+          Testing the new Section and Card components with different variants
+        </p>
+
+        <Section
+          title="Section Component Example"
+          icon="🎨"
+          action={<button className="btn btn-secondary">+ Add Item</button>}
+        >
+          <div style={{ marginBottom: '1rem' }}>
+            <Card variant="default">
+              <div style={{ padding: '0.5rem 0' }}>
+                <strong>Default Card</strong>
+                <p style={{ color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                  Basic card with no border accent
+                </p>
+              </div>
+            </Card>
+
+            <Card variant="issue">
+              <div style={{ padding: '0.5rem 0' }}>
+                <strong>Issue Card</strong>
+                <p style={{ color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                  Red border for reported issues
+                </p>
+              </div>
+            </Card>
+
+            <Card variant="event">
+              <div style={{ padding: '0.5rem 0' }}>
+                <strong>Event Card</strong>
+                <p style={{ color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                  Yellow border for scheduled events
+                </p>
+              </div>
+            </Card>
+
+            <Card variant="maintenance">
+              <div style={{ padding: '0.5rem 0' }}>
+                <strong>Maintenance Card</strong>
+                <p style={{ color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                  Yellow border for maintenance items
+                </p>
+              </div>
+            </Card>
+
+            <Card variant="contact">
+              <div style={{ padding: '0.5rem 0' }}>
+                <strong>Contact Card</strong>
+                <p style={{ color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                  Static card for contact information
+                </p>
+              </div>
+            </Card>
+
+            <Card
+              variant="link"
+              onClick={() => alert('Link card clicked!')}
+            >
+              <div style={{ padding: '0.5rem 0' }}>
+                <strong>Link Card (clickable)</strong>
+                <p style={{ color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                  Hover and click to see interaction
+                </p>
+              </div>
+            </Card>
+
+            <Card
+              variant="issue"
+              editable={editMode}
+              actions={
+                <>
+                  <button className="btn-icon" title="Edit">✏️</button>
+                  <button className="btn-icon" title="Complete">✓</button>
+                </>
+              }
+            >
+              <div style={{ padding: '0.5rem 0' }}>
+                <strong>Editable Card</strong>
+                <p style={{ color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                  Toggle edit mode to see action buttons
+                </p>
+              </div>
+            </Card>
+          </div>
+        </Section>
+      </section>
+
       {/* Issue Cards */}
       <section style={{ marginBottom: '3rem' }}>
-        <h2 style={{ marginBottom: '1rem', color: '#333' }}>Issue Cards</h2>
+        <h2 style={{ marginBottom: '1rem', color: '#333' }}>Issue Cards (Existing)</h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {sampleIssues.map((issue) => (
             <IssueCard
