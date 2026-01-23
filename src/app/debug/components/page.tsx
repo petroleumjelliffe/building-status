@@ -136,14 +136,12 @@ export default function ComponentDebugPage() {
       id: 'contact-2',
       label: 'Emergency Maintenance',
       phone: '555-987-6543',
-      email: null,
       hours: '24/7',
     },
     {
       id: 'contact-3',
       label: 'Non-Emergency',
       phone: '555-111-2222',
-      email: null,
       hours: 'Mon-Fri 9am-5pm',
     },
   ];
