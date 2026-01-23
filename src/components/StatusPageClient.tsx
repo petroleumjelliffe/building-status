@@ -7,6 +7,7 @@ import { StatusPill } from './StatusPill';
 import { AnnouncementBanner } from './AnnouncementBanner';
 import { IssueCard } from './IssueCard';
 import { MaintenanceCard } from './MaintenanceCard';
+import { EventCard } from './EventCard';
 import { ContactCard } from './ContactCard';
 import { GarbageSchedule } from './GarbageSchedule';
 import { HelpfulLinks } from './HelpfulLinks';
@@ -231,10 +232,10 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
           )}
         </div>
 
-        {/* Scheduled Maintenance */}
+        {/* Upcoming Events */}
         <div className="section">
           <div className="section-header">
-            Scheduled Maintenance
+            Upcoming Events
             {isEditable && sessionToken && (
               <button
                 className="btn btn-secondary"
@@ -245,20 +246,20 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
               </button>
             )}
           </div>
-          {data.maintenance.length > 0 ? (
-            <div className="maintenance-list">
-              {data.maintenance.map((item) => (
-                <MaintenanceCard
-                  key={item.id}
-                  maintenance={item}
+          {data.events.length > 0 ? (
+            <div className="events-list">
+              {data.events.map((event) => (
+                <EventCard
+                  key={event.id}
+                  event={event}
                   editable={isEditable}
-                  password={sessionToken || ''}
+                  sessionToken={sessionToken || ''}
                   onUpdate={handleUpdate}
                 />
               ))}
             </div>
           ) : (
-            <EmptyState message="No scheduled maintenance" />
+            <EmptyState message="No upcoming events" />
           )}
         </div>
 

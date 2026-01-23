@@ -111,6 +111,7 @@ export interface StatusPageData {
   systemStatus: SystemStatusData[];
   issues: Issue[];
   maintenance: Maintenance[];
+  events: CalendarEvent[];
   announcements: Announcement[];
   contacts: Contact[];
   helpfulLinks: HelpfulLink[];

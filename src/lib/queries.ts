@@ -15,6 +15,7 @@ export async function getStatusData(): Promise<StatusPageData> {
     systemStatusData,
     issuesData,
     maintenanceData,
+    eventsData,
     announcementsData,
     contactsConfig,
     linksConfig,
@@ -32,6 +33,13 @@ export async function getStatusData(): Promise<StatusPageData> {
       )
     ),
     db.select().from(maintenance).where(isNull(maintenance.completedAt)), // Only incomplete
+    // Scheduled events (not completed/cancelled)
+    db.select().from(events).where(
+      or(
+        eq(events.status, 'scheduled'),
+        eq(events.status, 'in_progress')
+      )
+    ).orderBy(asc(events.startsAt)),
     db.select().from(announcements).where(
       or(
         isNull(announcements.expiresAt),
@@ -50,6 +58,7 @@ export async function getStatusData(): Promise<StatusPageData> {
     systemStatus: systemStatusData as SystemStatusData[],
     issues: issuesData as any, // TODO: Properly type Drizzle query results
     maintenance: maintenanceData,
+    events: eventsData as CalendarEvent[],
     announcements: announcementsData as any, // TODO: Properly type Drizzle query results
     contacts: contactsConfig || [],
     helpfulLinks: linksConfig || [],

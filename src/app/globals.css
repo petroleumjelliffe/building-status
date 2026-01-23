@@ -358,6 +358,45 @@ h1 {
   font-size: 0.9rem;
 }
 
+/* Event Card */
+.event-card {
+  background: var(--surface);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+  border-left: 3px solid var(--yellow);
+}
+
+.event-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.event-datetime {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--yellow);
+  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.event-recurring {
+  font-size: 0.75rem;
+}
+
+.event-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 0.25rem;
+}
+
+.event-description {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
 .divider {
   height: 1px;
   background: var(--border);
