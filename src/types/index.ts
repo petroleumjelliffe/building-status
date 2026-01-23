@@ -70,12 +70,15 @@ export interface Announcement {
 }
 
 export interface Contact {
+  id: string;
   label: string;
-  phone: string;
+  phone?: string;
+  email?: string;
   hours: string;
 }
 
 export interface HelpfulLink {
+  id: string;
   title: string;
   url: string;
   icon: string;
@@ -233,4 +236,62 @@ export interface CompleteEventRequest {
 export interface CancelEventRequest {
   password: string;
   id: number;
+}
+
+// Contact CRUD request types
+export interface CreateContactRequest {
+  password: string;
+  label: string;
+  phone?: string;
+  email?: string;
+  hours: string;
+}
+
+export interface UpdateContactRequest {
+  password: string;
+  id: string;
+  label?: string;
+  phone?: string;
+  email?: string;
+  hours?: string;
+}
+
+export interface DeleteContactRequest {
+  password: string;
+  id: string;
+}
+
+// Helpful Link CRUD request types
+export interface CreateHelpfulLinkRequest {
+  password: string;
+  title: string;
+  url: string;
+  icon: string;
+}
+
+export interface UpdateHelpfulLinkRequest {
+  password: string;
+  id: string;
+  title?: string;
+  url?: string;
+  icon?: string;
+}
+
+export interface DeleteHelpfulLinkRequest {
+  password: string;
+  id: string;
+}
+
+// Garbage Schedule update request type
+export interface UpdateGarbageScheduleRequest {
+  password: string;
+  trash: {
+    days: string[];
+    time?: string;
+  };
+  recycling: {
+    days: string[];
+    time?: string;
+  };
+  notes: string;
 }

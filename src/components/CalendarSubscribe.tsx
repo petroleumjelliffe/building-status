@@ -9,9 +9,9 @@ interface CalendarSubscribeProps {
 /**
  * Calendar subscription widget
  * Provides links to subscribe to the building calendar
+ * Now designed to be used within a modal
  */
 export function CalendarSubscribe({ siteUrl }: CalendarSubscribeProps) {
-  const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
   // Build URLs
@@ -38,67 +38,53 @@ export function CalendarSubscribe({ siteUrl }: CalendarSubscribeProps) {
   };
 
   return (
-    <div className="calendar-subscribe">
-      <button
-        className="calendar-subscribe-btn"
-        onClick={() => setIsOpen(!isOpen)}
-        aria-expanded={isOpen}
+    <div className="calendar-subscribe-options">
+      <a
+        href={webcalUrl}
+        className="calendar-option"
       >
-        <span className="calendar-icon">📅</span>
-        Subscribe to Calendar
-        <span className={`chevron ${isOpen ? 'open' : ''}`}>▾</span>
+        <span className="option-icon">🍎</span>
+        <span className="option-text">
+          <strong>Apple Calendar</strong>
+          <small>Also works with iOS</small>
+        </span>
+      </a>
+
+      <a
+        href={googleCalUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="calendar-option"
+      >
+        <span className="option-icon">📆</span>
+        <span className="option-text">
+          <strong>Google Calendar</strong>
+          <small>Opens in new tab</small>
+        </span>
+      </a>
+
+      <button
+        onClick={handleCopy}
+        className="calendar-option"
+      >
+        <span className="option-icon">{copied ? '✓' : '🔗'}</span>
+        <span className="option-text">
+          <strong>{copied ? 'Copied!' : 'Copy URL'}</strong>
+          <small>For other calendar apps</small>
+        </span>
       </button>
 
-      {isOpen && (
-        <div className="calendar-subscribe-options">
-          <a
-            href={webcalUrl}
-            className="calendar-option"
-          >
-            <span className="option-icon">🍎</span>
-            <span className="option-text">
-              <strong>Apple Calendar</strong>
-              <small>Also works with iOS</small>
-            </span>
-          </a>
-
-          <a
-            href={googleCalUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="calendar-option"
-          >
-            <span className="option-icon">📆</span>
-            <span className="option-text">
-              <strong>Google Calendar</strong>
-              <small>Opens in new tab</small>
-            </span>
-          </a>
-
-          <button
-            onClick={handleCopy}
-            className="calendar-option"
-          >
-            <span className="option-icon">{copied ? '✓' : '🔗'}</span>
-            <span className="option-text">
-              <strong>{copied ? 'Copied!' : 'Copy URL'}</strong>
-              <small>For other calendar apps</small>
-            </span>
-          </button>
-
-          <a
-            href={icsUrl}
-            download="building-status.ics"
-            className="calendar-option"
-          >
-            <span className="option-icon">⬇️</span>
-            <span className="option-text">
-              <strong>Download .ics</strong>
-              <small>One-time import</small>
-            </span>
-          </a>
-        </div>
-      )}
+      <a
+        href={icsUrl}
+        download="building-status.ics"
+        className="calendar-option"
+      >
+        <span className="option-icon">⬇️</span>
+        <span className="option-text">
+          <strong>Download .ics</strong>
+          <small>One-time import</small>
+        </span>
+      </a>
     </div>
   );
 }

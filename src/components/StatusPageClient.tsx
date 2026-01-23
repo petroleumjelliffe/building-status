@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { StatusPageData } from '@/types';
+import { Section } from './Section';
 import { StatusPill } from './StatusPill';
 import { AnnouncementBanner } from './AnnouncementBanner';
 import { IssueCard } from './IssueCard';
@@ -19,6 +20,7 @@ import { Modal } from './Modal';
 import { IssueForm } from './IssueForm';
 import { MaintenanceForm } from './MaintenanceForm';
 import { EventForm } from './EventForm';
+import { ContactForm } from './ContactForm';
 import { CalendarSubscribe } from './CalendarSubscribe';
 import { EmptyState } from './EmptyState';
 import { getSession, clearSession, getEditMode, setEditMode as saveEditMode } from '@/lib/session';
@@ -39,6 +41,8 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isAddIssueModalOpen, setIsAddIssueModalOpen] = useState(false);
   const [isAddEventModalOpen, setIsAddEventModalOpen] = useState(false);
+  const [isAddContactModalOpen, setIsAddContactModalOpen] = useState(false);
+  const [isCalendarSubscribeOpen, setIsCalendarSubscribeOpen] = useState(false);
   const router = useRouter();
 
   // Check for existing session on mount
@@ -124,38 +128,40 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
     handleUpdate();
   };
 
+  const handleAddContactSuccess = () => {
+    setIsAddContactModalOpen(false);
+    handleUpdate();
+  };
+
   // editable prop = logged in AND edit mode ON
   const isEditable = isLoggedIn && editMode;
 
   return (
     <>
+      {/* Pinned Title Bar */}
+      <div className="title-bar">
+        <div className="title-bar-content">
+          <h1>Building Status</h1>
+          <HamburgerMenu
+            isLoggedIn={isLoggedIn}
+            onLoginClick={() => setIsLoginModalOpen(true)}
+            onLogoutClick={handleLogout}
+          />
+        </div>
+      </div>
+
       <div className={`container ${editMode ? 'page-container edit-mode' : 'page-container'}`}>
-        {/* Header */}
-        <header className="page-header">
-          <div className="header-content">
-            <h1>Building Status</h1>
-            <div className="header-actions">
-              <EditToggle
-                isLoggedIn={isLoggedIn}
-                editMode={editMode}
-                onToggle={handleEditToggle}
-              />
-              <ShareButton
-                url={siteUrl}
-                title="Building Status"
-                text="Check the current status of our building systems"
-              />
-              <HamburgerMenu
-                isLoggedIn={isLoggedIn}
-                onLoginClick={() => setIsLoginModalOpen(true)}
-                onLogoutClick={handleLogout}
-              />
-            </div>
-          </div>
+        {/* Sub-header with edit toggle and updated time */}
+        <div className="page-subheader">
+          <EditToggle
+            isLoggedIn={isLoggedIn}
+            editMode={editMode}
+            onToggle={handleEditToggle}
+          />
           <div className="updated">
             Updated {formattedDate}
           </div>
-        </header>
+        </div>
 
         {/* Announcements */}
         {data.announcements.length > 0 && (
@@ -168,8 +174,16 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
         )}
 
         {/* System Status */}
-        <div className="section">
-          <div className="section-header">Systems</div>
+        <Section
+          title="Systems"
+          action={
+            <ShareButton
+              url={siteUrl}
+              title="Building Status"
+              text="Check the current status of our building systems"
+            />
+          }
+        >
           <div className="status-row">
             {data.systems.map((system) => {
               const statusData = data.systemStatus.find(
@@ -190,22 +204,31 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
               );
             })}
           </div>
-        </div>
+        </Section>
 
         {/* Current Issues */}
-        <div className="section">
-          <div className="section-header">
-            Current Issues
-            {isEditable && sessionToken && (
+        <Section
+          title="Current Issues"
+          action={
+            isEditable && sessionToken ? (
               <button
                 className="btn btn-secondary"
                 onClick={() => setIsAddIssueModalOpen(true)}
-                style={{ marginLeft: 'auto', fontSize: '0.875rem', padding: '0.5rem 1rem' }}
+                style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
               >
                 + Add Issue
               </button>
-            )}
-          </div>
+            ) : (
+              <a
+                href={`mailto:${data.reportEmail}?subject=[Building Status] Issue Report&body=Building:%0A%0AUnit:%0A%0ACategory:%0A%0ADescription:%0A`}
+                className="btn btn-secondary"
+                style={{ fontSize: '0.875rem', padding: '0.5rem 1rem', textDecoration: 'none' }}
+              >
+                Report Issue
+              </a>
+            )
+          }
+        >
           {data.issues.length > 0 ? (
             <div className="issues-list">
               {data.issues.map((issue) => (
@@ -221,31 +244,31 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
           ) : (
             <EmptyState message="No issues reported" />
           )}
-          {/* Report Issue link - visible when not in edit mode */}
-          {!isEditable && (
-            <a
-              href={`mailto:${data.reportEmail}?subject=[Building Status] Issue Report&body=Building:%0A%0AUnit:%0A%0ACategory:%0A%0ADescription:%0A`}
-              className="report-issue-link"
-            >
-              Report an issue
-            </a>
-          )}
-        </div>
+        </Section>
 
         {/* Upcoming Events */}
-        <div className="section">
-          <div className="section-header">
-            Upcoming Events
-            {isEditable && sessionToken && (
+        <Section
+          title="Upcoming Events"
+          action={
+            isEditable && sessionToken ? (
               <button
                 className="btn btn-secondary"
                 onClick={() => setIsAddEventModalOpen(true)}
-                style={{ marginLeft: 'auto', fontSize: '0.875rem', padding: '0.5rem 1rem' }}
+                style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
               >
                 + Add Event
               </button>
-            )}
-          </div>
+            ) : (
+              <button
+                className="btn btn-secondary"
+                onClick={() => setIsCalendarSubscribeOpen(true)}
+                style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
+              >
+                📅 Subscribe
+              </button>
+            )
+          }
+        >
           {data.events.length > 0 ? (
             <div className="events-list">
               {data.events.map((event) => (
@@ -261,37 +284,62 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
           ) : (
             <EmptyState message="No upcoming events" />
           )}
-        </div>
+        </Section>
 
         {/* Emergency Contacts */}
-        {data.contacts.length > 0 && (
-          <div className="section">
-            <div className="section-header">📞 Emergency Contacts</div>
-            <div className="contacts-grid">
-              {data.contacts.map((contact, index) => (
-                <ContactCard key={index} contact={contact} />
-              ))}
-            </div>
-          </div>
+        {(data.contacts.length > 0 || isEditable) && (
+          <Section
+            title="Emergency Contacts"
+            icon="📞"
+            action={
+              isEditable && sessionToken ? (
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => setIsAddContactModalOpen(true)}
+                  style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
+                >
+                  + Add Contact
+                </button>
+              ) : undefined
+            }
+          >
+            {data.contacts.length > 0 ? (
+              <div className="contacts-grid">
+                {data.contacts.map((contact) => (
+                  <ContactCard
+                    key={contact.id}
+                    contact={contact}
+                    editable={isEditable}
+                    sessionToken={sessionToken || ''}
+                    onUpdate={handleUpdate}
+                  />
+                ))}
+              </div>
+            ) : (
+              <EmptyState message="No emergency contacts" />
+            )}
+          </Section>
         )}
 
         {/* Garbage Schedule */}
         {data.garbageSchedule && (
-          <div className="section">
-            <div className="section-header">Garbage & Recycling</div>
-            <GarbageSchedule schedule={data.garbageSchedule} />
-          </div>
+          <Section title="Garbage & Recycling">
+            <GarbageSchedule
+              schedule={data.garbageSchedule}
+              editable={isEditable}
+              sessionToken={sessionToken || ''}
+              onUpdate={handleUpdate}
+            />
+          </Section>
         )}
 
         {/* Helpful Links */}
-        {data.helpfulLinks.length > 0 && (
-          <div className="section">
-            <HelpfulLinks links={data.helpfulLinks} />
-          </div>
-        )}
-
-        {/* Calendar Subscribe */}
-        <CalendarSubscribe siteUrl={siteUrl} />
+        <HelpfulLinks
+          links={data.helpfulLinks}
+          editable={isEditable}
+          sessionToken={sessionToken || ''}
+          onUpdate={handleUpdate}
+        />
 
         {/* Footer */}
         <footer className="page-footer">
@@ -310,7 +358,7 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
         onSuccess={handleLoginSuccess}
       />
 
-      {/* Add Issue/Event Modals */}
+      {/* Add Issue/Event/Contact Modals */}
       {isEditable && sessionToken && (
         <>
           <Modal
@@ -336,8 +384,29 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
               onCancel={() => setIsAddEventModalOpen(false)}
             />
           </Modal>
+
+          <Modal
+            isOpen={isAddContactModalOpen}
+            onClose={() => setIsAddContactModalOpen(false)}
+            title="Add Emergency Contact"
+          >
+            <ContactForm
+              sessionToken={sessionToken}
+              onSubmit={handleAddContactSuccess}
+              onCancel={() => setIsAddContactModalOpen(false)}
+            />
+          </Modal>
         </>
       )}
+
+      {/* Calendar Subscribe Modal */}
+      <Modal
+        isOpen={isCalendarSubscribeOpen}
+        onClose={() => setIsCalendarSubscribeOpen(false)}
+        title="Subscribe to Calendar"
+      >
+        <CalendarSubscribe siteUrl={siteUrl} />
+      </Modal>
     </>
   );
 }
