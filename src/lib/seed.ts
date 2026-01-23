@@ -18,15 +18,22 @@ import * as path from 'path';
 async function seed() {
   console.log('🌱 Seeding database...');
 
-  // Load config.json
+  // Load config.json (or config.example.json as fallback)
   const configPath = path.join(process.cwd(), 'config.json');
+  const exampleConfigPath = path.join(process.cwd(), 'config.example.json');
 
+  let actualPath = configPath;
   if (!fs.existsSync(configPath)) {
-    console.error('❌ config.json not found. Please create it from config.example.json');
-    process.exit(1);
+    if (fs.existsSync(exampleConfigPath)) {
+      console.log('ℹ️  config.json not found, using config.example.json');
+      actualPath = exampleConfigPath;
+    } else {
+      console.error('❌ Neither config.json nor config.example.json found');
+      process.exit(1);
+    }
   }
 
-  const configData = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+  const configData = JSON.parse(fs.readFileSync(actualPath, 'utf-8'));
 
   try {
     // 1. Seed system status
