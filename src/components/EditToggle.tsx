@@ -9,7 +9,7 @@ interface EditToggleProps {
 /**
  * EditToggle component - Yellow button in header
  * Only visible when logged in
- * Shows "Edit OFF" or "Edit ON" and toggles edit mode
+ * Shows "Edit" or "Done" and toggles edit mode
  */
 export function EditToggle({ isLoggedIn, editMode, onToggle }: EditToggleProps) {
   if (!isLoggedIn) return null;
@@ -20,7 +20,7 @@ export function EditToggle({ isLoggedIn, editMode, onToggle }: EditToggleProps) 
       className={`edit-toggle ${editMode ? 'active' : ''}`}
       title={editMode ? 'Disable editing' : 'Enable editing'}
     >
-      Edit {editMode ? 'ON' : 'OFF'}
+      {editMode ? 'Done' : 'Edit'}
     </button>
   );
 }
