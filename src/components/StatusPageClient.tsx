@@ -149,11 +149,6 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
                 editMode={editMode}
                 onToggle={handleEditToggle}
               />
-              <ShareButton
-                url={siteUrl}
-                title="Building Status"
-                text="Check the current status of our building systems"
-              />
               <HamburgerMenu
                 isLoggedIn={isLoggedIn}
                 onLoginClick={() => setIsLoginModalOpen(true)}
@@ -177,7 +172,16 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
         )}
 
         {/* System Status */}
-        <Section title="Systems">
+        <Section
+          title="Systems"
+          action={
+            <ShareButton
+              url={siteUrl}
+              title="Building Status"
+              text="Check the current status of our building systems"
+            />
+          }
+        >
           <div className="status-row">
             {data.systems.map((system) => {
               const statusData = data.systemStatus.find(

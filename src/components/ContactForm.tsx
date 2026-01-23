@@ -22,6 +22,23 @@ export function ContactForm({ contact, sessionToken, onSubmit, onCancel }: Conta
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
+  // Format phone number as user types: (XXX) XXX-XXXX
+  const formatPhoneNumber = (value: string) => {
+    // Remove all non-numeric characters
+    const numbers = value.replace(/\D/g, '');
+
+    // Format based on length
+    if (numbers.length === 0) return '';
+    if (numbers.length <= 3) return `(${numbers}`;
+    if (numbers.length <= 6) return `(${numbers.slice(0, 3)}) ${numbers.slice(3)}`;
+    return `(${numbers.slice(0, 3)}) ${numbers.slice(3, 6)}-${numbers.slice(6, 10)}`;
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setPhone(formatted);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -100,8 +117,9 @@ export function ContactForm({ contact, sessionToken, onSubmit, onCancel }: Conta
           type="tel"
           className="form-input"
           value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          placeholder="e.g. (555) 123-4567"
+          onChange={handlePhoneChange}
+          placeholder="(555) 123-4567"
+          maxLength={14}
         />
       </div>
 
@@ -115,7 +133,9 @@ export function ContactForm({ contact, sessionToken, onSubmit, onCancel }: Conta
           className="form-input"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="e.g. contact@example.com"
+          placeholder="contact@example.com"
+          pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+          title="Please enter a valid email address"
         />
       </div>
 
