@@ -1,4 +1,5 @@
 import { getStatusData } from '@/lib/queries';
+import { getDefaultProperty } from '@/lib/property';
 import { StatusPageClient } from '@/components/StatusPageClient';
 import type { Metadata } from 'next';
 
@@ -12,8 +13,10 @@ export async function generateMetadata(): Promise<Metadata> {
   // Call database directly at build time
   // Fallback to defaults if database unavailable during build
   let data;
+  let property;
   try {
     data = await getStatusData();
+    property = await getDefaultProperty();
   } catch (error) {
     console.error('[generateMetadata] Database unavailable, using fallback defaults:', error);
     // Fallback to safe defaults if database unavailable
@@ -45,6 +48,7 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  const propertyName = property?.name || 'Building Status';
 
   // Generate dynamic status image URL from database
   const heat = data.systemStatus.find((s) => s.systemId === 'heat');
@@ -62,28 +66,31 @@ export async function generateMetadata(): Promise<Metadata> {
     ? 'Some systems experiencing issues'
     : 'All systems operational';
 
+  const pageTitle = `${propertyName} - Building Status`;
+  const pageDescription = `Current status for ${propertyName}: ${statusText}. Real-time updates for building systems, maintenance, and issues.`;
+
   return {
-    title: 'Building Status',
-    description: `Current building status: ${statusText}. Heat, Water, and Laundry systems.`,
+    title: pageTitle,
+    description: pageDescription,
     openGraph: {
-      title: 'Building Status',
-      description: statusText,
+      title: pageTitle,
+      description: pageDescription,
       url: siteUrl,
-      siteName: 'Building Status',
+      siteName: propertyName,
       type: 'website',
       images: [
         {
           url: statusImageUrl,
           width: 600,
           height: 315,
-          alt: 'Building Status',
+          alt: `${propertyName} Status`,
         },
       ],
     },
     twitter: {
       card: 'summary_large_image',
-      title: 'Building Status',
-      description: statusText,
+      title: pageTitle,
+      description: pageDescription,
       images: [statusImageUrl],
     },
   };

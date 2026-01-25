@@ -5,12 +5,13 @@ import type { StatusPageData, SystemStatus, SystemStatusData, CalendarEvent, Eve
 
 /**
  * Get all status data for the main page
+ * @param propertyId - Optional property ID to filter by (defaults to 1 for backward compatibility)
  */
-export async function getStatusData(): Promise<StatusPageData> {
+export async function getStatusData(propertyId: number = 1): Promise<StatusPageData> {
   // Calculate 24 hours ago for visibility window
   const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-  // Fetch all data in parallel
+  // Fetch all data in parallel, filtered by propertyId
   const [
     systemStatusData,
     issuesData,
@@ -24,26 +25,40 @@ export async function getStatusData(): Promise<StatusPageData> {
     systemsConfig,
     emailConfig,
   ] = await Promise.all([
-    db.select().from(systemStatus),
+    db.select().from(systemStatus).where(eq(systemStatus.propertyId, propertyId)),
     // Show unresolved issues OR resolved issues from last 24 hours
     db.select().from(issues).where(
-      or(
-        isNull(issues.resolvedAt),
-        gte(issues.resolvedAt, twentyFourHoursAgo)
+      and(
+        eq(issues.propertyId, propertyId),
+        or(
+          isNull(issues.resolvedAt),
+          gte(issues.resolvedAt, twentyFourHoursAgo)
+        )
       )
     ),
-    db.select().from(maintenance).where(isNull(maintenance.completedAt)), // Only incomplete
+    db.select().from(maintenance).where(
+      and(
+        eq(maintenance.propertyId, propertyId),
+        isNull(maintenance.completedAt)
+      )
+    ), // Only incomplete
     // Scheduled events (not completed/cancelled)
     db.select().from(events).where(
-      or(
-        eq(events.status, 'scheduled'),
-        eq(events.status, 'in_progress')
+      and(
+        eq(events.propertyId, propertyId),
+        or(
+          eq(events.status, 'scheduled'),
+          eq(events.status, 'in_progress')
+        )
       )
     ).orderBy(asc(events.startsAt)),
     db.select().from(announcements).where(
-      or(
-        isNull(announcements.expiresAt),
-        gte(announcements.expiresAt, new Date())
+      and(
+        eq(announcements.propertyId, propertyId),
+        or(
+          isNull(announcements.expiresAt),
+          gte(announcements.expiresAt, new Date())
+        )
       )
     ), // Only non-expired or permanent (null expiresAt)
     getConfigValue('contacts'),

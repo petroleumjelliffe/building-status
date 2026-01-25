@@ -295,3 +295,154 @@ export interface UpdateGarbageScheduleRequest {
   };
   notes: string;
 }
+
+// Multi-property types
+export interface Property {
+  id: number;
+  propertyId: string; // Slug like "riverside-coop"
+  hash: string; // URL hash like "abc123xyz"
+  name: string; // Display name like "Riverside Co-op"
+  createdAt: Date;
+}
+
+export interface AccessToken {
+  id: number;
+  propertyId: number;
+  token: string; // Access token in QR code
+  label: string; // e.g., "Building A - Main Entrance QR"
+  isActive: boolean;
+  createdAt: Date;
+  expiresAt: Date | null;
+}
+
+export interface ResidentSession {
+  id: number;
+  propertyId: number;
+  accessTokenId: number;
+  sessionToken: string; // Stored in localStorage
+  lastSeenAt: Date;
+  expiresAt: Date; // 90 days from creation
+  createdAt: Date;
+}
+
+export type NotificationContactMethod = 'email' | 'sms';
+export type NotificationSource = 'board' | 'self';
+
+export interface NotificationSubscription {
+  id: number;
+  propertyId: number;
+  contactMethod: NotificationContactMethod;
+  contactValue: string; // email or phone
+  source: NotificationSource; // 'board' or 'self'
+  confirmationToken: string | null;
+  confirmedAt: Date | null;
+  approvalRequired: boolean;
+  approvedBy: string | null; // admin who approved
+  approvedAt: Date | null; // when approved (NULL = pending)
+  revokedAt: Date | null; // NULL = active
+  notifyNewIssues: boolean;
+  notifyUpcomingMaintenance: boolean;
+  notifyNewAnnouncements: boolean;
+  notifyStatusChanges: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export type NotificationQueueStatus = 'pending' | 'sent' | 'failed';
+
+export interface NotificationQueue {
+  id: number;
+  subscriptionId: number;
+  type: string; // 'new_issue', 'upcoming_maintenance', etc.
+  subject: string;
+  message: string;
+  status: NotificationQueueStatus;
+  attempts: number;
+  lastAttemptAt: Date | null;
+  sentAt: Date | null;
+  error: string | null;
+  createdAt: Date;
+}
+
+// API request/response types for properties
+export interface CreatePropertyRequest {
+  propertyId: string;
+  name: string;
+}
+
+export interface PropertyListResponse {
+  properties: Property[];
+}
+
+// API request/response types for QR code access
+export interface ValidateAccessTokenRequest {
+  accessToken: string;
+  propertyHash: string;
+}
+
+export interface ValidateAccessTokenResponse {
+  success: boolean;
+  sessionToken?: string;
+  propertyId?: number;
+  expiresAt?: string;
+}
+
+export interface AccessStatusResponse {
+  hasAccess: boolean;
+  propertyId?: number;
+  expiresAt?: string;
+}
+
+// API request/response types for QR code management
+export interface CreateQRCodeRequest {
+  propertyId: number;
+  label: string;
+  expiresAt?: string;
+}
+
+export interface CreateQRCodeResponse {
+  token: string;
+  qrCodeUrl: string; // Data URL for QR code image
+  fullUrl: string; // Full URL with hash and token
+}
+
+export interface QRCodeListItem {
+  id: number;
+  propertyId: number;
+  propertyName: string;
+  label: string;
+  isActive: boolean;
+  createdAt: Date;
+}
+
+export interface QRCodeListResponse {
+  qrCodes: QRCodeListItem[];
+}
+
+// API request/response types for notifications
+export interface NotificationPreferences {
+  notifyNewIssues: boolean;
+  notifyUpcomingMaintenance: boolean;
+  notifyNewAnnouncements: boolean;
+  notifyStatusChanges: boolean;
+}
+
+export interface AddNotificationContactRequest {
+  propertyId: number;
+  contactMethod: NotificationContactMethod;
+  contactValue: string;
+  preferences: NotificationPreferences;
+}
+
+export interface NotificationSignupRequest {
+  propertyHash: string;
+  contactMethod: NotificationContactMethod;
+  contactValue: string;
+  preferences: NotificationPreferences;
+}
+
+export interface NotificationConfirmResponse {
+  success: boolean;
+  requiresApproval: boolean;
+  message: string;
+}

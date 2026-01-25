@@ -24,6 +24,7 @@ import { ContactForm } from './ContactForm';
 import { CalendarSubscribe } from './CalendarSubscribe';
 import { EmptyState } from './EmptyState';
 import { SettingsForm } from './SettingsForm';
+import { QRCodeManager } from './QRCodeManager';
 import { getSession, clearSession, getEditMode, setEditMode as saveEditMode } from '@/lib/session';
 
 interface StatusPageClientProps {
@@ -45,7 +46,179 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
   const [isAddContactModalOpen, setIsAddContactModalOpen] = useState(false);
   const [isCalendarSubscribeOpen, setIsCalendarSubscribeOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isQRCodeManagerOpen, setIsQRCodeManagerOpen] = useState(false);
+
+  // Property-specific state for hash-based routing
+  const [propertyHash, setPropertyHash] = useState<string | null>(null);
+  const [propertyData, setPropertyData] = useState<StatusPageData | null>(null);
+  const [propertyName, setPropertyName] = useState<string | null>(null);
+  const [isLoadingProperty, setIsLoadingProperty] = useState(false);
+
+  // Resident access state (via QR code)
+  const [hasResidentAccess, setHasResidentAccess] = useState(false);
+  const [residentSessionToken, setResidentSessionToken] = useState<string | null>(null);
+
   const router = useRouter();
+
+  // Check for ?auth= parameter on mount (QR code scan)
+  useEffect(() => {
+    const handleAuthToken = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const authToken = params.get('auth');
+      const hash = window.location.hash.slice(2); // Get property hash
+
+      if (authToken && hash) {
+        console.log('[StatusPageClient] Found auth token in URL, validating...');
+
+        try {
+          const response = await fetch('/api/resident/access/validate', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              accessToken: authToken,
+              propertyHash: hash,
+            }),
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            console.log('[StatusPageClient] Auth token validated, session created');
+
+            // Store session token in localStorage (property-specific)
+            const sessionKey = `resident_session_${hash}`;
+            localStorage.setItem(sessionKey, JSON.stringify({
+              sessionToken: result.sessionToken,
+              propertyId: result.propertyId,
+              expiresAt: result.expiresAt,
+            }));
+
+            // Update state
+            setResidentSessionToken(result.sessionToken);
+            setHasResidentAccess(true);
+
+            // Clean URL (remove ?auth= parameter)
+            const cleanUrl = `${window.location.pathname}${window.location.hash}`;
+            window.history.replaceState({}, '', cleanUrl);
+          } else {
+            console.error('[StatusPageClient] Auth token validation failed:', result.error);
+          }
+        } catch (error) {
+          console.error('[StatusPageClient] Error validating auth token:', error);
+        }
+      }
+    };
+
+    handleAuthToken();
+  }, []);
+
+  // Check for existing resident session on mount and hash changes
+  useEffect(() => {
+    const checkResidentSession = async () => {
+      const hash = window.location.hash.slice(2);
+      if (!hash || hash === 'default') return;
+
+      const sessionKey = `resident_session_${hash}`;
+      const sessionDataStr = localStorage.getItem(sessionKey);
+
+      if (!sessionDataStr) {
+        setHasResidentAccess(false);
+        setResidentSessionToken(null);
+        return;
+      }
+
+      try {
+        const sessionData = JSON.parse(sessionDataStr);
+
+        // Check expiration client-side first
+        if (new Date(sessionData.expiresAt) < new Date()) {
+          console.log('[StatusPageClient] Resident session expired');
+          localStorage.removeItem(sessionKey);
+          setHasResidentAccess(false);
+          setResidentSessionToken(null);
+          return;
+        }
+
+        // Validate with server
+        const response = await fetch('/api/resident/access/status', {
+          headers: {
+            'Authorization': `Bearer ${sessionData.sessionToken}`,
+          },
+        });
+
+        const result = await response.json();
+
+        if (result.hasAccess) {
+          console.log('[StatusPageClient] Resident session valid');
+          setResidentSessionToken(sessionData.sessionToken);
+          setHasResidentAccess(true);
+        } else {
+          console.log('[StatusPageClient] Resident session invalid');
+          localStorage.removeItem(sessionKey);
+          setHasResidentAccess(false);
+          setResidentSessionToken(null);
+        }
+      } catch (error) {
+        console.error('[StatusPageClient] Error checking resident session:', error);
+        localStorage.removeItem(sessionKey);
+        setHasResidentAccess(false);
+        setResidentSessionToken(null);
+      }
+    };
+
+    checkResidentSession();
+  }, [propertyHash]);
+
+  // Check for hash-based routing on mount and hash changes
+  useEffect(() => {
+    const handleHashChange = async () => {
+      // Get hash from URL (e.g., /#/abc123)
+      const hash = window.location.hash.slice(2); // Remove #/
+
+      if (hash && hash !== 'default') {
+        // Fetch property-specific data
+        setPropertyHash(hash);
+        setIsLoadingProperty(true);
+
+        try {
+          const response = await fetch(`/api/property/${hash}`);
+          if (response.ok) {
+            const result = await response.json();
+            setPropertyData(result.data);
+            setPropertyName(result.property.name);
+          } else {
+            console.error('[StatusPageClient] Property not found:', hash);
+            // Fall back to default data
+            setPropertyHash(null);
+            setPropertyData(null);
+            setPropertyName(null);
+          }
+        } catch (error) {
+          console.error('[StatusPageClient] Error fetching property data:', error);
+          setPropertyHash(null);
+          setPropertyData(null);
+          setPropertyName(null);
+        } finally {
+          setIsLoadingProperty(false);
+        }
+      } else {
+        // No hash or 'default' hash - use server-provided data
+        setPropertyHash(null);
+        setPropertyData(null);
+        setPropertyName(null);
+        setIsLoadingProperty(false);
+      }
+    };
+
+    // Handle initial load
+    handleHashChange();
+
+    // Listen for hash changes
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   // Check for existing session on mount
   useEffect(() => {
@@ -61,9 +234,9 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
         headers: { 'Authorization': `Bearer ${session.token}` }
       })
         .then(res => res.json())
-        .then(data => {
-          console.log('[StatusPageClient] Token verification result:', data);
-          if (data.valid) {
+        .then(authData => {
+          console.log('[StatusPageClient] Token verification result:', authData);
+          if (authData.valid) {
             setIsLoggedIn(true);
             setSessionToken(session.token);
           } else {
@@ -143,12 +316,27 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
   // editable prop = logged in AND edit mode ON
   const isEditable = isLoggedIn && editMode;
 
+  // Use property-specific data if available, otherwise use server-provided data
+  const activeData = propertyData || data;
+  const displayTitle = propertyName || 'Building Status';
+
+  // Show loading state while fetching property data
+  if (isLoadingProperty) {
+    return (
+      <div className="container page-container">
+        <div style={{ textAlign: 'center', padding: '4rem 0' }}>
+          <p>Loading property activeData...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       {/* Pinned Title Bar */}
       <div className="title-bar">
         <div className="title-bar-content">
-          <h1>Building Status</h1>
+          <h1>{displayTitle}</h1>
           <HamburgerMenu
             isLoggedIn={isLoggedIn}
             onLoginClick={() => setIsLoginModalOpen(true)}
@@ -171,9 +359,9 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
         </div>
 
         {/* Announcements */}
-        {data.announcements.length > 0 && (
+        {activeData.announcements.length > 0 && (
           <AnnouncementBanner
-            announcements={data.announcements}
+            announcements={activeData.announcements}
             editable={isEditable}
             password={sessionToken || ''}
             onUpdate={handleUpdate}
@@ -192,8 +380,8 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
           }
         >
           <div className="status-row">
-            {data.systems.map((system) => {
-              const statusData = data.systemStatus.find(
+            {activeData.systems.map((system) => {
+              const statusData = activeData.systemStatus.find(
                 (s) => s.systemId === system.id
               );
               return (
@@ -227,7 +415,7 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
               </button>
             ) : (
               <a
-                href={`mailto:${data.reportEmail}?subject=[Building Status] Issue Report&body=Building:%0A%0AUnit:%0A%0ACategory:%0A%0ADescription:%0A`}
+                href={`mailto:${activeData.reportEmail}?subject=[Building Status] Issue Report&body=Building:%0A%0AUnit:%0A%0ACategory:%0A%0ADescription:%0A`}
                 className="btn btn-secondary"
                 style={{ fontSize: '0.875rem', padding: '0.5rem 1rem', textDecoration: 'none' }}
               >
@@ -236,9 +424,9 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
             )
           }
         >
-          {data.issues.length > 0 ? (
+          {activeData.issues.length > 0 ? (
             <div className="issues-list">
-              {data.issues.map((issue) => (
+              {activeData.issues.map((issue) => (
                 <IssueCard
                   key={issue.id}
                   issue={issue}
@@ -276,9 +464,9 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
             )
           }
         >
-          {data.events.length > 0 ? (
+          {activeData.events.length > 0 ? (
             <div className="events-list">
-              {data.events.map((event) => (
+              {activeData.events.map((event) => (
                 <EventCard
                   key={event.id}
                   event={event}
@@ -294,7 +482,7 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
         </Section>
 
         {/* Emergency Contacts */}
-        {(data.contacts.length > 0 || isEditable) && (
+        {(activeData.contacts.length > 0 || isEditable) && (
           <Section
             title="Emergency Contacts"
             icon="📞"
@@ -310,15 +498,16 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
               ) : undefined
             }
           >
-            {data.contacts.length > 0 ? (
+            {activeData.contacts.length > 0 ? (
               <div className="contacts-grid">
-                {data.contacts.map((contact) => (
+                {activeData.contacts.map((contact) => (
                   <ContactCard
                     key={contact.id}
                     contact={contact}
                     editable={isEditable}
                     sessionToken={sessionToken || ''}
                     onUpdate={handleUpdate}
+                    locked={!isLoggedIn && !hasResidentAccess}
                   />
                 ))}
               </div>
@@ -329,10 +518,10 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
         )}
 
         {/* Garbage Schedule */}
-        {data.garbageSchedule && (
+        {activeData.garbageSchedule && (
           <Section title="Garbage & Recycling">
             <GarbageSchedule
-              schedule={data.garbageSchedule}
+              schedule={activeData.garbageSchedule}
               editable={isEditable}
               sessionToken={sessionToken || ''}
               onUpdate={handleUpdate}
@@ -342,11 +531,32 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
 
         {/* Helpful Links */}
         <HelpfulLinks
-          links={data.helpfulLinks}
+          links={activeData.helpfulLinks}
           editable={isEditable}
           sessionToken={sessionToken || ''}
           onUpdate={handleUpdate}
         />
+
+        {/* QR Code Management */}
+        {isEditable && sessionToken && (
+          <Section
+            title="QR Code Access"
+            icon="📱"
+            action={
+              <button
+                className="btn btn-primary"
+                onClick={() => setIsQRCodeManagerOpen(true)}
+                style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
+              >
+                Manage QR Codes
+              </button>
+            }
+          >
+            <div style={{ padding: '0.5rem 0' }}>
+              Generate QR codes for resident access to contact information. Post QR codes in your building for residents to scan.
+            </div>
+          </Section>
+        )}
 
         {/* Settings */}
         {isEditable && (
@@ -364,7 +574,7 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
             }
           >
             <div style={{ padding: '0.5rem 0' }}>
-              <strong>Report Email:</strong> {data.reportEmail}
+              <strong>Report Email:</strong> {activeData.reportEmail}
             </div>
           </Section>
         )}
@@ -431,10 +641,21 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
             title="Site Settings"
           >
             <SettingsForm
-              reportEmail={data.reportEmail}
+              reportEmail={activeData.reportEmail}
               sessionToken={sessionToken}
               onSubmit={handleSettingsSuccess}
               onCancel={() => setIsSettingsModalOpen(false)}
+            />
+          </Modal>
+
+          <Modal
+            isOpen={isQRCodeManagerOpen}
+            onClose={() => setIsQRCodeManagerOpen(false)}
+            title=""
+          >
+            <QRCodeManager
+              sessionToken={sessionToken}
+              onClose={() => setIsQRCodeManagerOpen(false)}
             />
           </Modal>
         </>
