@@ -106,7 +106,7 @@ export function PropertySelector({
         <div style={{ marginTop: '0.5rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
           {properties.find(p => p.id === selectedPropertyId)?.hash && (
             <>
-              URL: {process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/#/
+              URL: {process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/
               {properties.find(p => p.id === selectedPropertyId)?.hash}
             </>
           )}

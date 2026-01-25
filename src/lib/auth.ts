@@ -94,6 +94,14 @@ export function validateSessionToken(token: string | null | undefined): boolean 
 }
 
 /**
+ * Verify admin token (alias for validateSessionToken)
+ * Used by API endpoints for consistency
+ */
+export function verifyAdminToken(token: string | null | undefined): boolean {
+  return validateSessionToken(token);
+}
+
+/**
  * Create a new session after password verification
  * Returns session token or null if password invalid
  */

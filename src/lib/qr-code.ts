@@ -65,9 +65,12 @@ export async function generatePropertyQRCode(
     })
     .returning({ id: accessTokens.id });
 
-  // Build full URL with hash and auth token
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-  const fullUrl = `${baseUrl}/#/${propertyHash}?auth=${token}`;
+  // Build full URL with property hash and auth token
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  if (!baseUrl) {
+    throw new Error('NEXT_PUBLIC_SITE_URL environment variable must be set to generate QR codes');
+  }
+  const fullUrl = `${baseUrl}/${propertyHash}?auth=${token}`;
 
   // Generate QR code image
   const qrCodeDataUrl = await createQRCodeImage(fullUrl);
