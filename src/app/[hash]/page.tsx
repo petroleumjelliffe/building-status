@@ -107,8 +107,10 @@ export default async function PropertyPage({ params }: PropertyPageProps) {
       data={data}
       siteUrl={siteUrl}
       formattedDate={formattedDate}
+      propertyId={property.id}
       propertyHash={params.hash}
       propertyName={property.name}
+      requireAuthForContacts={property.requireAuthForContacts}
     />
   );
 }

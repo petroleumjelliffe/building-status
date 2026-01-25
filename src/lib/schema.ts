@@ -7,9 +7,11 @@ export const properties = pgTable('properties', {
   hash: varchar('hash', { length: 64 }).unique().notNull(), // URL hash e.g., "abc123xyz"
   name: varchar('name', { length: 255 }).notNull(), // Display name e.g., "Riverside Co-op"
   createdAt: timestamp('created_at').defaultNow().notNull(),
+  requireAuthForContacts: boolean('require_auth_for_contacts').default(false).notNull(), // Whether contact info requires authentication
 }, (table) => ({
   propertyIdIdx: index('idx_properties_property_id').on(table.propertyId),
   hashIdx: index('idx_properties_hash').on(table.hash),
+  requireAuthIdx: index('idx_properties_require_auth').on(table.requireAuthForContacts),
 }));
 
 // System status for each building

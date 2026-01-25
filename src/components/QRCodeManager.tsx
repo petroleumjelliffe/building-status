@@ -1,14 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { PropertySelector } from './PropertySelector';
-
-interface Property {
-  id: number;
-  propertyId: string;
-  hash: string;
-  name: string;
-}
 
 interface QRCode {
   id: number;
@@ -23,11 +15,12 @@ interface QRCode {
 interface QRCodeManagerProps {
   sessionToken: string;
   onClose: () => void;
+  propertyId: number;
+  propertyName: string;
+  propertyHash: string;
 }
 
-export function QRCodeManager({ sessionToken, onClose }: QRCodeManagerProps) {
-  const [selectedPropertyId, setSelectedPropertyId] = useState<number | null>(null);
-  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+export function QRCodeManager({ sessionToken, onClose, propertyId, propertyName, propertyHash }: QRCodeManagerProps) {
   const [qrCodes, setQRCodes] = useState<QRCode[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,26 +39,18 @@ export function QRCodeManager({ sessionToken, onClose }: QRCodeManagerProps) {
     label: string;
   } | null>(null);
 
-  // Load QR codes when property is selected
+  // Load QR codes on mount
   useEffect(() => {
-    if (selectedPropertyId) {
-      loadQRCodes();
-    }
-  }, [selectedPropertyId]);
-
-  const handlePropertySelect = (propertyId: number, property: Property) => {
-    setSelectedPropertyId(propertyId);
-    setSelectedProperty(property);
-  };
+    loadQRCodes();
+  }, []);
 
   const loadQRCodes = async () => {
-    if (!selectedPropertyId) return;
 
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch(`/api/admin/qr-codes?propertyId=${selectedPropertyId}`, {
+      const response = await fetch(`/api/admin/qr-codes?propertyId=${propertyId}`, {
         headers: {
           'Authorization': `Bearer ${sessionToken}`,
         },
@@ -88,11 +73,6 @@ export function QRCodeManager({ sessionToken, onClose }: QRCodeManagerProps) {
   const handleGenerateQRCode = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!selectedPropertyId || !selectedProperty) {
-      alert('Please select a property first');
-      return;
-    }
-
     if (!formLabel.trim()) {
       alert('Please enter a label for this QR code');
       return;
@@ -109,7 +89,7 @@ export function QRCodeManager({ sessionToken, onClose }: QRCodeManagerProps) {
           'Authorization': `Bearer ${sessionToken}`,
         },
         body: JSON.stringify({
-          propertyId: selectedPropertyId,
+          propertyId: propertyId,
           label: formLabel.trim(),
           expiresAt: formExpires && formExpiresDate ? new Date(formExpiresDate).toISOString() : null,
         }),
@@ -179,6 +159,34 @@ export function QRCodeManager({ sessionToken, onClose }: QRCodeManagerProps) {
     link.click();
   };
 
+  const handleViewQRCode = async (qrCode: QRCode) => {
+    try {
+      // Regenerate the QR code image
+      const response = await fetch(`/api/admin/qr-codes/${qrCode.id}/regenerate`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${sessionToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to regenerate QR code');
+      }
+
+      const data = await response.json();
+
+      // Show the regenerated QR code
+      setGeneratedQR({
+        qrCodeDataUrl: data.qrCodeDataUrl,
+        fullUrl: data.fullUrl,
+        label: qrCode.label,
+      });
+    } catch (err) {
+      console.error('[QRCodeManager] Error regenerating QR code:', err);
+      setError('Failed to regenerate QR code');
+    }
+  };
+
   return (
     <div className="qr-code-manager" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -188,14 +196,13 @@ export function QRCodeManager({ sessionToken, onClose }: QRCodeManagerProps) {
         </button>
       </div>
 
-      <PropertySelector
-        selectedPropertyId={selectedPropertyId}
-        onPropertySelect={handlePropertySelect}
-        sessionToken={sessionToken}
-      />
-
-      {selectedPropertyId && (
-        <>
+      <div style={{ padding: '1rem', backgroundColor: 'var(--bg-secondary)', borderRadius: '8px' }}>
+        <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Managing QR codes for:</div>
+        <div style={{ fontSize: '1rem', fontWeight: 500, marginTop: '0.25rem' }}>{propertyName}</div>
+        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+          {typeof window !== 'undefined' && process.env.NEXT_PUBLIC_SITE_URL ? process.env.NEXT_PUBLIC_SITE_URL : window?.location?.origin || ''}/{propertyHash}
+        </div>
+      </div>
           {error && (
             <div className="error-message" style={{ color: 'var(--red)', padding: '1rem', backgroundColor: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px' }}>
               {error}
@@ -352,19 +359,26 @@ export function QRCodeManager({ sessionToken, onClose }: QRCodeManagerProps) {
                       {qr.expiresAt && ` • Expires: ${new Date(qr.expiresAt).toLocaleDateString()}`}
                     </div>
                   </div>
-                  <button
-                    onClick={() => handleToggleActive(qr.id, qr.isActive)}
-                    className={qr.isActive ? 'btn btn-secondary' : 'btn btn-primary'}
-                    style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}
-                  >
-                    {qr.isActive ? 'Active' : 'Inactive'}
-                  </button>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button
+                      onClick={() => handleViewQRCode(qr)}
+                      className="btn btn-primary"
+                      style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}
+                    >
+                      View QR
+                    </button>
+                    <button
+                      onClick={() => handleToggleActive(qr.id, qr.isActive)}
+                      className={qr.isActive ? 'btn btn-secondary' : 'btn btn-primary'}
+                      style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}
+                    >
+                      {qr.isActive ? 'Active' : 'Inactive'}
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
           )}
-        </>
-      )}
     </div>
   );
 }

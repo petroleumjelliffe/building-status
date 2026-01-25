@@ -303,6 +303,7 @@ export interface Property {
   hash: string; // URL hash like "abc123xyz"
   name: string; // Display name like "Riverside Co-op"
   createdAt: Date;
+  requireAuthForContacts: boolean; // Whether contact info requires authentication
 }
 
 export interface AccessToken {

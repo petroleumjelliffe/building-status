@@ -31,14 +31,24 @@ interface StatusPageClientProps {
   data: StatusPageData;
   siteUrl: string;
   formattedDate: string;
+  propertyId?: number; // Property database ID
   propertyHash?: string; // Property hash from URL (for session management)
   propertyName?: string; // Property name for display
+  requireAuthForContacts?: boolean; // Whether contact info requires authentication
 }
 
 /**
  * Client wrapper for the status page with authentication and edit mode
  */
-export function StatusPageClient({ data, siteUrl, formattedDate, propertyHash, propertyName }: StatusPageClientProps) {
+export function StatusPageClient({
+  data,
+  siteUrl,
+  formattedDate,
+  propertyId,
+  propertyHash,
+  propertyName,
+  requireAuthForContacts = false
+}: StatusPageClientProps) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [sessionToken, setSessionToken] = useState<string | null>(null);
   const [editMode, setEditMode] = useState(false);
@@ -302,13 +312,8 @@ export function StatusPageClient({ data, siteUrl, formattedDate, propertyHash, p
       </div>
 
       <div className={`container ${editMode ? 'page-container edit-mode' : 'page-container'}`}>
-        {/* Sub-header with edit toggle and updated time */}
+        {/* Sub-header with updated time */}
         <div className="page-subheader">
-          <EditToggle
-            isLoggedIn={isLoggedIn}
-            editMode={editMode}
-            onToggle={handleEditToggle}
-          />
           <div className="updated">
             Updated {formattedDate}
           </div>
@@ -463,7 +468,7 @@ export function StatusPageClient({ data, siteUrl, formattedDate, propertyHash, p
                     editable={isEditable}
                     sessionToken={sessionToken || ''}
                     onUpdate={handleUpdate}
-                    locked={!isLoggedIn && !hasResidentAccess}
+                    locked={requireAuthForContacts && !isLoggedIn && !hasResidentAccess}
                   />
                 ))}
               </div>
@@ -494,7 +499,7 @@ export function StatusPageClient({ data, siteUrl, formattedDate, propertyHash, p
         />
 
         {/* QR Code Management */}
-        {isEditable && sessionToken && (
+        {isEditable && sessionToken && propertyId && propertyHash && (
           <Section
             title="QR Code Access"
             icon="📱"
@@ -612,6 +617,9 @@ export function StatusPageClient({ data, siteUrl, formattedDate, propertyHash, p
             <QRCodeManager
               sessionToken={sessionToken}
               onClose={() => setIsQRCodeManagerOpen(false)}
+              propertyId={propertyId!}
+              propertyName={propertyName || 'Building Status'}
+              propertyHash={propertyHash || ''}
             />
           </Modal>
         </>
@@ -625,6 +633,20 @@ export function StatusPageClient({ data, siteUrl, formattedDate, propertyHash, p
       >
         <CalendarSubscribe siteUrl={siteUrl} />
       </Modal>
+
+      {/* Pinned Edit Toggle */}
+      <div style={{
+        position: 'fixed',
+        bottom: '1rem',
+        right: '1rem',
+        zIndex: 100
+      }}>
+        <EditToggle
+          isLoggedIn={isLoggedIn}
+          editMode={editMode}
+          onToggle={handleEditToggle}
+        />
+      </div>
     </>
   );
 }
