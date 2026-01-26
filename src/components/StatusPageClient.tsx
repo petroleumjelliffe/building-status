@@ -524,6 +524,40 @@ export function StatusPageClient({
           </Section>
         )}
 
+        {/* Print Signs */}
+        {isEditable && propertyHash && (
+          <Section
+            title="Print Signs"
+            icon="🖨️"
+          >
+            <div style={{ padding: '0.5rem 0', marginBottom: '1rem' }}>
+              Generate printable signs with QR codes and building information for posting in common areas or resident fridges.
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  const printUrl = `/print/property-sign/${propertyHash}?type=common&location=Laundry+Room`;
+                  window.open(printUrl, '_blank');
+                }}
+                style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
+              >
+                Common Area Sign
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  const printUrl = `/print/property-sign/${propertyHash}?type=fridge`;
+                  window.open(printUrl, '_blank');
+                }}
+                style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
+              >
+                Fridge/Unit Sign
+              </button>
+            </div>
+          </Section>
+        )}
+
         {/* Settings */}
         {isEditable && (
           <Section
