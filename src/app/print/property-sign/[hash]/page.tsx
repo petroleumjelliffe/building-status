@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { getPropertyByHash } from '@/lib/property';
 import { getStatusData } from '@/lib/queries';
 import { createQRCodeImage } from '@/lib/qr-code';
+import { PrintControls } from '@/components/print/PrintControls';
 import './print.css';
 
 // Force static rendering for print pages
@@ -179,14 +180,7 @@ export default async function PrintPropertySign({ params, searchParams }: PrintS
           </div>
 
           {/* Print Controls - Hidden when printing */}
-          <div className="no-print print-controls">
-            <button onClick={() => window.print()} className="print-button">
-              🖨️ Print Sign
-            </button>
-            <button onClick={() => window.close()} className="close-button">
-              Close
-            </button>
-          </div>
+          <PrintControls />
         </div>
       </body>
     </html>
