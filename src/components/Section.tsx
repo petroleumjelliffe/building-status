@@ -16,8 +16,10 @@ export function Section({ title, icon, action, children, className }: SectionPro
   return (
     <div className={`section ${className || ''}`}>
       <div className="section-header">
-        {icon && <span style={{ marginRight: '0.5rem' }}>{icon}</span>}
-        {title}
+        <span className="section-title">
+          {icon && <span style={{ marginRight: '0.5rem' }}>{icon}</span>}
+          {title}
+        </span>
         {action && <div style={{ marginLeft: 'auto' }}>{action}</div>}
       </div>
       {children}

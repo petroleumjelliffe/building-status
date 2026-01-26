@@ -291,6 +291,11 @@ export function StatusPageClient({
     handleUpdate();
   };
 
+  const handleReportIssue = () => {
+    const mailtoUrl = `mailto:${data.reportEmail}?subject=[Building Status] Issue Report&body=Building:%0A%0AUnit:%0A%0ACategory:%0A%0ADescription:%0A`;
+    window.location.href = mailtoUrl;
+  };
+
   // editable prop = logged in AND edit mode ON
   const isEditable = isLoggedIn && editMode;
 
@@ -370,18 +375,18 @@ export function StatusPageClient({
               <button
                 className="btn btn-secondary"
                 onClick={() => setIsAddIssueModalOpen(true)}
-                style={{ fontSize: '0.875rem', padding: '0.5rem 1rem', textTransform: 'none' }}
+                style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
               >
                 + Add Issue
               </button>
             ) : (
-              <a
-                href={`mailto:${data.reportEmail}?subject=[Building Status] Issue Report&body=Building:%0A%0AUnit:%0A%0ACategory:%0A%0ADescription:%0A`}
+              <button
                 className="btn btn-secondary"
-                style={{ fontSize: '0.875rem', padding: '0.5rem 1rem', textDecoration: 'none', textTransform: 'none' }}
+                onClick={handleReportIssue}
+                style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
               >
                 📝 Report issue
-              </a>
+              </button>
             )
           }
         >
@@ -410,7 +415,7 @@ export function StatusPageClient({
               <button
                 className="btn btn-secondary"
                 onClick={() => setIsAddEventModalOpen(true)}
-                style={{ fontSize: '0.875rem', padding: '0.5rem 1rem', textTransform: 'none' }}
+                style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
               >
                 + Add Event
               </button>
@@ -418,7 +423,7 @@ export function StatusPageClient({
               <button
                 className="btn btn-secondary"
                 onClick={() => setIsCalendarSubscribeOpen(true)}
-                style={{ fontSize: '0.875rem', padding: '0.5rem 1rem', textTransform: 'none' }}
+                style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
               >
                 📅 Subscribe
               </button>
@@ -452,7 +457,7 @@ export function StatusPageClient({
                 <button
                   className="btn btn-secondary"
                   onClick={() => setIsAddContactModalOpen(true)}
-                  style={{ fontSize: '0.875rem', padding: '0.5rem 1rem', textTransform: 'none' }}
+                  style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
                 >
                   + Add Contact
                 </button>
@@ -528,7 +533,7 @@ export function StatusPageClient({
               <button
                 className="btn btn-secondary"
                 onClick={() => setIsSettingsModalOpen(true)}
-                style={{ fontSize: '0.875rem', padding: '0.5rem 1rem', textTransform: 'none' }}
+                style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
               >
                 Edit
               </button>

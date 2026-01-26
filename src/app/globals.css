@@ -166,13 +166,16 @@ h1 {
   font-size: 0.7rem;
   font-weight: 500;
   letter-spacing: 0.1em;
-  text-transform: uppercase;
   color: var(--text-muted);
   margin-bottom: 0.75rem;
   padding-left: 0.25rem;
   display: flex;
   align-items: center;
   gap: 1rem;
+}
+
+.section-title {
+  text-transform: uppercase;
 }
 
 .status-row {
