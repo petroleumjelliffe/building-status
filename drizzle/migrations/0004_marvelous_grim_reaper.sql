@@ -1,0 +1,2 @@
+ALTER TABLE "properties" ADD COLUMN "require_auth_for_contacts" boolean DEFAULT false NOT NULL;--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idx_properties_require_auth" ON "properties" USING btree ("require_auth_for_contacts");

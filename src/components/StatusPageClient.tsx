@@ -24,18 +24,31 @@ import { ContactForm } from './ContactForm';
 import { CalendarSubscribe } from './CalendarSubscribe';
 import { EmptyState } from './EmptyState';
 import { SettingsForm } from './SettingsForm';
+import { QRCodeManager } from './QRCodeManager';
 import { getSession, clearSession, getEditMode, setEditMode as saveEditMode } from '@/lib/session';
 
 interface StatusPageClientProps {
   data: StatusPageData;
   siteUrl: string;
   formattedDate: string;
+  propertyId?: number; // Property database ID
+  propertyHash?: string; // Property hash from URL (for session management)
+  propertyName?: string; // Property name for display
+  requireAuthForContacts?: boolean; // Whether contact info requires authentication
 }
 
 /**
  * Client wrapper for the status page with authentication and edit mode
  */
-export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageClientProps) {
+export function StatusPageClient({
+  data,
+  siteUrl,
+  formattedDate,
+  propertyId,
+  propertyHash,
+  propertyName,
+  requireAuthForContacts = false
+}: StatusPageClientProps) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [sessionToken, setSessionToken] = useState<string | null>(null);
   const [editMode, setEditMode] = useState(false);
@@ -45,7 +58,145 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
   const [isAddContactModalOpen, setIsAddContactModalOpen] = useState(false);
   const [isCalendarSubscribeOpen, setIsCalendarSubscribeOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isQRCodeManagerOpen, setIsQRCodeManagerOpen] = useState(false);
+
+  // Resident access state (via QR code)
+  const [hasResidentAccess, setHasResidentAccess] = useState(false);
+  const [residentSessionToken, setResidentSessionToken] = useState<string | null>(null);
+
   const router = useRouter();
+
+  // Check for ?auth= parameter on mount (QR code scan)
+  useEffect(() => {
+    if (!propertyHash) return; // Only process auth for property-specific pages
+
+    const handleAuthToken = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const authToken = params.get('auth');
+
+      if (authToken) {
+        console.log('[StatusPageClient] Found auth token in URL, storing and redirecting...');
+
+        // Store the auth token temporarily
+        sessionStorage.setItem('pending_auth_token', authToken);
+        sessionStorage.setItem('pending_auth_hash', propertyHash);
+
+        // Immediately redirect to clean URL
+        const cleanUrl = window.location.pathname;
+        window.location.replace(cleanUrl);
+        return; // Stop execution, page will reload
+      }
+
+      // Check for pending auth token from redirect
+      const pendingToken = sessionStorage.getItem('pending_auth_token');
+      const pendingHash = sessionStorage.getItem('pending_auth_hash');
+
+      if (pendingToken && pendingHash && pendingHash === propertyHash) {
+        console.log('[StatusPageClient] Processing pending auth token...');
+
+        // Clear pending items
+        sessionStorage.removeItem('pending_auth_token');
+        sessionStorage.removeItem('pending_auth_hash');
+
+        try {
+          const response = await fetch('/api/resident/access/validate', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              accessToken: pendingToken,
+              propertyHash: pendingHash,
+            }),
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            console.log('[StatusPageClient] Auth token validated, session created');
+
+            // Store session token in localStorage (property-specific)
+            const sessionKey = `resident_session_${pendingHash}`;
+            localStorage.setItem(sessionKey, JSON.stringify({
+              sessionToken: result.sessionToken,
+              propertyId: result.propertyId,
+              expiresAt: result.expiresAt,
+            }));
+
+            // Update state
+            setResidentSessionToken(result.sessionToken);
+            setHasResidentAccess(true);
+
+            // Reload to show unlocked contacts
+            window.location.reload();
+          } else {
+            console.error('[StatusPageClient] Auth token validation failed:', result.error);
+          }
+        } catch (error) {
+          console.error('[StatusPageClient] Error validating auth token:', error);
+        }
+      }
+    };
+
+    handleAuthToken();
+  }, [propertyHash]);
+
+  // Check for existing resident session on mount
+  useEffect(() => {
+    if (!propertyHash) return; // Only check session for property-specific pages
+
+    const checkResidentSession = async () => {
+      const sessionKey = `resident_session_${propertyHash}`;
+      const sessionDataStr = localStorage.getItem(sessionKey);
+
+      if (!sessionDataStr) {
+        setHasResidentAccess(false);
+        setResidentSessionToken(null);
+        return;
+      }
+
+      try {
+        const sessionData = JSON.parse(sessionDataStr);
+
+        // Check expiration client-side first
+        if (new Date(sessionData.expiresAt) < new Date()) {
+          console.log('[StatusPageClient] Resident session expired');
+          localStorage.removeItem(sessionKey);
+          setHasResidentAccess(false);
+          setResidentSessionToken(null);
+          return;
+        }
+
+        // Validate with server
+        const response = await fetch('/api/resident/access/status', {
+          headers: {
+            'Authorization': `Bearer ${sessionData.sessionToken}`,
+          },
+        });
+
+        const result = await response.json();
+
+        if (result.hasAccess) {
+          console.log('[StatusPageClient] Resident session valid');
+          setResidentSessionToken(sessionData.sessionToken);
+          setHasResidentAccess(true);
+        } else {
+          console.log('[StatusPageClient] Resident session invalid');
+          localStorage.removeItem(sessionKey);
+          setHasResidentAccess(false);
+          setResidentSessionToken(null);
+        }
+      } catch (error) {
+        console.error('[StatusPageClient] Error checking resident session:', error);
+        localStorage.removeItem(sessionKey);
+        setHasResidentAccess(false);
+        setResidentSessionToken(null);
+      }
+    };
+
+    checkResidentSession();
+  }, [propertyHash]);
+
 
   // Check for existing session on mount
   useEffect(() => {
@@ -61,9 +212,9 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
         headers: { 'Authorization': `Bearer ${session.token}` }
       })
         .then(res => res.json())
-        .then(data => {
-          console.log('[StatusPageClient] Token verification result:', data);
-          if (data.valid) {
+        .then(authData => {
+          console.log('[StatusPageClient] Token verification result:', authData);
+          if (authData.valid) {
             setIsLoggedIn(true);
             setSessionToken(session.token);
           } else {
@@ -143,12 +294,15 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
   // editable prop = logged in AND edit mode ON
   const isEditable = isLoggedIn && editMode;
 
+  // Display title: use property name if available, otherwise default
+  const displayTitle = propertyName || 'Building Status';
+
   return (
     <>
       {/* Pinned Title Bar */}
       <div className="title-bar">
         <div className="title-bar-content">
-          <h1>Building Status</h1>
+          <h1>{displayTitle}</h1>
           <HamburgerMenu
             isLoggedIn={isLoggedIn}
             onLoginClick={() => setIsLoginModalOpen(true)}
@@ -158,13 +312,8 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
       </div>
 
       <div className={`container ${editMode ? 'page-container edit-mode' : 'page-container'}`}>
-        {/* Sub-header with edit toggle and updated time */}
+        {/* Sub-header with updated time */}
         <div className="page-subheader">
-          <EditToggle
-            isLoggedIn={isLoggedIn}
-            editMode={editMode}
-            onToggle={handleEditToggle}
-          />
           <div className="updated">
             Updated {formattedDate}
           </div>
@@ -319,6 +468,7 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
                     editable={isEditable}
                     sessionToken={sessionToken || ''}
                     onUpdate={handleUpdate}
+                    locked={requireAuthForContacts && !isLoggedIn && !hasResidentAccess}
                   />
                 ))}
               </div>
@@ -347,6 +497,27 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
           sessionToken={sessionToken || ''}
           onUpdate={handleUpdate}
         />
+
+        {/* QR Code Management */}
+        {isEditable && sessionToken && propertyId && propertyHash && (
+          <Section
+            title="QR Code Access"
+            icon="📱"
+            action={
+              <button
+                className="btn btn-primary"
+                onClick={() => setIsQRCodeManagerOpen(true)}
+                style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
+              >
+                Manage QR Codes
+              </button>
+            }
+          >
+            <div style={{ padding: '0.5rem 0' }}>
+              Generate QR codes for resident access to contact information. Post QR codes in your building for residents to scan.
+            </div>
+          </Section>
+        )}
 
         {/* Settings */}
         {isEditable && (
@@ -437,6 +608,20 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
               onCancel={() => setIsSettingsModalOpen(false)}
             />
           </Modal>
+
+          <Modal
+            isOpen={isQRCodeManagerOpen}
+            onClose={() => setIsQRCodeManagerOpen(false)}
+            title=""
+          >
+            <QRCodeManager
+              sessionToken={sessionToken}
+              onClose={() => setIsQRCodeManagerOpen(false)}
+              propertyId={propertyId!}
+              propertyName={propertyName || 'Building Status'}
+              propertyHash={propertyHash || ''}
+            />
+          </Modal>
         </>
       )}
 
@@ -448,6 +633,20 @@ export function StatusPageClient({ data, siteUrl, formattedDate }: StatusPageCli
       >
         <CalendarSubscribe siteUrl={siteUrl} />
       </Modal>
+
+      {/* Pinned Edit Toggle */}
+      <div style={{
+        position: 'fixed',
+        bottom: '1rem',
+        right: '1rem',
+        zIndex: 100
+      }}>
+        <EditToggle
+          isLoggedIn={isLoggedIn}
+          editMode={editMode}
+          onToggle={handleEditToggle}
+        />
+      </div>
     </>
   );
 }
