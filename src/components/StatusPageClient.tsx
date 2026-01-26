@@ -380,7 +380,7 @@ export function StatusPageClient({
                 className="btn btn-secondary"
                 style={{ fontSize: '0.875rem', padding: '0.5rem 1rem', textDecoration: 'none' }}
               >
-                Report Issue
+                📝 Report issue
               </a>
             )
           }
@@ -480,7 +480,7 @@ export function StatusPageClient({
 
         {/* Garbage Schedule */}
         {data.garbageSchedule && (
-          <Section title="Garbage & Recycling">
+          <Section title="Waste Collection Schedule">
             <GarbageSchedule
               schedule={data.garbageSchedule}
               editable={isEditable}

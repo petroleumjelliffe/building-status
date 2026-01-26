@@ -52,7 +52,7 @@ export function GarbageSchedule({ schedule, editable, sessionToken, onUpdate }: 
           </Card>
 
           <Card variant="garbage">
-            <div className="garbage-type">♻️ Recycling</div>
+            <div className="garbage-type">♻️ Recycling & Compost</div>
             <div className="garbage-days">{schedule.recycling.days.join(', ')}</div>
             {schedule.recycling.time && (
               <div className="garbage-time">{schedule.recycling.time}</div>
