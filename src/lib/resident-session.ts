@@ -1,7 +1,7 @@
 import { randomBytes } from 'crypto';
 import { db } from './db';
 import { residentSessions } from './schema';
-import { eq, and, gte } from 'drizzle-orm';
+import { eq, and, gte, lte } from 'drizzle-orm';
 
 /**
  * Generate a session token
@@ -99,7 +99,7 @@ export async function invalidateResidentSession(sessionToken: string): Promise<v
 export async function cleanupExpiredSessions(): Promise<void> {
   await db
     .delete(residentSessions)
-    .where(gte(new Date(), residentSessions.expiresAt));
+    .where(lte(residentSessions.expiresAt, new Date()));
 }
 
 /**

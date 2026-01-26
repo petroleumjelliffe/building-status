@@ -148,6 +148,7 @@ export async function getAccessTokensForProperty(propertyId: number) {
   return await db
     .select({
       id: accessTokens.id,
+      propertyId: accessTokens.propertyId,
       token: accessTokens.token,
       label: accessTokens.label,
       isActive: accessTokens.isActive,
