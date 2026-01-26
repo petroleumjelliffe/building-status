@@ -39,6 +39,7 @@ export default async function PrintPropertySign({ params, searchParams }: PrintS
     <html lang="en">
       <head>
         <meta charSet="utf-8" />
+        <meta name="format-detection" content="telephone=no,email=no,address=no" />
         <title>Print Sign - {property.name}</title>
       </head>
       <body className="print-body">
