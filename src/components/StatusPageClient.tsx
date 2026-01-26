@@ -370,7 +370,7 @@ export function StatusPageClient({
               <button
                 className="btn btn-secondary"
                 onClick={() => setIsAddIssueModalOpen(true)}
-                style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
+                style={{ fontSize: '0.875rem', padding: '0.5rem 1rem', textTransform: 'none' }}
               >
                 + Add Issue
               </button>
@@ -378,7 +378,7 @@ export function StatusPageClient({
               <a
                 href={`mailto:${data.reportEmail}?subject=[Building Status] Issue Report&body=Building:%0A%0AUnit:%0A%0ACategory:%0A%0ADescription:%0A`}
                 className="btn btn-secondary"
-                style={{ fontSize: '0.875rem', padding: '0.5rem 1rem', textDecoration: 'none' }}
+                style={{ fontSize: '0.875rem', padding: '0.5rem 1rem', textDecoration: 'none', textTransform: 'none' }}
               >
                 📝 Report issue
               </a>
@@ -410,7 +410,7 @@ export function StatusPageClient({
               <button
                 className="btn btn-secondary"
                 onClick={() => setIsAddEventModalOpen(true)}
-                style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
+                style={{ fontSize: '0.875rem', padding: '0.5rem 1rem', textTransform: 'none' }}
               >
                 + Add Event
               </button>
@@ -418,7 +418,7 @@ export function StatusPageClient({
               <button
                 className="btn btn-secondary"
                 onClick={() => setIsCalendarSubscribeOpen(true)}
-                style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
+                style={{ fontSize: '0.875rem', padding: '0.5rem 1rem', textTransform: 'none' }}
               >
                 📅 Subscribe
               </button>
@@ -452,7 +452,7 @@ export function StatusPageClient({
                 <button
                   className="btn btn-secondary"
                   onClick={() => setIsAddContactModalOpen(true)}
-                  style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
+                  style={{ fontSize: '0.875rem', padding: '0.5rem 1rem', textTransform: 'none' }}
                 >
                   + Add Contact
                 </button>
@@ -528,7 +528,7 @@ export function StatusPageClient({
               <button
                 className="btn btn-secondary"
                 onClick={() => setIsSettingsModalOpen(true)}
-                style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
+                style={{ fontSize: '0.875rem', padding: '0.5rem 1rem', textTransform: 'none' }}
               >
                 Edit
               </button>
