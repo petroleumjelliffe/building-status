@@ -28,7 +28,7 @@ This document establishes how the board communicates with shareholders and resid
 
 **Physical Postings**
 - Lobby bulletin board for official notices
-- Elevator notices for urgent or time-sensitive items
+- Lobby notices for urgent or time-sensitive items
 - Laundry room postings for relevant operational info
 - QR codes linking to status page for digital access
 
@@ -47,7 +47,7 @@ This document establishes how the board communicates with shareholders and resid
 
 | Message Type | Primary Channel | Secondary Channel | Physical Posting |
 |--------------|-----------------|-------------------|------------------|
-| Emergency/Safety | WhatsApp + Status Page | Email | Elevator + Lobby |
+| Emergency/Safety | WhatsApp + Status Page | Email | Lobby |
 | System Outage | Status Page | WhatsApp | As needed |
 | Scheduled Maintenance | Status Page + Email | WhatsApp reminder | Lobby |
 | Board Meetings | Email | WhatsApp reminder | Lobby |
@@ -114,7 +114,7 @@ Residents can customize how they receive building updates by subscribing to the 
 
 ### Urgent Communications (Immediate)
 - Safety issues (gas leak, fire alarm, security concern)
-- Utility outages (water, heat, electric, elevator)
+- Utility outages (water, heat, electric)
 - Building access issues (front door, intercom)
 
 *Response time: Immediate posting to status page and WhatsApp, email within 1 hour, physical posting as situation allows.*
@@ -156,7 +156,7 @@ Residents can customize how they receive building updates by subscribing to the 
 ## Status Page Architecture
 
 ### Monitored Systems (Assets)
-- Elevator
+
 - Boiler/Heat
 - Hot Water
 - Laundry Room (washers, dryers)
@@ -180,7 +180,7 @@ Residents can customize how they receive building updates by subscribing to the 
 7. Post-incident summary (for significant issues)
 
 ### Integration Points
-- **Text/SMS**: Query status ("text ELEVATOR to get current status"), receive subscribed alerts, board members can post updates
+- **Text/SMS**: Query status ("text WATER to get current status"), receive subscribed alerts, board members can post updates
 - **WhatsApp**: Group chat for community discussion, manual status updates for major incidents
 - **Calendar feed (ICS)**: Subscribe to scheduled maintenance, board meetings, social events, inspections
 - **Email**: Subscribed alerts and reminders, newsletter, formal notices

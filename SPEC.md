@@ -245,7 +245,7 @@ The page dynamically updates its social sharing preview image based on current s
 - Emoji icons for quick visual recognition
 
 **Enhancement Opportunities:**
-- Add more systems (elevator, electricity, internet, garbage collection)
+- Add more systems (electricity, internet, garbage collection)
 - Show individual building status if multi-building complex
 - Toggle between summary and detailed view
 
@@ -843,7 +843,7 @@ The page dynamically updates its social sharing preview image based on current s
 ### Should Have (v1.1)
 - [ ] Contact preferences in form
 - [ ] Printable version
-- [ ] More system types (elevator, etc.)
+- [ ] More system types (additional utilities)
 - [ ] Issue reference numbers
 - [ ] Auto-expiring announcements
 

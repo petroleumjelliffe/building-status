@@ -89,13 +89,13 @@ export default async function PrintPropertySign({ params, searchParams }: PrintS
                   <span style={{ fontWeight: 700, color: 'var(--black)' }}>→ </span>Heat & Water
                 </span>
                 <span style={{ display: 'inline-block', marginRight: '0.2in' }}>
-                  <span style={{ fontWeight: 700, color: 'var(--black)' }}>→ </span>Elevator
-                </span>
-                <span style={{ display: 'inline-block', marginRight: '0.2in' }}>
                   <span style={{ fontWeight: 700, color: 'var(--black)' }}>→ </span>Report Issues
                 </span>
                 <span style={{ display: 'inline-block', marginRight: '0.2in' }}>
                   <span style={{ fontWeight: 700, color: 'var(--black)' }}>→ </span>Events
+                </span>
+                <span style={{ display: 'inline-block', marginRight: '0.2in' }}>
+                  <span style={{ fontWeight: 700, color: 'var(--black)' }}>→ </span>Contacts
                 </span>
               </div>
             </div>

@@ -45,7 +45,7 @@ https://[domain]/[property-hash]?unit=4A&utm_source=unit_qr&utm_medium=print&utm
 ### 2. Public/Common Area QR Codes
 
 **Actor**: Building Manager
-**Goal**: Post QR codes in laundry room, lobby, elevator for general access
+**Goal**: Post QR codes in laundry room, lobby for general access
 
 **Flow**:
 1. Manager generates "Public" QR code

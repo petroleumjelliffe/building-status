@@ -8,7 +8,7 @@ A lightweight status page for self-managed co-ops. No apps to install, no accoun
 
 **Building type:** Self-managed co-ops, 10-60 units
 **Board members:** Volunteers, not tech professionals, already overwhelmed
-**Residents:** Won't install another app, already on WhatsApp/Signal, just want to know when the elevator will be fixed
+**Residents:** Won't install another app, already on WhatsApp/Signal, just want to know when the water will be back
 
 ## Design Principles
 
@@ -28,13 +28,13 @@ A lightweight status page for self-managed co-ops. No apps to install, no accoun
 - Contact info (super, management)
 
 **System** (the things that can be up or down)
-- Name (Elevator, Hot Water, Boiler/Heat, Laundry Room, Intercom, etc.)
+- Name (Hot Water, Boiler/Heat, Laundry Room, Intercom, etc.)
 - Current status: `operational` | `degraded` | `outage` | `maintenance`
 - Last updated timestamp
 
 **Incident**
 - Linked to one or more systems
-- Title (e.g., "Elevator out of service")
+- Title (e.g., "Hot water outage")
 - Severity: `minor` | `major` | `critical`
 - Status: `investigating` | `identified` | `scheduled` | `in_progress` | `resolved`
 - Updates (timestamped log of progress)
@@ -81,8 +81,8 @@ URL: `status.lindenheights.coop` or `buildingstatus.app/linden-heights`
 Text "STATUS" to (555) 123-4567
 → "Linden Heights Status: All systems operational. Upcoming: Boiler inspection Thu 1/18 9am-12pm. View: status.lindenheights.coop"
 
-Text "ELEVATOR" to (555) 123-4567  
-→ "Elevator: OUTAGE since Jan 15 2pm. Vendor scheduled Jan 16 morning. Updates: status.lindenheights.coop/incidents/123"
+Text "WATER" to (555) 123-4567  
+→ "Water: OUTAGE since Jan 15 2pm. Vendor scheduled Jan 16 morning. Updates: status.lindenheights.coop/incidents/123"
 
 Text "SUBSCRIBE" to (555) 123-4567
 → "You're subscribed to Linden Heights alerts. Reply STOP to unsubscribe, PREFS to change settings."
@@ -90,13 +90,13 @@ Text "SUBSCRIBE" to (555) 123-4567
 
 **For board members (update):**
 ```
-Text "ELEVATOR OUT waiting for vendor"
-→ "Created incident: Elevator outage. Status page updated. 38 subscribers notified."
+Text "WATER OUT waiting for plumber"
+→ "Created incident: Water outage. Status page updated. 38 subscribers notified."
 
-Text "ELEVATOR UPDATE vendor on site, eta 2 hours"
+Text "WATER UPDATE plumber on site, eta 2 hours"
 → "Incident updated. 38 subscribers notified."
 
-Text "ELEVATOR RESOLVED"
+Text "WATER RESOLVED"
 → "Incident resolved. Duration: 6 hours. 38 subscribers notified."
 ```
 
@@ -277,7 +277,7 @@ interface BoardMember {
 
 - Board members actually use it to post updates
 - Residents check the page or subscribe
-- Reduction in "is the elevator fixed yet?" messages in WhatsApp group
+- Reduction in "is the water back yet?" messages in WhatsApp group
 - Board finds it less effort than current approach
 
 ## Open Questions
