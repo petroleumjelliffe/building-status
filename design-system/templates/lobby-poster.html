@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Building Status - Lobby Poster</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    @page {
+      size: letter portrait;
+      margin: 0;
+    }
+
+    @media print {
+      body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
+
+    :root {
+      --black: #1a1a1a;
+      --white: #ffffff;
+      --gray: #666666;
+      --gray-light: #f5f5f5;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: #e5e5e5;
+      color: var(--black);
+      line-height: 1.3;
+    }
+
+    .page {
+      width: 8.5in;
+      height: 11in;
+      padding: 0.5in;
+      background: var(--white);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding-bottom: 0.2in;
+      border-bottom: 2px solid var(--black);
+      margin-bottom: 0.35in;
+    }
+
+    .building-identity {
+    }
+
+    .building-name {
+      font-size: 36pt;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 0.95;
+    }
+
+    .building-address {
+      font-size: 10pt;
+      color: var(--gray);
+      margin-top: 6px;
+    }
+
+    .logo-placeholder {
+      width: 0.8in;
+      height: 0.8in;
+      background: var(--gray-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9pt;
+      color: var(--gray);
+    }
+
+    /* QR Hero */
+    .qr-hero {
+      display: flex;
+      gap: 0.4in;
+      align-items: flex-start;
+      margin-bottom: 0.35in;
+      padding-bottom: 0.35in;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .qr-code {
+      width: 2.4in;
+      height: 2.4in;
+      background: var(--gray-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11pt;
+      font-weight: 600;
+      color: var(--gray);
+      flex-shrink: 0;
+    }
+
+    .qr-content {
+      flex: 1;
+      padding-top: 0.1in;
+    }
+
+    .qr-headline {
+      font-size: 28pt;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 0.15in;
+    }
+
+    .qr-subline {
+      font-size: 11pt;
+      color: var(--gray);
+      line-height: 1.4;
+      margin-bottom: 0.2in;
+    }
+
+    .qr-url {
+      font-size: 18pt;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+
+    .qr-features {
+      margin-top: 0.2in;
+      font-size: 10pt;
+      color: var(--gray);
+    }
+
+    .qr-features span {
+      display: inline-block;
+      margin-right: 0.2in;
+    }
+
+    .qr-features span::before {
+      content: "→ ";
+      font-weight: 700;
+      color: var(--black);
+    }
+
+    /* Info Grid */
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.35in;
+      flex: 1;
+    }
+
+    .info-section {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .section-label {
+      font-size: 8pt;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--gray);
+      margin-bottom: 0.12in;
+      padding-bottom: 0.08in;
+      border-bottom: 1px solid #ddd;
+    }
+
+    /* Contacts */
+    .contact-item {
+      margin-bottom: 0.15in;
+    }
+
+    .contact-name {
+      font-size: 9pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      margin-bottom: 2px;
+    }
+
+    .contact-value {
+      font-size: 18pt;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+
+    .contact-value.email {
+      font-size: 10pt;
+      font-weight: 600;
+    }
+
+    .contact-meta {
+      font-size: 9pt;
+      color: var(--gray);
+    }
+
+    /* Waste */
+    .waste-grid {
+      display: flex;
+      gap: 0.15in;
+      margin-bottom: 0.1in;
+    }
+
+    .waste-item {
+      flex: 1;
+      text-align: center;
+      padding: 0.12in;
+      background: var(--gray-light);
+    }
+
+    .waste-type {
+      font-size: 8pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      margin-bottom: 2px;
+    }
+
+    .waste-days {
+      font-size: 14pt;
+      font-weight: 800;
+    }
+
+    .waste-note {
+      font-size: 9pt;
+      color: var(--gray);
+      font-style: italic;
+    }
+
+    /* Links */
+    .link-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 0.1in 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .link-item:last-child {
+      border-bottom: none;
+    }
+
+    .link-name {
+      font-size: 11pt;
+      font-weight: 700;
+    }
+
+    .link-url {
+      font-size: 9pt;
+      color: var(--gray);
+    }
+
+    /* Tips */
+    .tips-list {
+      list-style: none;
+    }
+
+    .tips-list li {
+      font-size: 10pt;
+      padding: 0.06in 0;
+      padding-left: 1em;
+      position: relative;
+    }
+
+    .tips-list li::before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      font-weight: 700;
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: auto;
+      padding-top: 0.15in;
+      border-top: 1px solid #ddd;
+      display: flex;
+      justify-content: space-between;
+      font-size: 8pt;
+      color: var(--gray);
+    }
+
+    .footer-location::before {
+      content: "📍 ";
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <!-- Header -->
+    <header class="header">
+      <div class="building-identity">
+        <h1 class="building-name">Linden Heights</h1>
+        <p class="building-address">123 Linden Boulevard, Brooklyn NY 11226</p>
+      </div>
+      <div class="logo-placeholder">Logo</div>
+    </header>
+
+    <!-- QR Hero -->
+    <section class="qr-hero">
+      <div class="qr-code">[QR]</div>
+      <div class="qr-content">
+        <h2 class="qr-headline">Building Status</h2>
+        <p class="qr-subline">Check system status, report issues, view events, and access emergency contacts.</p>
+        <p class="qr-url">lh.app/billy</p>
+        <p class="qr-features">
+          <span>Heat & Water</span>
+          <span>Elevator</span>
+          <span>Report Issues</span>
+          <span>Events</span>
+        </p>
+      </div>
+    </section>
+
+    <!-- Info Grid -->
+    <div class="info-grid">
+      <!-- Emergency Contacts -->
+      <section class="info-section">
+        <h3 class="section-label">Emergency Contacts</h3>
+        <div class="contact-item">
+          <p class="contact-name">Building Super</p>
+          <p class="contact-value">555-123-4567</p>
+          <p class="contact-meta">Mon–Fri 9am–5pm</p>
+        </div>
+        <div class="contact-item">
+          <p class="contact-name">Laundry (Sebco)</p>
+          <p class="contact-value">800-111-2222</p>
+          <p class="contact-meta">Mon–Fri 9am–5pm</p>
+        </div>
+        <div class="contact-item">
+          <p class="contact-name">Board</p>
+          <p class="contact-value email">board@lindenheights.org</p>
+        </div>
+      </section>
+
+      <!-- Waste Collection -->
+      <section class="info-section">
+        <h3 class="section-label">Waste Collection</h3>
+        <div class="waste-grid">
+          <div class="waste-item">
+            <p class="waste-type">Trash</p>
+            <p class="waste-days">Tu / Fr</p>
+          </div>
+          <div class="waste-item">
+            <p class="waste-type">Recycle</p>
+            <p class="waste-days">Fri</p>
+          </div>
+          <div class="waste-item">
+            <p class="waste-type">Compost</p>
+            <p class="waste-days">Fri</p>
+          </div>
+        </div>
+        <p class="waste-note">Set out by 7am on collection day</p>
+      </section>
+
+      <!-- Quick Links -->
+      <section class="info-section">
+        <h3 class="section-label">Quick Links</h3>
+        <div class="link-item">
+          <span class="link-name">Residents WhatsApp</span>
+          <span class="link-url">chat.whatsapp.com/abc</span>
+        </div>
+        <div class="link-item">
+          <span class="link-name">Bike Room Registration</span>
+          <span class="link-url">forms.gle/xyz</span>
+        </div>
+        <div class="link-item">
+          <span class="link-name">Pay Rent Online</span>
+          <span class="link-url">portal.example.com</span>
+        </div>
+      </section>
+
+      <!-- Tips -->
+      <section class="info-section">
+        <h3 class="section-label">Quick Tips</h3>
+        <ul class="tips-list">
+          <li>Check status page before reporting an issue</li>
+          <li>Subscribe to calendar for event reminders</li>
+          <li>Bookmark the page for quick access</li>
+          <li>Report issues through the app for faster response</li>
+        </ul>
+      </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <span class="footer-location">Posted in Laundry Room</span>
+      <span>Generated January 2026</span>
+    </footer>
+  </div>
+</body>
+</html>

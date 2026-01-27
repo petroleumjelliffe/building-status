@@ -8,6 +8,21 @@ import './print.css';
 // Force static rendering for print pages
 export const dynamic = 'force-dynamic';
 
+// Helper function to format days like "Tu / Fr"
+function formatDaysShort(days: string[]): string {
+  const dayMap: Record<string, string> = {
+    'Monday': 'Mon',
+    'Tuesday': 'Tu',
+    'Wednesday': 'Wed',
+    'Thursday': 'Thu',
+    'Friday': 'Fri',
+    'Saturday': 'Sat',
+    'Sunday': 'Sun'
+  };
+
+  return days.map(day => dayMap[day] || day.substring(0, 3)).join(' / ');
+}
+
 interface PrintSignPageProps {
   params: {
     hash: string;
@@ -45,13 +60,15 @@ export default async function PrintPropertySign({ params, searchParams }: PrintS
       <body className="print-body">
         <div className="property-sign">
           {/* Header */}
-          <div className="sign-header">
-            <h1 className="property-name">{property.name}</h1>
-            <div className="sign-subtitle">Building Status & Information</div>
-          </div>
+          <header className="sign-header">
+            <div className="building-identity">
+              <h1 className="property-name">{property.name}</h1>
+              <p className="building-address">{property.address || ''}</p>
+            </div>
+          </header>
 
-          {/* QR Code Section */}
-          <div className="qr-section">
+          {/* QR Hero Section */}
+          <section className="qr-section">
             <div className="qr-code-container">
               <img
                 src={qrCodeDataUrl}
@@ -60,18 +77,29 @@ export default async function PrintPropertySign({ params, searchParams }: PrintS
               />
             </div>
             <div className="qr-instructions">
-              <div className="instruction-title">Scan for Quick Access</div>
-              <ul className="instruction-list">
-                <li>Check building systems status</li>
-                <li>Report maintenance issues</li>
-                <li>View upcoming events</li>
-                <li>Access emergency contacts</li>
-              </ul>
-              <div className="url-fallback">
-                Or visit: <span className="url">{propertyUrl.replace('https://', '').replace('http://', '')}</span>
+              <h2 className="instruction-title">Building Status</h2>
+              <p style={{ fontSize: '11pt', color: 'var(--gray)', lineHeight: 1.4, marginBottom: '0.2in' }}>
+                Check system status, report issues, view events, and access emergency contacts.
+              </p>
+              <p className="url-fallback">
+                <span className="url">{propertyUrl.replace('https://', '').replace('http://', '')}</span>
+              </p>
+              <div style={{ marginTop: '0.2in', fontSize: '10pt', color: 'var(--gray)' }}>
+                <span style={{ display: 'inline-block', marginRight: '0.2in' }}>
+                  <span style={{ fontWeight: 700, color: 'var(--black)' }}>→ </span>Heat & Water
+                </span>
+                <span style={{ display: 'inline-block', marginRight: '0.2in' }}>
+                  <span style={{ fontWeight: 700, color: 'var(--black)' }}>→ </span>Elevator
+                </span>
+                <span style={{ display: 'inline-block', marginRight: '0.2in' }}>
+                  <span style={{ fontWeight: 700, color: 'var(--black)' }}>→ </span>Report Issues
+                </span>
+                <span style={{ display: 'inline-block', marginRight: '0.2in' }}>
+                  <span style={{ fontWeight: 700, color: 'var(--black)' }}>→ </span>Events
+                </span>
               </div>
             </div>
-          </div>
+          </section>
 
           {/* Two Column Layout */}
           <div className="info-grid">
@@ -79,106 +107,95 @@ export default async function PrintPropertySign({ params, searchParams }: PrintS
             <div className="info-column">
               {/* Emergency Contacts */}
               {data.contacts && data.contacts.length > 0 && (
-                <div className="info-section">
-                  <h2 className="section-title">📞 Emergency Contacts</h2>
+                <section className="info-section">
+                  <h3 className="section-title">Emergency Contacts</h3>
                   <div className="contacts-list">
                     {data.contacts.slice(0, 3).map((contact, idx) => (
                       <div key={idx} className="contact-item">
-                        <div className="contact-label">{contact.label}</div>
+                        <p className="contact-label">{contact.label}</p>
                         {contact.phone && (
-                          <div className="contact-phone">{contact.phone}</div>
+                          <p className="contact-phone">{contact.phone}</p>
                         )}
                         {contact.email && (
-                          <div className="contact-email">{contact.email}</div>
+                          <p className="contact-email">{contact.email}</p>
                         )}
                         {contact.hours && (
-                          <div className="contact-hours">{contact.hours}</div>
+                          <p className="contact-hours">{contact.hours}</p>
                         )}
                       </div>
                     ))}
                   </div>
-                </div>
+                </section>
               )}
 
-              {/* Waste Schedule */}
+              {/* Waste Collection */}
               {data.garbageSchedule && (
-                <div className="info-section">
-                  <h2 className="section-title">🗑️ Waste Collection</h2>
-                  <div className="waste-schedule">
+                <section className="info-section">
+                  <h3 className="section-title">Waste Collection</h3>
+                  <div className="waste-grid">
                     {data.garbageSchedule.trash && (
                       <div className="waste-item">
-                        <div className="waste-type">Trash</div>
-                        <div className="waste-days">{data.garbageSchedule.trash.days.join(', ')}</div>
-                        {data.garbageSchedule.trash.time && (
-                          <div className="waste-time">{data.garbageSchedule.trash.time}</div>
-                        )}
+                        <p className="waste-type">Trash</p>
+                        <p className="waste-days">{formatDaysShort(data.garbageSchedule.trash.days)}</p>
                       </div>
                     )}
                     {data.garbageSchedule.recycling && (
                       <div className="waste-item">
-                        <div className="waste-type">Recycling & Compost</div>
-                        <div className="waste-days">{data.garbageSchedule.recycling.days.join(', ')}</div>
-                        {data.garbageSchedule.recycling.time && (
-                          <div className="waste-time">{data.garbageSchedule.recycling.time}</div>
-                        )}
+                        <p className="waste-type">Recycle</p>
+                        <p className="waste-days">{formatDaysShort(data.garbageSchedule.recycling.days)}</p>
                       </div>
                     )}
-                    {data.garbageSchedule.notes && (
-                      <div className="waste-notes">{data.garbageSchedule.notes}</div>
-                    )}
+                    <div className="waste-item">
+                      <p className="waste-type">Compost</p>
+                      <p className="waste-days">{data.garbageSchedule.recycling ? formatDaysShort(data.garbageSchedule.recycling.days) : '—'}</p>
+                    </div>
                   </div>
-                </div>
+                  {data.garbageSchedule.notes && (
+                    <p className="waste-notes">{data.garbageSchedule.notes}</p>
+                  )}
+                </section>
               )}
             </div>
 
             {/* Right Column */}
             <div className="info-column">
-              {/* Helpful Links */}
+              {/* Quick Links */}
               {data.helpfulLinks && data.helpfulLinks.length > 0 && (
-                <div className="info-section">
-                  <h2 className="section-title">🔗 Helpful Links</h2>
+                <section className="info-section">
+                  <h3 className="section-title">Quick Links</h3>
                   <div className="links-list">
                     {data.helpfulLinks.map((link, idx) => (
                       <div key={idx} className="link-item">
-                        <div className="link-icon">{link.icon}</div>
-                        <div className="link-content">
-                          <div className="link-title">{link.title}</div>
-                          <div className="link-url">{link.url.replace('https://', '').replace('http://', '').substring(0, 40)}</div>
-                        </div>
+                        <span className="link-title">{link.title}</span>
+                        <span className="link-url">{link.url.replace('https://', '').replace('http://', '')}</span>
                       </div>
                     ))}
                   </div>
-                </div>
+                </section>
               )}
 
               {/* Quick Tips */}
-              <div className="info-section">
-                <h2 className="section-title">💡 Quick Tips</h2>
+              <section className="info-section">
+                <h3 className="section-title">Quick Tips</h3>
                 <ul className="tips-list">
                   <li>Check status page before reporting an issue</li>
                   <li>Subscribe to calendar for event reminders</li>
                   <li>Bookmark the page for quick access</li>
-                  {signType === 'fridge' && (
-                    <li>Keep this QR code on your fridge for easy reference</li>
-                  )}
+                  <li>Report issues through the app for faster response</li>
                 </ul>
-              </div>
+              </section>
             </div>
           </div>
 
           {/* Footer */}
-          <div className="sign-footer">
-            <div className="footer-left">
-              {signType === 'common' ? (
-                <span>📍 Posted in {locationLabel}</span>
-              ) : (
-                <span>📍 For residents of {property.name}</span>
-              )}
-            </div>
-            <div className="footer-right">
-              Generated {new Date().toLocaleDateString()}
-            </div>
-          </div>
+          <footer className="sign-footer">
+            <span className="footer-left">
+              {signType === 'common' ? `Posted in ${locationLabel}` : property.address || property.name}
+            </span>
+            <span className="footer-right">
+              Generated {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+            </span>
+          </footer>
 
           {/* Print Controls - Hidden when printing */}
           <PrintControls />
