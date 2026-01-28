@@ -1,0 +1,500 @@
+/* Design System: Monochromatic Print-Friendly Signage */
+
+@page {
+  size: letter portrait;
+  margin: 0;
+}
+
+@media print {
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+:root {
+  --black: #1a1a1a;
+  --white: #ffffff;
+  --gray: #666666;
+  --gray-light: #f5f5f5;
+}
+
+.print-body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-inter), 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: var(--black);
+  line-height: 1.3;
+  background: #e5e5e5;
+}
+
+/* Main container */
+.property-sign {
+  width: 8.5in;
+  height: 11in;
+  padding: 0.5in;
+  background: var(--white);
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* Header */
+.sign-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-bottom: 0.2in;
+  border-bottom: 2px solid var(--black);
+  margin-bottom: 0.35in;
+  flex-shrink: 0;
+}
+
+.building-identity {
+}
+
+.property-name {
+  font-size: 36pt;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 0.95;
+  margin: 0;
+  padding: 0;
+}
+
+.building-address {
+  font-size: 10pt;
+  color: var(--gray);
+  margin-top: 6px;
+}
+
+.sign-subtitle {
+  display: none; /* Not used in design system */
+}
+
+/* QR Hero */
+.qr-section {
+  display: flex;
+  gap: 0.4in;
+  align-items: flex-start;
+  margin-bottom: 0.35in;
+  padding-bottom: 0.35in;
+  border-bottom: 1px solid #ddd;
+  flex-shrink: 0;
+  background: transparent;
+  padding-left: 0;
+  padding-right: 0;
+  padding-top: 0;
+  border-radius: 0;
+}
+
+.qr-code-container {
+  flex-shrink: 0;
+}
+
+.qr-code {
+  width: 2.4in;
+  height: 2.4in;
+  background: var(--gray-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11pt;
+  font-weight: 600;
+  color: var(--gray);
+  border: none;
+  box-shadow: none;
+}
+
+.qr-instructions {
+  flex: 1;
+  padding-top: 0.1in;
+}
+
+.instruction-title {
+  font-size: 28pt;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin-bottom: 0.15in;
+  color: var(--black);
+}
+
+.instruction-list {
+  margin: 0 0 0.2in 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.instruction-list li {
+  font-size: 10pt;
+  color: var(--gray);
+  line-height: 1.4;
+  margin-bottom: 0;
+  display: inline-block;
+  margin-right: 0.2in;
+}
+
+.instruction-list li::before {
+  content: "→ ";
+  font-weight: 700;
+  color: var(--black);
+}
+
+.url-fallback {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+  font-size: 18pt;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--black);
+}
+
+.url-fallback .url {
+  font-weight: 800;
+  color: var(--black);
+  font-family: var(--font-inter), 'Inter', sans-serif;
+  font-size: 18pt;
+  display: inline;
+  margin-top: 0;
+}
+
+/* Info Grid */
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.35in;
+  flex: 1;
+  min-height: 0;
+  margin-bottom: 0;
+}
+
+.info-column {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-height: 0;
+}
+
+/* Info Sections */
+.info-section {
+  break-inside: avoid;
+  page-break-inside: avoid;
+  margin-bottom: 0.25in;
+}
+
+.section-title {
+  font-size: 8pt;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gray);
+  margin: 0 0 0.12in 0;
+  padding-bottom: 0.08in;
+  border-bottom: 1px solid #ddd;
+}
+
+/* Contacts */
+.contacts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15in;
+}
+
+.contact-item {
+  padding: 0;
+  background: transparent;
+  border: none;
+  margin-bottom: 0;
+}
+
+.contact-label {
+  font-size: 9pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--black);
+  margin-bottom: 2px;
+}
+
+.contact-phone {
+  font-size: 18pt;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--black);
+  font-family: var(--font-inter), 'Inter', sans-serif;
+  margin-bottom: 0;
+}
+
+.contact-email {
+  font-size: 10pt;
+  font-weight: 600;
+  color: var(--black);
+  margin-bottom: 0;
+}
+
+.contact-hours {
+  font-size: 9pt;
+  color: var(--gray);
+  font-weight: 400;
+}
+
+/* Waste Schedule */
+.waste-schedule {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.waste-item {
+  padding: 0;
+  background: transparent;
+  border: none;
+  margin-bottom: 0.1in;
+}
+
+.waste-grid {
+  display: flex;
+  gap: 0.15in;
+  margin-bottom: 0.1in;
+}
+
+.waste-grid .waste-item {
+  flex: 1;
+  text-align: center;
+  padding: 0.12in;
+  background: var(--gray-light);
+  margin-bottom: 0;
+}
+
+.waste-type {
+  font-size: 8pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--black);
+  margin-bottom: 2px;
+}
+
+.waste-days {
+  font-size: 14pt;
+  font-weight: 800;
+  color: var(--black);
+  margin-bottom: 0;
+}
+
+.waste-time {
+  display: none; /* Not in design system */
+}
+
+.waste-notes {
+  font-size: 9pt;
+  color: var(--gray);
+  font-style: italic;
+  font-weight: 400;
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+/* Links */
+.links-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.link-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0.1in 0;
+  border-bottom: 1px solid #eee;
+  background: transparent;
+  gap: 0;
+}
+
+.link-item:last-child {
+  border-bottom: none;
+}
+
+.link-icon {
+  display: none; /* Not in design system */
+}
+
+.link-content {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.link-title {
+  font-size: 11pt;
+  font-weight: 700;
+  color: var(--black);
+  margin-bottom: 0;
+  line-height: 1.2;
+}
+
+.link-url {
+  font-size: 9pt;
+  color: var(--gray);
+  font-family: var(--font-inter), 'Inter', sans-serif;
+  word-break: break-all;
+  font-weight: 400;
+}
+
+/* Tips */
+.tips-list {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.tips-list li {
+  font-size: 10pt;
+  padding: 0.06in 0;
+  padding-left: 1em;
+  position: relative;
+  line-height: 1.4;
+  font-weight: 400;
+  color: var(--black);
+  margin-bottom: 0;
+}
+
+.tips-list li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  font-weight: 700;
+  color: var(--black);
+}
+
+/* Footer */
+.sign-footer {
+  margin-top: auto;
+  padding-top: 0.15in;
+  border-top: 1px solid #ddd;
+  display: flex;
+  justify-content: space-between;
+  font-size: 8pt;
+  color: var(--gray);
+  flex-shrink: 0;
+}
+
+.footer-left,
+.footer-right {
+  font-weight: 400;
+}
+
+/* Print Controls */
+.print-controls {
+  position: fixed;
+  top: 0.5in;
+  right: 0.5in;
+  display: flex;
+  gap: 0.5rem;
+  z-index: 1000;
+}
+
+.print-button,
+.close-button {
+  padding: 0.5rem 1rem;
+  font-size: 14px;
+  font-weight: 600;
+  border: 2px solid #000;
+  border-radius: 4px;
+  cursor: pointer;
+  background: #fff;
+  transition: all 0.2s;
+}
+
+.print-button:hover {
+  background: #000;
+  color: #fff;
+}
+
+.close-button:hover {
+  background: #f0f0f0;
+}
+
+/* Print-specific styles */
+@media print {
+  @page {
+    size: letter portrait;
+    margin: 0;
+  }
+
+  .print-body {
+    margin: 0;
+    padding: 0;
+    background: #fff;
+  }
+
+  .property-sign {
+    width: 100%;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0.5in;
+    box-sizing: border-box;
+  }
+
+  /* Hide non-print elements */
+  .no-print {
+    display: none !important;
+  }
+
+  /* Ensure sections don't break across pages */
+  .info-section {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Ensure all text is pure black or gray in print */
+  .property-name,
+  .contact-phone,
+  .waste-days,
+  .tips-list li,
+  .link-title,
+  .contact-label,
+  .waste-type {
+    color: var(--black);
+  }
+
+  .contact-hours,
+  .waste-notes,
+  .link-url,
+  .building-address,
+  .footer-left,
+  .footer-right,
+  .section-title,
+  .instruction-list li {
+    color: var(--gray);
+  }
+}
+
+/* Screen-only helper text */
+@media screen {
+  .property-sign::before {
+    content: "Preview - Use Print button to generate PDF or print to paper";
+    display: block;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: #fffbcc;
+    border: 2px solid #f0c36d;
+    border-radius: 4px;
+    text-align: center;
+    font-weight: 600;
+    color: #8b6914;
+  }
+}
+
+@media print {
+  .property-sign::before {
+    display: none;
+  }
+}

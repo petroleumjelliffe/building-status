@@ -11,13 +11,14 @@ interface MaintenanceCardProps {
   editable?: boolean;
   password?: string;
   onUpdate?: () => void;
+  propertyHash?: string;
 }
 
 /**
  * MaintenanceCard component - displays scheduled maintenance
  * In edit mode, shows edit and complete buttons
  */
-export function MaintenanceCard({ maintenance, editable, password, onUpdate }: MaintenanceCardProps) {
+export function MaintenanceCard({ maintenance, editable, password, onUpdate, propertyHash }: MaintenanceCardProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
 
@@ -57,6 +58,18 @@ export function MaintenanceCard({ maintenance, editable, password, onUpdate }: M
   // Action buttons for edit mode
   const actions = editable && password ? (
     <>
+      {propertyHash && (
+        <button
+          className="btn-icon"
+          onClick={() => {
+            const printUrl = `/print/maintenance-sign/${propertyHash}?issueId=${maintenance.id}`;
+            window.open(printUrl, '_blank');
+          }}
+          title="Print sign for this maintenance"
+        >
+          🖨️
+        </button>
+      )}
       <button
         className="btn-icon"
         onClick={() => setIsEditModalOpen(true)}

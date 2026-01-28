@@ -524,6 +524,116 @@ export function StatusPageClient({
           </Section>
         )}
 
+        {/* Print Signs */}
+        {isEditable && propertyHash && (
+          <Section
+            title="Print Signs"
+            icon="🖨️"
+          >
+            <div style={{ padding: '0.5rem 0', marginBottom: '1rem' }}>
+              Generate printable signs with QR codes and building information. Monochromatic design optimized for office printers.
+            </div>
+
+            {/* Lobby Poster */}
+            <div style={{ marginBottom: '1.5rem' }}>
+              <h4 style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.5rem' }}>Lobby Poster</h4>
+              <p style={{ fontSize: '0.75rem', color: '#666', marginBottom: '0.5rem' }}>
+                Full-page poster with building info, contacts, waste schedule, and QR code.
+              </p>
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  const printUrl = `/print/property-sign/${propertyHash}`;
+                  window.open(printUrl, '_blank');
+                }}
+                style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
+              >
+                Print Lobby Poster
+              </button>
+            </div>
+
+            {/* Unit Cards */}
+            <div style={{ marginBottom: '1.5rem' }}>
+              <h4 style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.5rem' }}>Unit Cards</h4>
+              <p style={{ fontSize: '0.75rem', color: '#666', marginBottom: '0.5rem' }}>
+                Fridge magnets / door cards for residents (4 per page).
+              </p>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => {
+                    const printUrl = `/print/unit-cards/${propertyHash}?units=1A,1B,2A,2B`;
+                    window.open(printUrl, '_blank');
+                  }}
+                  style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
+                >
+                  Print Sample (1A-2B)
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    const units = prompt('Enter unit numbers (comma-separated, e.g., "1A,1B,2A,2B"):');
+                    if (units) {
+                      const printUrl = `/print/unit-cards/${propertyHash}?units=${encodeURIComponent(units)}`;
+                      window.open(printUrl, '_blank');
+                    }
+                  }}
+                  style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
+                >
+                  Custom Units
+                </button>
+              </div>
+            </div>
+
+            {/* Maintenance Signs */}
+            {data.maintenanceIssues && data.maintenanceIssues.length > 0 && (
+              <div>
+                <h4 style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.5rem' }}>Maintenance Signs</h4>
+                <p style={{ fontSize: '0.75rem', color: '#666', marginBottom: '0.5rem' }}>
+                  Full-page signs for active issues and announcements (72pt headline).
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {data.maintenanceIssues.slice(0, 5).map((issue) => (
+                    <button
+                      key={issue.id}
+                      className="btn btn-secondary"
+                      onClick={() => {
+                        const printUrl = `/print/maintenance-sign/${propertyHash}?issueId=${issue.id}`;
+                        window.open(printUrl, '_blank');
+                      }}
+                      style={{
+                        fontSize: '0.875rem',
+                        padding: '0.5rem 1rem',
+                        textAlign: 'left',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                      }}
+                    >
+                      <span>{issue.title}</span>
+                      <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>
+                        {issue.status}
+                      </span>
+                    </button>
+                  ))}
+                  {data.maintenanceIssues.length === 0 && (
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() => {
+                        const printUrl = `/print/maintenance-sign/${propertyHash}`;
+                        window.open(printUrl, '_blank');
+                      }}
+                      style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
+                    >
+                      Print "All Systems Operational" Sign
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+          </Section>
+        )}
+
         {/* Settings */}
         {isEditable && (
           <Section

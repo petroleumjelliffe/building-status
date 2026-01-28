@@ -282,7 +282,7 @@ Track in simple spreadsheet or notebook:
 
 **Recruitment**:
 - Offer $10-15 gift card for 10-minute conversation
-- Catch residents in lobby/elevator
+- Catch residents in lobby
 - Schedule brief coffee chats
 
 #### Interview Script

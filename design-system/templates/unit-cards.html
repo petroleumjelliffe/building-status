@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Building Status - Unit Cards v5</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    @page {
+      size: letter portrait;
+      margin: 0;
+    }
+
+    @media print {
+      body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
+
+    :root {
+      --black: #1a1a1a;
+      --white: #ffffff;
+      --gray: #666666;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: #e5e5e5;
+      color: var(--black);
+      line-height: 1.3;
+    }
+
+    .page {
+      width: 8.5in;
+      height: 11in;
+      padding: 0.25in;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.25in;
+    }
+
+    .unit-card {
+      background: var(--white);
+      padding: 0.3in;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 0.25in;
+      padding-bottom: 0.15in;
+      border-bottom: 2px solid var(--black);
+    }
+
+    .building-name {
+      font-size: 11pt;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .unit-number {
+      font-size: 28pt;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+
+    /* QR Section */
+    .qr-section {
+      display: flex;
+      gap: 0.25in;
+      align-items: flex-start;
+      margin-bottom: 0.25in;
+      padding-bottom: 0.2in;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .qr-code {
+      width: 1.4in;
+      height: 1.4in;
+      background: #f5f5f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9pt;
+      font-weight: 600;
+      color: var(--gray);
+      flex-shrink: 0;
+    }
+
+    .qr-content {
+      flex: 1;
+      padding-top: 0.05in;
+    }
+
+    .qr-headline {
+      font-size: 18pt;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      margin-bottom: 0.08in;
+    }
+
+    .qr-subline {
+      font-size: 9pt;
+      color: var(--gray);
+      margin-bottom: 0.12in;
+    }
+
+    .qr-url {
+      font-size: 14pt;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    /* Info Grid */
+    .info-grid {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.15in;
+    }
+
+    .info-row {
+      display: flex;
+      gap: 0.2in;
+    }
+
+    .info-item {
+      flex: 1;
+    }
+
+    .info-label {
+      font-size: 7pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--gray);
+      margin-bottom: 3px;
+    }
+
+    .info-value {
+      font-size: 11pt;
+      font-weight: 700;
+    }
+
+    .info-value.phone {
+      font-size: 15pt;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .info-note {
+      font-size: 8pt;
+      color: var(--gray);
+    }
+
+    /* Waste Schedule */
+    .waste-section {
+      margin-top: auto;
+      padding-top: 0.15in;
+      border-top: 1px solid #ddd;
+    }
+
+    .waste-label {
+      font-size: 7pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--gray);
+      margin-bottom: 0.08in;
+    }
+
+    .waste-grid {
+      display: flex;
+      gap: 0.15in;
+    }
+
+    .waste-item {
+      flex: 1;
+      text-align: center;
+    }
+
+    .waste-type {
+      font-size: 8pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      margin-bottom: 2px;
+    }
+
+    .waste-days {
+      font-size: 13pt;
+      font-weight: 800;
+    }
+
+    /* Footer */
+    .card-footer {
+      margin-top: 0.15in;
+      padding-top: 0.1in;
+      font-size: 7pt;
+      color: var(--gray);
+      display: flex;
+      justify-content: space-between;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <!-- Card 1 -->
+    <div class="unit-card">
+      <header class="card-header">
+        <span class="building-name">Linden Heights</span>
+        <span class="unit-number">1A</span>
+      </header>
+      
+      <div class="qr-section">
+        <div class="qr-code">[QR]</div>
+        <div class="qr-content">
+          <h2 class="qr-headline">Building Status</h2>
+          <p class="qr-subline">Systems, issues, events, contacts</p>
+          <p class="qr-url">lh.app/billy</p>
+        </div>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-row">
+          <div class="info-item">
+            <p class="info-label">Super</p>
+            <p class="info-value phone">555-123-4567</p>
+            <p class="info-note">Mon–Fri 9–5</p>
+          </div>
+          <div class="info-item">
+            <p class="info-label">Laundry</p>
+            <p class="info-value">800-111-2222</p>
+            <p class="info-note">Sebco</p>
+          </div>
+        </div>
+        
+        <div class="info-item">
+          <p class="info-label">Board</p>
+          <p class="info-value">board@lindenheights.org</p>
+        </div>
+
+        <div class="waste-section">
+          <p class="waste-label">Waste Collection · out by 7am</p>
+          <div class="waste-grid">
+            <div class="waste-item">
+              <p class="waste-type">Trash</p>
+              <p class="waste-days">Tu / Fr</p>
+            </div>
+            <div class="waste-item">
+              <p class="waste-type">Recycle</p>
+              <p class="waste-days">Fri</p>
+            </div>
+            <div class="waste-item">
+              <p class="waste-type">Compost</p>
+              <p class="waste-days">Fri</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="card-footer">
+        <span>123 Linden Blvd, Brooklyn</span>
+        <span>Jan 2026</span>
+      </footer>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="unit-card">
+      <header class="card-header">
+        <span class="building-name">Linden Heights</span>
+        <span class="unit-number">1B</span>
+      </header>
+      
+      <div class="qr-section">
+        <div class="qr-code">[QR]</div>
+        <div class="qr-content">
+          <h2 class="qr-headline">Building Status</h2>
+          <p class="qr-subline">Systems, issues, events, contacts</p>
+          <p class="qr-url">lh.app/billy</p>
+        </div>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-row">
+          <div class="info-item">
+            <p class="info-label">Super</p>
+            <p class="info-value phone">555-123-4567</p>
+            <p class="info-note">Mon–Fri 9–5</p>
+          </div>
+          <div class="info-item">
+            <p class="info-label">Laundry</p>
+            <p class="info-value">800-111-2222</p>
+            <p class="info-note">Sebco</p>
+          </div>
+        </div>
+        
+        <div class="info-item">
+          <p class="info-label">Board</p>
+          <p class="info-value">board@lindenheights.org</p>
+        </div>
+
+        <div class="waste-section">
+          <p class="waste-label">Waste Collection · out by 7am</p>
+          <div class="waste-grid">
+            <div class="waste-item">
+              <p class="waste-type">Trash</p>
+              <p class="waste-days">Tu / Fr</p>
+            </div>
+            <div class="waste-item">
+              <p class="waste-type">Recycle</p>
+              <p class="waste-days">Fri</p>
+            </div>
+            <div class="waste-item">
+              <p class="waste-type">Compost</p>
+              <p class="waste-days">Fri</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="card-footer">
+        <span>123 Linden Blvd, Brooklyn</span>
+        <span>Jan 2026</span>
+      </footer>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="unit-card">
+      <header class="card-header">
+        <span class="building-name">Linden Heights</span>
+        <span class="unit-number">2A</span>
+      </header>
+      
+      <div class="qr-section">
+        <div class="qr-code">[QR]</div>
+        <div class="qr-content">
+          <h2 class="qr-headline">Building Status</h2>
+          <p class="qr-subline">Systems, issues, events, contacts</p>
+          <p class="qr-url">lh.app/billy</p>
+        </div>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-row">
+          <div class="info-item">
+            <p class="info-label">Super</p>
+            <p class="info-value phone">555-123-4567</p>
+            <p class="info-note">Mon–Fri 9–5</p>
+          </div>
+          <div class="info-item">
+            <p class="info-label">Laundry</p>
+            <p class="info-value">800-111-2222</p>
+            <p class="info-note">Sebco</p>
+          </div>
+        </div>
+        
+        <div class="info-item">
+          <p class="info-label">Board</p>
+          <p class="info-value">board@lindenheights.org</p>
+        </div>
+
+        <div class="waste-section">
+          <p class="waste-label">Waste Collection · out by 7am</p>
+          <div class="waste-grid">
+            <div class="waste-item">
+              <p class="waste-type">Trash</p>
+              <p class="waste-days">Tu / Fr</p>
+            </div>
+            <div class="waste-item">
+              <p class="waste-type">Recycle</p>
+              <p class="waste-days">Fri</p>
+            </div>
+            <div class="waste-item">
+              <p class="waste-type">Compost</p>
+              <p class="waste-days">Fri</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="card-footer">
+        <span>123 Linden Blvd, Brooklyn</span>
+        <span>Jan 2026</span>
+      </footer>
+    </div>
+
+    <!-- Card 4 -->
+    <div class="unit-card">
+      <header class="card-header">
+        <span class="building-name">Linden Heights</span>
+        <span class="unit-number">2B</span>
+      </header>
+      
+      <div class="qr-section">
+        <div class="qr-code">[QR]</div>
+        <div class="qr-content">
+          <h2 class="qr-headline">Building Status</h2>
+          <p class="qr-subline">Systems, issues, events, contacts</p>
+          <p class="qr-url">lh.app/billy</p>
+        </div>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-row">
+          <div class="info-item">
+            <p class="info-label">Super</p>
+            <p class="info-value phone">555-123-4567</p>
+            <p class="info-note">Mon–Fri 9–5</p>
+          </div>
+          <div class="info-item">
+            <p class="info-label">Laundry</p>
+            <p class="info-value">800-111-2222</p>
+            <p class="info-note">Sebco</p>
+          </div>
+        </div>
+        
+        <div class="info-item">
+          <p class="info-label">Board</p>
+          <p class="info-value">board@lindenheights.org</p>
+        </div>
+
+        <div class="waste-section">
+          <p class="waste-label">Waste Collection · out by 7am</p>
+          <div class="waste-grid">
+            <div class="waste-item">
+              <p class="waste-type">Trash</p>
+              <p class="waste-days">Tu / Fr</p>
+            </div>
+            <div class="waste-item">
+              <p class="waste-type">Recycle</p>
+              <p class="waste-days">Fri</p>
+            </div>
+            <div class="waste-item">
+              <p class="waste-type">Compost</p>
+              <p class="waste-days">Fri</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="card-footer">
+        <span>123 Linden Blvd, Brooklyn</span>
+        <span>Jan 2026</span>
+      </footer>
+    </div>
+
+  </div>
+</body>
+</html>
