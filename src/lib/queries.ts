@@ -61,12 +61,12 @@ export async function getStatusData(propertyId: number = 1): Promise<StatusPageD
         )
       )
     ), // Only non-expired or permanent (null expiresAt)
-    getConfigValue('contacts'),
-    getConfigValue('helpfulLinks'),
-    getConfigValue('garbageSchedule'),
-    getConfigValue('buildings'),
-    getConfigValue('systems'),
-    getConfigValue('reportEmail'),
+    getConfigValue('contacts', propertyId),
+    getConfigValue('helpfulLinks', propertyId),
+    getConfigValue('garbageSchedule', propertyId),
+    getConfigValue('buildings', propertyId),
+    getConfigValue('systems', propertyId),
+    getConfigValue('reportEmail', propertyId),
   ]);
 
   return {
@@ -88,20 +88,25 @@ export async function getStatusData(propertyId: number = 1): Promise<StatusPageD
 /**
  * Get a specific config value by key
  */
-export async function getConfigValue<T = any>(key: string): Promise<T | null> {
-  const result = await db.select().from(config).where(eq(config.key, key));
+export async function getConfigValue<T = any>(key: string, propertyId: number): Promise<T | null> {
+  const result = await db.select().from(config).where(
+    and(
+      eq(config.propertyId, propertyId),
+      eq(config.key, key)
+    )
+  );
   return result[0]?.value as T || null;
 }
 
 /**
  * Update a config value
  */
-export async function setConfigValue(key: string, value: any): Promise<void> {
+export async function setConfigValue(key: string, value: any, propertyId: number): Promise<void> {
   await db
     .insert(config)
-    .values({ key, value, updatedAt: new Date() })
+    .values({ propertyId, key, value, updatedAt: new Date() })
     .onConflictDoUpdate({
-      target: config.key,
+      target: [config.propertyId, config.key],
       set: { value, updatedAt: new Date() },
     });
 }
@@ -459,8 +464,8 @@ export async function deleteEvent(id: number): Promise<void> {
 /**
  * Get all emergency contacts
  */
-export async function getContacts(): Promise<any[]> {
-  return await getConfigValue('contacts') || [];
+export async function getContacts(propertyId: number): Promise<any[]> {
+  return await getConfigValue('contacts', propertyId) || [];
 }
 
 /**
@@ -469,14 +474,15 @@ export async function getContacts(): Promise<any[]> {
 export async function createContact(
   label: string,
   hours: string,
+  propertyId: number,
   phone?: string,
   email?: string
 ): Promise<string> {
-  const contacts = await getContacts();
+  const contacts = await getContacts(propertyId);
   const id = `contact-${Date.now()}`;
   const newContact = { id, label, phone, email, hours };
 
-  await setConfigValue('contacts', [...contacts, newContact]);
+  await setConfigValue('contacts', [...contacts, newContact], propertyId);
   return id;
 }
 
@@ -490,24 +496,25 @@ export async function updateContact(
     phone?: string;
     email?: string;
     hours?: string;
-  }
+  },
+  propertyId: number
 ): Promise<void> {
-  const contacts = await getContacts();
+  const contacts = await getContacts(propertyId);
   const updatedContacts = contacts.map(contact =>
     contact.id === id ? { ...contact, ...updates } : contact
   );
 
-  await setConfigValue('contacts', updatedContacts);
+  await setConfigValue('contacts', updatedContacts, propertyId);
 }
 
 /**
  * Delete a contact
  */
-export async function deleteContact(id: string): Promise<void> {
-  const contacts = await getContacts();
+export async function deleteContact(id: string, propertyId: number): Promise<void> {
+  const contacts = await getContacts(propertyId);
   const filteredContacts = contacts.filter(contact => contact.id !== id);
 
-  await setConfigValue('contacts', filteredContacts);
+  await setConfigValue('contacts', filteredContacts, propertyId);
 }
 
 // ============================================
@@ -517,8 +524,8 @@ export async function deleteContact(id: string): Promise<void> {
 /**
  * Get all helpful links
  */
-export async function getHelpfulLinks(): Promise<any[]> {
-  return await getConfigValue('helpfulLinks') || [];
+export async function getHelpfulLinks(propertyId: number): Promise<any[]> {
+  return await getConfigValue('helpfulLinks', propertyId) || [];
 }
 
 /**
@@ -527,13 +534,14 @@ export async function getHelpfulLinks(): Promise<any[]> {
 export async function createHelpfulLink(
   title: string,
   url: string,
-  icon: string
+  icon: string,
+  propertyId: number
 ): Promise<string> {
-  const links = await getHelpfulLinks();
+  const links = await getHelpfulLinks(propertyId);
   const id = `link-${Date.now()}`;
   const newLink = { id, title, url, icon };
 
-  await setConfigValue('helpfulLinks', [...links, newLink]);
+  await setConfigValue('helpfulLinks', [...links, newLink], propertyId);
   return id;
 }
 
@@ -546,24 +554,25 @@ export async function updateHelpfulLink(
     title?: string;
     url?: string;
     icon?: string;
-  }
+  },
+  propertyId: number
 ): Promise<void> {
-  const links = await getHelpfulLinks();
+  const links = await getHelpfulLinks(propertyId);
   const updatedLinks = links.map(link =>
     link.id === id ? { ...link, ...updates } : link
   );
 
-  await setConfigValue('helpfulLinks', updatedLinks);
+  await setConfigValue('helpfulLinks', updatedLinks, propertyId);
 }
 
 /**
  * Delete a helpful link
  */
-export async function deleteHelpfulLink(id: string): Promise<void> {
-  const links = await getHelpfulLinks();
+export async function deleteHelpfulLink(id: string, propertyId: number): Promise<void> {
+  const links = await getHelpfulLinks(propertyId);
   const filteredLinks = links.filter(link => link.id !== id);
 
-  await setConfigValue('helpfulLinks', filteredLinks);
+  await setConfigValue('helpfulLinks', filteredLinks, propertyId);
 }
 
 // ============================================
@@ -573,8 +582,8 @@ export async function deleteHelpfulLink(id: string): Promise<void> {
 /**
  * Get garbage schedule
  */
-export async function getGarbageSchedule(): Promise<any> {
-  return await getConfigValue('garbageSchedule') || {
+export async function getGarbageSchedule(propertyId: number): Promise<any> {
+  return await getConfigValue('garbageSchedule', propertyId) || {
     trash: { days: [], time: '' },
     recycling: { days: [], time: '' },
     notes: ''
@@ -589,11 +598,12 @@ export async function updateGarbageSchedule(
     trash: { days: string[]; time?: string };
     recycling: { days: string[]; time?: string };
     notes: string;
-  }
+  },
+  propertyId: number
 ): Promise<void> {
-  await setConfigValue('garbageSchedule', schedule);
+  await setConfigValue('garbageSchedule', schedule, propertyId);
 }
 
-export async function updateReportEmail(email: string): Promise<void> {
-  await setConfigValue('reportEmail', email);
+export async function updateReportEmail(email: string, propertyId: number): Promise<void> {
+  await setConfigValue('reportEmail', email, propertyId);
 }

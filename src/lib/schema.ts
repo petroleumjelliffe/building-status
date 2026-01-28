@@ -1,4 +1,4 @@
-import { pgTable, serial, varchar, text, timestamp, jsonb, boolean, integer, index } from 'drizzle-orm/pg-core';
+import { pgTable, serial, varchar, text, timestamp, jsonb, boolean, integer, index, primaryKey } from 'drizzle-orm/pg-core';
 
 // Properties (co-ops/building complexes)
 export const properties = pgTable('properties', {
@@ -101,10 +101,14 @@ export const announcements = pgTable('announcements', {
 // Static configuration (contacts, links, schedules)
 // Stored as JSONB for flexibility
 export const config = pgTable('config', {
-  key: varchar('key', { length: 100 }).primaryKey(),
+  propertyId: integer('property_id').references(() => properties.id, { onDelete: 'cascade' }).notNull(),
+  key: varchar('key', { length: 100 }).notNull(),
   value: jsonb('value').notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
+}, (table) => ({
+  pk: primaryKey({ columns: [table.propertyId, table.key] }),
+  propertyIdIdx: index('idx_config_property_id').on(table.propertyId),
+}));
 
 // Example config key-value pairs:
 // - 'contacts': [{ label: string, phone: string, hours: string }, ...]

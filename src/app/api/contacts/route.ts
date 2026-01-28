@@ -45,7 +45,8 @@ export async function POST(request: Request) {
     }
 
     // Create contact
-    const id = await createContact(label, hours, phone, email);
+    const propertyId = 1; // TODO: Extract from admin session
+    const id = await createContact(label, hours, propertyId, phone, email);
 
     // Revalidate the status page
     revalidatePath('/');

@@ -33,7 +33,8 @@ export async function PUT(
     const { title, url, icon } = body;
 
     // Update helpful link
-    await updateHelpfulLink(id, { title, url, icon });
+    const propertyId = 1; // TODO: Extract from admin session
+    await updateHelpfulLink(id, { title, url, icon }, propertyId);
 
     // Revalidate the status page
     revalidatePath('/');
@@ -73,7 +74,8 @@ export async function DELETE(
     const { id } = params;
 
     // Delete helpful link
-    await deleteHelpfulLink(id);
+    const propertyId = 1; // TODO: Extract from admin session
+    await deleteHelpfulLink(id, propertyId);
 
     // Revalidate the status page
     revalidatePath('/');

@@ -33,7 +33,8 @@ export async function PUT(
     const { label, phone, email, hours } = body;
 
     // Update contact
-    await updateContact(id, { label, phone, email, hours });
+    const propertyId = 1; // TODO: Extract from admin session
+    await updateContact(id, { label, phone, email, hours }, propertyId);
 
     // Revalidate the status page
     revalidatePath('/');
@@ -73,7 +74,8 @@ export async function DELETE(
     const { id } = params;
 
     // Delete contact
-    await deleteContact(id);
+    const propertyId = 1; // TODO: Extract from admin session
+    await deleteContact(id, propertyId);
 
     // Revalidate the status page
     revalidatePath('/');

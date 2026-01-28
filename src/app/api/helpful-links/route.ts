@@ -37,7 +37,8 @@ export async function POST(request: Request) {
     }
 
     // Create helpful link
-    const id = await createHelpfulLink(title, url, icon);
+    const propertyId = 1; // TODO: Extract from admin session
+    const id = await createHelpfulLink(title, url, icon, propertyId);
 
     // Revalidate the status page
     revalidatePath('/');
