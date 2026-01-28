@@ -9,7 +9,8 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET() {
   try {
-    const data = await getStatusData();
+    const propertyId = 1; // TODO: Accept as query param
+    const data = await getStatusData(propertyId);
 
     return NextResponse.json({
       success: true,

@@ -45,7 +45,8 @@ export async function PUT(request: Request) {
     }
 
     // Update report email
-    await updateReportEmail(reportEmail);
+    const propertyId = 1; // TODO: Extract from admin session
+    await updateReportEmail(reportEmail, propertyId);
 
     // Revalidate the status page
     revalidatePath('/');

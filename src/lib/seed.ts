@@ -52,6 +52,7 @@ async function seed() {
       };
 
       await db.insert(systemStatus).values({
+        propertyId: 1,
         systemId: system.id,
         status: statusData.status,
         count: statusData.count,
@@ -66,6 +67,7 @@ async function seed() {
     const currentIssues = configData.status?.currentIssues || [];
     for (const issue of currentIssues) {
       await db.insert(issues).values({
+        propertyId: 1,
         category: issue.category,
         location: issue.location,
         icon: issue.icon || null,
@@ -81,6 +83,7 @@ async function seed() {
     const maintenanceItems = configData.status?.scheduledMaintenance || [];
     for (const item of maintenanceItems) {
       await db.insert(maintenance).values({
+        propertyId: 1,
         date: item.date,
         description: item.description,
         createdAt: new Date(),
@@ -93,6 +96,7 @@ async function seed() {
     const pinnedNotifications = configData.status?.pinnedNotifications || [];
     for (const notification of pinnedNotifications) {
       await db.insert(announcements).values({
+        propertyId: 1,
         type: notification.type,
         message: notification.message,
         expiresAt: notification.expiresAt ? new Date(notification.expiresAt) : null,
@@ -126,11 +130,12 @@ async function seed() {
 
     for (const entry of configEntries) {
       await db.insert(config).values({
+        propertyId: 1, // Seed data for default property
         key: entry.key,
         value: entry.value,
         updatedAt: new Date(),
       }).onConflictDoUpdate({
-        target: config.key,
+        target: [config.propertyId, config.key], // Composite key
         set: { value: entry.value, updatedAt: new Date() },
       });
     }

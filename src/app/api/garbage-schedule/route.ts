@@ -37,7 +37,8 @@ export async function PUT(request: Request) {
     }
 
     // Update garbage schedule
-    await updateGarbageSchedule({ trash, recycling, notes });
+    const propertyId = 1; // TODO: Extract from admin session
+    await updateGarbageSchedule({ trash, recycling, notes }, propertyId);
 
     // Revalidate the status page
     revalidatePath('/');
