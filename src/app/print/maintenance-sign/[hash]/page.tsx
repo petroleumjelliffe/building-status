@@ -86,6 +86,22 @@ export default async function PrintMaintenanceSign({ params, searchParams }: Mai
     if (found) issue = found;
   }
 
+  // Transform Maintenance type to have status/category/title fields
+  if (issue && !issue.status) {
+    // It's a Maintenance type, transform it to match expected format
+    issue = {
+      ...issue,
+      title: issue.description.split(' - ')[0] || issue.description, // Use first part as title
+      status: 'scheduled',
+      category: 'maintenance',
+      details: {
+        'Date': issue.date,
+        'Description': issue.description,
+        'Created': new Date(issue.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+      }
+    };
+  }
+
   if (!issue) {
     // Create a default "all systems operational" notice
     issue = {
