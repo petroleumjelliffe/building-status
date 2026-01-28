@@ -143,7 +143,7 @@ export default async function PrintUnitCards({ params, searchParams }: UnitCards
 
               {/* Footer */}
               <footer className="card-footer">
-                <span>{property.address || '123 Linden Blvd'}</span>
+                <span>{property.name}</span>
                 <span>{new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
               </footer>
             </article>

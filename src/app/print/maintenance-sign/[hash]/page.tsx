@@ -79,17 +79,17 @@ export default async function PrintMaintenanceSign({ params, searchParams }: Mai
 
   // Find the specific issue or use a default
   const issueId = searchParams.issueId;
-  let issue = data.maintenanceIssues?.[0]; // Default to first issue
+  let issue: any = data.maintenance?.[0]; // Default to first issue
 
-  if (issueId && data.maintenanceIssues) {
-    const found = data.maintenanceIssues.find((i: any) => i.id === issueId);
+  if (issueId && data.maintenance) {
+    const found = data.maintenance.find((i: any) => i.id === issueId);
     if (found) issue = found;
   }
 
   if (!issue) {
     // Create a default "all systems operational" notice
     issue = {
-      id: 'default',
+      id: 0,
       title: 'All Systems\nOperational',
       description: 'All building systems are currently functioning normally. Check the building status page for real-time updates.',
       status: 'notice',
@@ -222,7 +222,7 @@ export default async function PrintMaintenanceSign({ params, searchParams }: Mai
 
           {/* Footer */}
           <footer className="footer">
-            <span>{property.address || property.name}</span>
+            <span>{property.name}</span>
             <span className="issue-id">
               {issueId ? `Issue #${issueId}` : 'Building Notice'}
               {issue.status === 'resolved' && ' – Closed'}

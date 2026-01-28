@@ -63,7 +63,6 @@ export default async function PrintPropertySign({ params, searchParams }: PrintS
           <header className="sign-header">
             <div className="building-identity">
               <h1 className="property-name">{property.name}</h1>
-              <p className="building-address">{property.address || ''}</p>
             </div>
           </header>
 
@@ -190,7 +189,7 @@ export default async function PrintPropertySign({ params, searchParams }: PrintS
           {/* Footer */}
           <footer className="sign-footer">
             <span className="footer-left">
-              {signType === 'common' ? `Posted in ${locationLabel}` : property.address || property.name}
+              {signType === 'common' ? `Posted in ${locationLabel}` : property.name}
             </span>
             <span className="footer-right">
               Generated {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}

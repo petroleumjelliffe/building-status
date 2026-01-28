@@ -586,14 +586,14 @@ export function StatusPageClient({
             </div>
 
             {/* Maintenance Signs */}
-            {data.maintenanceIssues && data.maintenanceIssues.length > 0 && (
+            {data.maintenance && data.maintenance.length > 0 && (
               <div>
                 <h4 style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.5rem' }}>Maintenance Signs</h4>
                 <p style={{ fontSize: '0.75rem', color: '#666', marginBottom: '0.5rem' }}>
                   Full-page signs for active issues and announcements (72pt headline).
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  {data.maintenanceIssues.slice(0, 5).map((issue) => (
+                  {data.maintenance.slice(0, 5).map((issue) => (
                     <button
                       key={issue.id}
                       className="btn btn-secondary"
@@ -610,13 +610,13 @@ export function StatusPageClient({
                         alignItems: 'center'
                       }}
                     >
-                      <span>{issue.title}</span>
+                      <span>{issue.description}</span>
                       <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>
-                        {issue.status}
+                        {issue.date}
                       </span>
                     </button>
                   ))}
-                  {data.maintenanceIssues.length === 0 && (
+                  {data.maintenance.length === 0 && (
                     <button
                       className="btn btn-secondary"
                       onClick={() => {
