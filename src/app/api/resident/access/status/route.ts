@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateResidentSession } from '@/lib/resident-session';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/resident/access/status
  * Check if the current resident session is valid
