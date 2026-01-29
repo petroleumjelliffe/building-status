@@ -28,6 +28,13 @@ export async function cleanDatabase() {
   await db.delete(schema.issues);
   await db.delete(schema.systemStatus);
   await db.delete(schema.properties);
+
+  // Reset the properties ID sequence so next property gets id=1
+  const client = (db as any)._.session.client;
+  await client`ALTER SEQUENCE properties_id_seq RESTART WITH 1`;
+
+  // Reset the property counter
+  propertyCounter = 0;
 }
 
 export async function closeTestDb() {
@@ -44,8 +51,8 @@ export async function createTestProperty() {
   const db = getTestDb();
   propertyCounter++;
   const [property] = await db.insert(schema.properties).values({
-    propertyId: `test-property-${propertyCounter}-${Date.now()}`,
-    hash: `test-hash-${propertyCounter}-${Date.now()}`,
+    propertyId: `test-property-${propertyCounter}`,
+    hash: `test-hash-${propertyCounter}`,
     name: `Test Building ${propertyCounter}`,
     requireAuthForContacts: false,
   }).returning();
