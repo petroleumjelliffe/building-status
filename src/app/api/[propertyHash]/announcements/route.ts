@@ -2,13 +2,14 @@ import { NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { validateSessionToken } from '@/lib/auth';
 import { createAnnouncement, updateAnnouncement } from '@/lib/queries';
+import { getPropertyByHash } from '@/lib/property';
 import type { AnnouncementType } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
 /**
- * POST /api/announcements
- * Creates or updates an announcement
+ * POST /api/[propertyHash]/announcements
+ * Creates or updates an announcement for a property
  *
  * Headers: Authorization: Bearer <token>
  * Body: {
@@ -18,8 +19,22 @@ export const dynamic = 'force-dynamic';
  *   expiresAt?: string (ISO date)
  * }
  */
-export async function POST(request: Request) {
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ propertyHash: string }> }
+) {
   try {
+    const { propertyHash } = await params;
+
+    // Validate property hash
+    const property = await getPropertyByHash(propertyHash);
+    if (!property) {
+      return NextResponse.json(
+        { success: false, error: 'Property not found' },
+        { status: 404 }
+      );
+    }
+
     // Verify session token
     const authHeader = request.headers.get('Authorization');
     const token = authHeader?.replace('Bearer ', '');
@@ -60,21 +75,19 @@ export async function POST(request: Request) {
     }
 
     // Create or update announcement
-    // TODO: Remove hardcoded propertyId after frontend migration to /api/[propertyHash]/
-    const propertyId = 1;
     let result;
     if (id && typeof id === 'number') {
-      // Update existing announcement
-      await updateAnnouncement(id, propertyId, {
+      // Update existing announcement with ownership verification
+      await updateAnnouncement(id, property.id, {
         type: type as AnnouncementType,
         message,
         expiresAt: expiresAt ? new Date(expiresAt) : null,
       });
       result = { id };
     } else {
-      // Create new announcement
+      // Create new announcement with propertyId
       const newId = await createAnnouncement(
-        propertyId,
+        property.id,
         type as AnnouncementType,
         message,
         expiresAt ? new Date(expiresAt) : undefined
@@ -82,8 +95,8 @@ export async function POST(request: Request) {
       result = { id: newId };
     }
 
-    // Trigger on-demand revalidation of the home page
-    revalidatePath('/');
+    // Revalidate the status page for this property
+    revalidatePath(`/${propertyHash}`);
 
     return NextResponse.json({
       success: true,
@@ -92,6 +105,14 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error('Error managing announcement:', error);
+
+    // Check for access denied error
+    if (error instanceof Error && error.message.includes('access denied')) {
+      return NextResponse.json(
+        { success: false, error: 'Announcement not found' },
+        { status: 404 }
+      );
+    }
 
     return NextResponse.json(
       {

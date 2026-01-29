@@ -38,7 +38,9 @@ export async function POST(
     }
 
     // Resolve issue
-    await resolveIssue(id);
+    // TODO: Remove hardcoded propertyId after frontend migration to /api/[propertyHash]/
+    const propertyId = 1;
+    await resolveIssue(id, propertyId);
 
     // Revalidate the status page
     revalidatePath('/');

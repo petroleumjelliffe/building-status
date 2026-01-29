@@ -49,7 +49,9 @@ export async function PUT(
     if (icon !== undefined) updates.icon = icon;
 
     // Update issue
-    await updateIssue(id, updates);
+    // TODO: Remove hardcoded propertyId after frontend migration to /api/[propertyHash]/
+    const propertyId = 1;
+    await updateIssue(id, propertyId, updates);
 
     // Revalidate the status page
     revalidatePath('/');

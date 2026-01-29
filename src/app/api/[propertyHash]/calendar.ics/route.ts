@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import ical, { ICalEventStatus, ICalAlarmType } from 'ical-generator';
 import { getUpcomingEvents } from '@/lib/queries';
+import { getPropertyByHash } from '@/lib/property';
 import type { EventType } from '@/types';
 
 export const dynamic = 'force-dynamic';
@@ -22,14 +23,28 @@ function mapStatus(status: string | null): ICalEventStatus {
 }
 
 /**
- * GET /api/calendar.ics
- * Returns an iCal feed of upcoming events
+ * GET /api/[propertyHash]/calendar.ics
+ * Returns an iCal feed of upcoming events for a property
  *
  * Query params:
  * - type: Filter by event type (maintenance, announcement, outage)
  */
-export async function GET(request: Request) {
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ propertyHash: string }> }
+) {
   try {
+    const { propertyHash } = await params;
+
+    // Validate property hash
+    const property = await getPropertyByHash(propertyHash);
+    if (!property) {
+      return NextResponse.json(
+        { error: 'Property not found' },
+        { status: 404 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const typeParam = searchParams.get('type');
 
@@ -39,18 +54,16 @@ export async function GET(request: Request) {
       types = typeParam.split(',') as EventType[];
     }
 
-    // Fetch events from database
-    // TODO: Remove hardcoded propertyId after frontend migration to /api/[propertyHash]/
-    const propertyId = 1;
-    const events = await getUpcomingEvents(propertyId, types);
+    // Fetch events from database for this property
+    const events = await getUpcomingEvents(property.id, types);
 
     // Create calendar
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
     const calendar = ical({
-      name: 'Building Status - 712 W Cornelia',
+      name: `Building Status - ${property.name}`,
       timezone: 'America/New_York',
       prodId: { company: 'Building Status', product: 'Calendar' },
-      url: siteUrl,
+      url: `${siteUrl}/${propertyHash}`,
       ttl: 3600, // Refresh every hour
     });
 
@@ -64,7 +77,7 @@ export async function GET(request: Request) {
         summary: `${getTypeEmoji(event.type)} ${event.title}`,
         description: event.description || undefined,
         status: mapStatus(event.status),
-        url: `${siteUrl}/#event-${event.id}`,
+        url: `${siteUrl}/${propertyHash}#event-${event.id}`,
       });
 
       // Add alarm for events with notification settings
@@ -87,7 +100,7 @@ export async function GET(request: Request) {
       status: 200,
       headers: {
         'Content-Type': 'text/calendar; charset=utf-8',
-        'Content-Disposition': 'attachment; filename="building-status.ics"',
+        'Content-Disposition': `attachment; filename="${propertyHash}-calendar.ics"`,
         'Cache-Control': 'public, max-age=3600', // Cache for 1 hour
       },
     });

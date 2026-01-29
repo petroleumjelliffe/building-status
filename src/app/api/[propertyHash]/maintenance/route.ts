@@ -1,19 +1,34 @@
 import { NextResponse } from 'next/server';
 import { validateSessionToken } from '@/lib/auth';
 import { createMaintenance } from '@/lib/queries';
+import { getPropertyByHash } from '@/lib/property';
 import { revalidatePath } from 'next/cache';
 import type { CreateMaintenanceRequest } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
 /**
- * POST /api/maintenance
- * Create a new maintenance item
+ * POST /api/[propertyHash]/maintenance
+ * Create a new maintenance item for a property
  *
  * Headers: Authorization: Bearer <token>
  */
-export async function POST(request: Request) {
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ propertyHash: string }> }
+) {
   try {
+    const { propertyHash } = await params;
+
+    // Validate property hash
+    const property = await getPropertyByHash(propertyHash);
+    if (!property) {
+      return NextResponse.json(
+        { success: false, error: 'Property not found' },
+        { status: 404 }
+      );
+    }
+
     // Verify session token
     const authHeader = request.headers.get('Authorization');
     const token = authHeader?.replace('Bearer ', '');
@@ -36,13 +51,11 @@ export async function POST(request: Request) {
       );
     }
 
-    // Create maintenance
-    // TODO: Remove hardcoded propertyId after frontend migration to /api/[propertyHash]/
-    const propertyId = 1;
-    const id = await createMaintenance(propertyId, date, description);
+    // Create maintenance with propertyId
+    const id = await createMaintenance(property.id, date, description);
 
-    // Revalidate the status page
-    revalidatePath('/');
+    // Revalidate the status page for this property
+    revalidatePath(`/${propertyHash}`);
 
     return NextResponse.json({ success: true, id });
   } catch (error) {

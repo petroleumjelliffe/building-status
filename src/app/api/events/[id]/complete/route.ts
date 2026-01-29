@@ -31,7 +31,9 @@ export async function POST(
     const eventId = parseInt(id, 10);
 
     // Check if event exists
-    const existing = await getEventById(eventId);
+    // TODO: Remove hardcoded propertyId after frontend migration to /api/[propertyHash]/
+    const propertyId = 1;
+    const existing = await getEventById(eventId, propertyId);
     if (!existing) {
       return NextResponse.json(
         { success: false, error: 'Event not found' },
@@ -39,7 +41,7 @@ export async function POST(
       );
     }
 
-    await completeEvent(eventId);
+    await completeEvent(eventId, propertyId);
 
     // Revalidate the status page
     revalidatePath('/');

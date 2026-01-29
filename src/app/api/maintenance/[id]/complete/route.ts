@@ -38,7 +38,9 @@ export async function POST(
     }
 
     // Complete maintenance
-    await completeMaintenance(id);
+    // TODO: Remove hardcoded propertyId after frontend migration to /api/[propertyHash]/
+    const propertyId = 1;
+    await completeMaintenance(id, propertyId);
 
     // Revalidate the status page
     revalidatePath('/');

@@ -1,21 +1,33 @@
 import { NextResponse } from 'next/server';
 import { validateSessionToken } from '@/lib/auth';
 import { getEventById, cancelEvent } from '@/lib/queries';
+import { getPropertyByHash } from '@/lib/property';
 import { revalidatePath } from 'next/cache';
 
 export const dynamic = 'force-dynamic';
 
 /**
- * POST /api/events/[id]/cancel
- * Mark an event as cancelled
+ * POST /api/[propertyHash]/events/[id]/cancel
+ * Mark an event as cancelled for a property
  *
  * Headers: Authorization: Bearer <token>
  */
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ propertyHash: string; id: string }> }
 ) {
   try {
+    const { propertyHash, id } = await params;
+
+    // Validate property hash
+    const property = await getPropertyByHash(propertyHash);
+    if (!property) {
+      return NextResponse.json(
+        { success: false, error: 'Property not found' },
+        { status: 404 }
+      );
+    }
+
     // Verify session token
     const authHeader = request.headers.get('Authorization');
     const token = authHeader?.replace('Bearer ', '');
@@ -27,13 +39,10 @@ export async function POST(
       );
     }
 
-    const { id } = await params;
     const eventId = parseInt(id, 10);
 
-    // Check if event exists
-    // TODO: Remove hardcoded propertyId after frontend migration to /api/[propertyHash]/
-    const propertyId = 1;
-    const existing = await getEventById(eventId, propertyId);
+    // Check if event exists for this property
+    const existing = await getEventById(eventId, property.id);
     if (!existing) {
       return NextResponse.json(
         { success: false, error: 'Event not found' },
@@ -41,10 +50,10 @@ export async function POST(
       );
     }
 
-    await cancelEvent(eventId, propertyId);
+    await cancelEvent(eventId, property.id);
 
-    // Revalidate the status page
-    revalidatePath('/');
+    // Revalidate the status page for this property
+    revalidatePath(`/${propertyHash}`);
 
     return NextResponse.json({ success: true });
   } catch (error) {

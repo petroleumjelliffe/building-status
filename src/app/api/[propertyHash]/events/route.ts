@@ -1,20 +1,33 @@
 import { NextResponse } from 'next/server';
 import { validateSessionToken } from '@/lib/auth';
 import { createEvent, getScheduledEvents } from '@/lib/queries';
+import { getPropertyByHash } from '@/lib/property';
 import { revalidatePath } from 'next/cache';
 import type { CreateEventRequest, EventType } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
 /**
- * GET /api/events
- * Get all scheduled events
+ * GET /api/[propertyHash]/events
+ * Get all scheduled events for a property
  */
-export async function GET() {
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ propertyHash: string }> }
+) {
   try {
-    // TODO: Remove hardcoded propertyId after frontend migration to /api/[propertyHash]/
-    const propertyId = 1;
-    const events = await getScheduledEvents(propertyId);
+    const { propertyHash } = await params;
+
+    // Validate property hash
+    const property = await getPropertyByHash(propertyHash);
+    if (!property) {
+      return NextResponse.json(
+        { success: false, error: 'Property not found' },
+        { status: 404 }
+      );
+    }
+
+    const events = await getScheduledEvents(property.id);
     return NextResponse.json({ success: true, events });
   } catch (error) {
     console.error('Error fetching events:', error);
@@ -26,13 +39,27 @@ export async function GET() {
 }
 
 /**
- * POST /api/events
- * Create a new calendar event
+ * POST /api/[propertyHash]/events
+ * Create a new calendar event for a property
  *
  * Headers: Authorization: Bearer <token>
  */
-export async function POST(request: Request) {
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ propertyHash: string }> }
+) {
   try {
+    const { propertyHash } = await params;
+
+    // Validate property hash
+    const property = await getPropertyByHash(propertyHash);
+    if (!property) {
+      return NextResponse.json(
+        { success: false, error: 'Property not found' },
+        { status: 404 }
+      );
+    }
+
     // Verify session token
     const authHeader = request.headers.get('Authorization');
     const token = authHeader?.replace('Bearer ', '');
@@ -64,10 +91,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // Create event
-    // TODO: Remove hardcoded propertyId after frontend migration to /api/[propertyHash]/
-    const propertyId = 1;
-    const id = await createEvent(propertyId, type, title, new Date(startsAt), {
+    // Create event with propertyId
+    const id = await createEvent(property.id, type, title, new Date(startsAt), {
       description,
       endsAt: endsAt ? new Date(endsAt) : undefined,
       allDay,
@@ -76,8 +101,8 @@ export async function POST(request: Request) {
       notifyBeforeMinutes,
     });
 
-    // Revalidate the status page
-    revalidatePath('/');
+    // Revalidate the status page for this property
+    revalidatePath(`/${propertyHash}`);
 
     return NextResponse.json({ success: true, id });
   } catch (error) {

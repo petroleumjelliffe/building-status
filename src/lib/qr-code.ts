@@ -175,3 +175,24 @@ export async function getAllAccessTokens() {
     })
     .from(accessTokens);
 }
+
+/**
+ * Get a single access token by ID
+ * @param tokenId - Database ID of the access token
+ */
+export async function getAccessTokenById(tokenId: number) {
+  const [accessToken] = await db
+    .select({
+      id: accessTokens.id,
+      propertyId: accessTokens.propertyId,
+      token: accessTokens.token,
+      label: accessTokens.label,
+      isActive: accessTokens.isActive,
+      createdAt: accessTokens.createdAt,
+      expiresAt: accessTokens.expiresAt,
+    })
+    .from(accessTokens)
+    .where(eq(accessTokens.id, tokenId));
+
+  return accessToken || null;
+}

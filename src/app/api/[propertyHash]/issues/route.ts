@@ -1,19 +1,34 @@
 import { NextResponse } from 'next/server';
 import { validateSessionToken } from '@/lib/auth';
 import { createIssue } from '@/lib/queries';
+import { getPropertyByHash } from '@/lib/property';
 import { revalidatePath } from 'next/cache';
 import type { CreateIssueRequest } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
 /**
- * POST /api/issues
- * Create a new issue
+ * POST /api/[propertyHash]/issues
+ * Create a new issue for a property
  *
  * Headers: Authorization: Bearer <token>
  */
-export async function POST(request: Request) {
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ propertyHash: string }> }
+) {
   try {
+    const { propertyHash } = await params;
+
+    // Validate property hash
+    const property = await getPropertyByHash(propertyHash);
+    if (!property) {
+      return NextResponse.json(
+        { success: false, error: 'Property not found' },
+        { status: 404 }
+      );
+    }
+
     // Verify session token
     const authHeader = request.headers.get('Authorization');
     const token = authHeader?.replace('Bearer ', '');
@@ -36,13 +51,11 @@ export async function POST(request: Request) {
       );
     }
 
-    // Create issue
-    // TODO: Remove hardcoded propertyId after frontend migration to /api/[propertyHash]/
-    const propertyId = 1;
-    const id = await createIssue(propertyId, category, location, detail, status, icon);
+    // Create issue with propertyId
+    const id = await createIssue(property.id, category, location, detail, status, icon);
 
-    // Revalidate the status page
-    revalidatePath('/');
+    // Revalidate the status page for this property
+    revalidatePath(`/${propertyHash}`);
 
     return NextResponse.json({ success: true, id });
   } catch (error) {

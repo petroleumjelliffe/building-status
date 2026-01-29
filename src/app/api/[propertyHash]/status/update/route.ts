@@ -2,13 +2,14 @@ import { NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { validateSessionToken } from '@/lib/auth';
 import { updateSystemStatus } from '@/lib/queries';
+import { getPropertyByHash } from '@/lib/property';
 import type { SystemStatus } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
 /**
- * POST /api/status/update
- * Updates a system status
+ * POST /api/[propertyHash]/status/update
+ * Updates a system status for a property
  *
  * Headers: Authorization: Bearer <token>
  * Body: {
@@ -18,15 +19,25 @@ export const dynamic = 'force-dynamic';
  *   note?: string
  * }
  */
-export async function POST(request: Request) {
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ propertyHash: string }> }
+) {
   try {
+    const { propertyHash } = await params;
+
+    // Validate property hash
+    const property = await getPropertyByHash(propertyHash);
+    if (!property) {
+      return NextResponse.json(
+        { success: false, error: 'Property not found' },
+        { status: 404 }
+      );
+    }
+
     // Verify session token
     const authHeader = request.headers.get('Authorization');
     const token = authHeader?.replace('Bearer ', '');
-
-    console.log('Auth header:', authHeader);
-    console.log('Token:', token);
-    console.log('Token valid:', validateSessionToken(token));
 
     if (!validateSessionToken(token)) {
       return NextResponse.json(
@@ -63,19 +74,17 @@ export async function POST(request: Request) {
       );
     }
 
-    // Update the system status
-    // TODO: Remove hardcoded propertyId after frontend migration to /api/[propertyHash]/
-    const propertyId = 1;
+    // Update the system status with propertyId
     await updateSystemStatus(
-      propertyId,
+      property.id,
       systemId,
       status as SystemStatus,
       count || undefined,
       note || undefined
     );
 
-    // Trigger on-demand revalidation of the home page
-    revalidatePath('/');
+    // Revalidate the status page for this property
+    revalidatePath(`/${propertyHash}`);
 
     return NextResponse.json({
       success: true,

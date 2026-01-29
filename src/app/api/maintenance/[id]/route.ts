@@ -46,7 +46,9 @@ export async function PUT(
     if (description !== undefined) updates.description = description;
 
     // Update maintenance
-    await updateMaintenance(id, updates);
+    // TODO: Remove hardcoded propertyId after frontend migration to /api/[propertyHash]/
+    const propertyId = 1;
+    await updateMaintenance(id, propertyId, updates);
 
     // Revalidate the status page
     revalidatePath('/');

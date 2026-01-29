@@ -1,22 +1,33 @@
 import { NextResponse } from 'next/server';
 import { validateSessionToken } from '@/lib/auth';
 import { getEventById, updateEvent, deleteEvent } from '@/lib/queries';
+import { getPropertyByHash } from '@/lib/property';
 import { revalidatePath } from 'next/cache';
 import type { UpdateEventRequest, EventType, EventStatus } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
 /**
- * GET /api/events/[id]
- * Get a single event by ID
+ * GET /api/[propertyHash]/events/[id]
+ * Get a single event by ID for a property
  */
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ propertyHash: string; id: string }> }
 ) {
   try {
-    const { id } = await params;
-    const event = await getEventById(parseInt(id, 10));
+    const { propertyHash, id } = await params;
+
+    // Validate property hash
+    const property = await getPropertyByHash(propertyHash);
+    if (!property) {
+      return NextResponse.json(
+        { success: false, error: 'Property not found' },
+        { status: 404 }
+      );
+    }
+
+    const event = await getEventById(parseInt(id, 10), property.id);
 
     if (!event) {
       return NextResponse.json(
@@ -36,16 +47,27 @@ export async function GET(
 }
 
 /**
- * PATCH /api/events/[id]
- * Update an existing event
+ * PATCH /api/[propertyHash]/events/[id]
+ * Update an existing event for a property
  *
  * Headers: Authorization: Bearer <token>
  */
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ propertyHash: string; id: string }> }
 ) {
   try {
+    const { propertyHash, id } = await params;
+
+    // Validate property hash
+    const property = await getPropertyByHash(propertyHash);
+    if (!property) {
+      return NextResponse.json(
+        { success: false, error: 'Property not found' },
+        { status: 404 }
+      );
+    }
+
     // Verify session token
     const authHeader = request.headers.get('Authorization');
     const token = authHeader?.replace('Bearer ', '');
@@ -57,12 +79,11 @@ export async function PATCH(
       );
     }
 
-    const { id } = await params;
     const eventId = parseInt(id, 10);
     const body: UpdateEventRequest = await request.json();
 
-    // Check if event exists
-    const existing = await getEventById(eventId);
+    // Check if event exists for this property
+    const existing = await getEventById(eventId, property.id);
     if (!existing) {
       return NextResponse.json(
         { success: false, error: 'Event not found' },
@@ -71,8 +92,6 @@ export async function PATCH(
     }
 
     // Build update object
-    // TODO: Remove hardcoded propertyId after frontend migration to /api/[propertyHash]/
-    const propertyId = 1;
     const updates: Parameters<typeof updateEvent>[2] = {};
 
     if (body.type !== undefined) {
@@ -105,10 +124,10 @@ export async function PATCH(
     }
     if (body.notifyBeforeMinutes !== undefined) updates.notifyBeforeMinutes = body.notifyBeforeMinutes;
 
-    await updateEvent(eventId, propertyId, updates);
+    await updateEvent(eventId, property.id, updates);
 
-    // Revalidate the status page
-    revalidatePath('/');
+    // Revalidate the status page for this property
+    revalidatePath(`/${propertyHash}`);
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -121,16 +140,27 @@ export async function PATCH(
 }
 
 /**
- * DELETE /api/events/[id]
- * Delete an event permanently
+ * DELETE /api/[propertyHash]/events/[id]
+ * Delete an event permanently for a property
  *
  * Headers: Authorization: Bearer <token>
  */
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ propertyHash: string; id: string }> }
 ) {
   try {
+    const { propertyHash, id } = await params;
+
+    // Validate property hash
+    const property = await getPropertyByHash(propertyHash);
+    if (!property) {
+      return NextResponse.json(
+        { success: false, error: 'Property not found' },
+        { status: 404 }
+      );
+    }
+
     // Verify session token
     const authHeader = request.headers.get('Authorization');
     const token = authHeader?.replace('Bearer ', '');
@@ -142,13 +172,10 @@ export async function DELETE(
       );
     }
 
-    const { id } = await params;
     const eventId = parseInt(id, 10);
 
-    // Check if event exists
-    // TODO: Remove hardcoded propertyId after frontend migration to /api/[propertyHash]/
-    const propertyId = 1;
-    const existing = await getEventById(eventId, propertyId);
+    // Check if event exists for this property
+    const existing = await getEventById(eventId, property.id);
     if (!existing) {
       return NextResponse.json(
         { success: false, error: 'Event not found' },
@@ -156,10 +183,10 @@ export async function DELETE(
       );
     }
 
-    await deleteEvent(eventId, propertyId);
+    await deleteEvent(eventId, property.id);
 
-    // Revalidate the status page
-    revalidatePath('/');
+    // Revalidate the status page for this property
+    revalidatePath(`/${propertyHash}`);
 
     return NextResponse.json({ success: true });
   } catch (error) {
