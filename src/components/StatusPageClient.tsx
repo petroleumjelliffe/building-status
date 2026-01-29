@@ -625,7 +625,7 @@ export function StatusPageClient({
                       }}
                       style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}
                     >
-                      Print "All Systems Operational" Sign
+                      Print &quot;All Systems Operational&quot; Sign
                     </button>
                   )}
                 </div>

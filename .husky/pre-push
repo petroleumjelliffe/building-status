@@ -1,0 +1,6 @@
+# Run full test suite and linting before pushing
+echo "Running tests..."
+npm test -- --run
+
+echo "Running linter..."
+npm run lint
