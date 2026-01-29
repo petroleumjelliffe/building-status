@@ -104,9 +104,9 @@ describe('Simple Query Functions - CRUD Operations', () => {
   describe('Announcement Functions', () => {
     describe('updateAnnouncement', () => {
       it('updates announcement type', async () => {
-        const id = await createAnnouncement('info', 'Test message', undefined);
+        const id = await createAnnouncement(testProperty.id, 'info', 'Test message', undefined);
 
-        await updateAnnouncement(id, { type: 'warning' });
+        await updateAnnouncement(id, testProperty.id, { type: 'warning' });
 
         const db = getTestDb();
         const result = await db.select().from(announcements).where(eq(announcements.id, id));
@@ -115,9 +115,9 @@ describe('Simple Query Functions - CRUD Operations', () => {
       });
 
       it('updates announcement message', async () => {
-        const id = await createAnnouncement('info', 'Original message', undefined);
+        const id = await createAnnouncement(testProperty.id, 'info', 'Original message', undefined);
 
-        await updateAnnouncement(id, { message: 'Updated message' });
+        await updateAnnouncement(id, testProperty.id, { message: 'Updated message' });
 
         const db = getTestDb();
         const result = await db.select().from(announcements).where(eq(announcements.id, id));
@@ -126,10 +126,10 @@ describe('Simple Query Functions - CRUD Operations', () => {
       });
 
       it('updates announcement expiresAt', async () => {
-        const id = await createAnnouncement('info', 'Test message', undefined);
+        const id = await createAnnouncement(testProperty.id, 'info', 'Test message', undefined);
         const futureDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
-        await updateAnnouncement(id, { expiresAt: futureDate });
+        await updateAnnouncement(id, testProperty.id, { expiresAt: futureDate });
 
         const db = getTestDb();
         const result = await db.select().from(announcements).where(eq(announcements.id, id));
@@ -137,10 +137,10 @@ describe('Simple Query Functions - CRUD Operations', () => {
       });
 
       it('updates multiple fields at once', async () => {
-        const id = await createAnnouncement('info', 'Original', undefined);
+        const id = await createAnnouncement(testProperty.id, 'info', 'Original', undefined);
         const futureDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
-        await updateAnnouncement(id, {
+        await updateAnnouncement(id, testProperty.id, {
           type: 'alert',
           message: 'Updated',
           expiresAt: futureDate,
@@ -156,9 +156,9 @@ describe('Simple Query Functions - CRUD Operations', () => {
 
     describe('deleteAnnouncement', () => {
       it('deletes announcement', async () => {
-        const id = await createAnnouncement('info', 'Test message', undefined);
+        const id = await createAnnouncement(testProperty.id, 'info', 'Test message', undefined);
 
-        await deleteAnnouncement(id);
+        await deleteAnnouncement(id, testProperty.id);
 
         const db = getTestDb();
         const result = await db.select().from(announcements).where(eq(announcements.id, id));
@@ -166,10 +166,10 @@ describe('Simple Query Functions - CRUD Operations', () => {
       });
 
       it('only deletes specified announcement', async () => {
-        const id1 = await createAnnouncement('info', 'Message 1', undefined);
-        const id2 = await createAnnouncement('warning', 'Message 2', undefined);
+        const id1 = await createAnnouncement(testProperty.id, 'info', 'Message 1', undefined);
+        const id2 = await createAnnouncement(testProperty.id, 'warning', 'Message 2', undefined);
 
-        await deleteAnnouncement(id1);
+        await deleteAnnouncement(id1, testProperty.id);
 
         const db = getTestDb();
         const remaining = await db.select().from(announcements);
@@ -182,9 +182,9 @@ describe('Simple Query Functions - CRUD Operations', () => {
   describe('Issue Functions', () => {
     describe('updateIssue', () => {
       it('updates issue category', async () => {
-        const id = await createIssue('Plumbing', 'Floor 2', 'Leak', 'reported');
+        const id = await createIssue(testProperty.id, 'Plumbing', 'Floor 2', 'Leak', 'reported');
 
-        await updateIssue(id, { category: 'Electrical' });
+        await updateIssue(id, testProperty.id, { category: 'Electrical' });
 
         const db = getTestDb();
         const result = await db.select().from(issues).where(eq(issues.id, id));
@@ -193,9 +193,9 @@ describe('Simple Query Functions - CRUD Operations', () => {
       });
 
       it('updates multiple fields', async () => {
-        const id = await createIssue('Plumbing', 'Floor 2', 'Leak', 'reported');
+        const id = await createIssue(testProperty.id, 'Plumbing', 'Floor 2', 'Leak', 'reported');
 
-        await updateIssue(id, {
+        await updateIssue(id, testProperty.id, {
           status: 'investigating',
           detail: 'Major leak found',
           icon: '💧',
@@ -211,10 +211,10 @@ describe('Simple Query Functions - CRUD Operations', () => {
 
     describe('resolveIssue', () => {
       it('sets resolvedAt timestamp', async () => {
-        const id = await createIssue('Plumbing', 'Floor 2', 'Leak', 'reported');
+        const id = await createIssue(testProperty.id, 'Plumbing', 'Floor 2', 'Leak', 'reported');
         const beforeResolve = new Date();
 
-        await resolveIssue(id);
+        await resolveIssue(id, testProperty.id);
 
         const db = getTestDb();
         const result = await db.select().from(issues).where(eq(issues.id, id));
@@ -224,9 +224,9 @@ describe('Simple Query Functions - CRUD Operations', () => {
       });
 
       it('does not affect other fields', async () => {
-        const id = await createIssue('Plumbing', 'Floor 2', 'Leak', 'reported', '🔧');
+        const id = await createIssue(testProperty.id, 'Plumbing', 'Floor 2', 'Leak', 'reported', '🔧');
 
-        await resolveIssue(id);
+        await resolveIssue(id, testProperty.id);
 
         const db = getTestDb();
         const result = await db.select().from(issues).where(eq(issues.id, id));
@@ -241,9 +241,9 @@ describe('Simple Query Functions - CRUD Operations', () => {
   describe('Maintenance Functions', () => {
     describe('updateMaintenance', () => {
       it('updates maintenance date', async () => {
-        const id = await createMaintenance('Mon, Jan 1', 'Test maintenance');
+        const id = await createMaintenance(testProperty.id, 'Mon, Jan 1', 'Test maintenance');
 
-        await updateMaintenance(id, { date: 'Tue, Jan 2' });
+        await updateMaintenance(id, testProperty.id, { date: 'Tue, Jan 2' });
 
         const db = getTestDb();
         const result = await db.select().from(maintenance).where(eq(maintenance.id, id));
@@ -252,9 +252,9 @@ describe('Simple Query Functions - CRUD Operations', () => {
       });
 
       it('updates maintenance description', async () => {
-        const id = await createMaintenance('Mon, Jan 1', 'Original description');
+        const id = await createMaintenance(testProperty.id, 'Mon, Jan 1', 'Original description');
 
-        await updateMaintenance(id, { description: 'Updated description' });
+        await updateMaintenance(id, testProperty.id, { description: 'Updated description' });
 
         const db = getTestDb();
         const result = await db.select().from(maintenance).where(eq(maintenance.id, id));
@@ -263,9 +263,9 @@ describe('Simple Query Functions - CRUD Operations', () => {
       });
 
       it('updates both fields', async () => {
-        const id = await createMaintenance('Mon, Jan 1', 'Original');
+        const id = await createMaintenance(testProperty.id, 'Mon, Jan 1', 'Original');
 
-        await updateMaintenance(id, {
+        await updateMaintenance(id, testProperty.id, {
           date: 'Wed, Jan 3',
           description: 'Updated',
         });
@@ -279,10 +279,10 @@ describe('Simple Query Functions - CRUD Operations', () => {
 
     describe('completeMaintenance', () => {
       it('sets completedAt timestamp', async () => {
-        const id = await createMaintenance('Mon, Jan 1', 'Test maintenance');
+        const id = await createMaintenance(testProperty.id, 'Mon, Jan 1', 'Test maintenance');
         const beforeComplete = new Date();
 
-        await completeMaintenance(id);
+        await completeMaintenance(id, testProperty.id);
 
         const db = getTestDb();
         const result = await db.select().from(maintenance).where(eq(maintenance.id, id));
@@ -292,9 +292,9 @@ describe('Simple Query Functions - CRUD Operations', () => {
       });
 
       it('does not affect other fields', async () => {
-        const id = await createMaintenance('Mon, Jan 1', 'Test maintenance');
+        const id = await createMaintenance(testProperty.id, 'Mon, Jan 1', 'Test maintenance');
 
-        await completeMaintenance(id);
+        await completeMaintenance(id, testProperty.id);
 
         const db = getTestDb();
         const result = await db.select().from(maintenance).where(eq(maintenance.id, id));
@@ -309,9 +309,9 @@ describe('Simple Query Functions - CRUD Operations', () => {
 
     describe('completeEvent', () => {
       it('sets status to completed', async () => {
-        const id = await createEvent('maintenance', 'Test event', futureDate);
+        const id = await createEvent(testProperty.id, 'maintenance', 'Test event', futureDate);
 
-        await completeEvent(id);
+        await completeEvent(id, testProperty.id);
 
         const db = getTestDb();
         const result = await db.select().from(events).where(eq(events.id, id));
@@ -319,10 +319,10 @@ describe('Simple Query Functions - CRUD Operations', () => {
       });
 
       it('sets completedAt timestamp', async () => {
-        const id = await createEvent('maintenance', 'Test event', futureDate);
+        const id = await createEvent(testProperty.id, 'maintenance', 'Test event', futureDate);
         const beforeComplete = new Date();
 
-        await completeEvent(id);
+        await completeEvent(id, testProperty.id);
 
         const db = getTestDb();
         const result = await db.select().from(events).where(eq(events.id, id));
@@ -332,7 +332,7 @@ describe('Simple Query Functions - CRUD Operations', () => {
       });
 
       it('updates updatedAt timestamp', async () => {
-        const id = await createEvent('maintenance', 'Test event', futureDate);
+        const id = await createEvent(testProperty.id, 'maintenance', 'Test event', futureDate);
         const db = getTestDb();
         const before = await db.select().from(events).where(eq(events.id, id));
         const originalUpdatedAt = before[0].updatedAt;
@@ -340,7 +340,7 @@ describe('Simple Query Functions - CRUD Operations', () => {
         // Wait a bit to ensure timestamp difference
         await new Promise(resolve => setTimeout(resolve, 10));
 
-        await completeEvent(id);
+        await completeEvent(id, testProperty.id);
 
         const after = await db.select().from(events).where(eq(events.id, id));
         expect(after[0].updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime());
@@ -349,9 +349,9 @@ describe('Simple Query Functions - CRUD Operations', () => {
 
     describe('cancelEvent', () => {
       it('sets status to cancelled', async () => {
-        const id = await createEvent('maintenance', 'Test event', futureDate);
+        const id = await createEvent(testProperty.id, 'maintenance', 'Test event', futureDate);
 
-        await cancelEvent(id);
+        await cancelEvent(id, testProperty.id);
 
         const db = getTestDb();
         const result = await db.select().from(events).where(eq(events.id, id));
@@ -359,9 +359,9 @@ describe('Simple Query Functions - CRUD Operations', () => {
       });
 
       it('does not set completedAt', async () => {
-        const id = await createEvent('maintenance', 'Test event', futureDate);
+        const id = await createEvent(testProperty.id, 'maintenance', 'Test event', futureDate);
 
-        await cancelEvent(id);
+        await cancelEvent(id, testProperty.id);
 
         const db = getTestDb();
         const result = await db.select().from(events).where(eq(events.id, id));
@@ -369,7 +369,7 @@ describe('Simple Query Functions - CRUD Operations', () => {
       });
 
       it('updates updatedAt timestamp', async () => {
-        const id = await createEvent('maintenance', 'Test event', futureDate);
+        const id = await createEvent(testProperty.id, 'maintenance', 'Test event', futureDate);
         const db = getTestDb();
         const before = await db.select().from(events).where(eq(events.id, id));
         const originalUpdatedAt = before[0].updatedAt;
@@ -377,7 +377,7 @@ describe('Simple Query Functions - CRUD Operations', () => {
         // Wait a bit to ensure timestamp difference
         await new Promise(resolve => setTimeout(resolve, 10));
 
-        await cancelEvent(id);
+        await cancelEvent(id, testProperty.id);
 
         const after = await db.select().from(events).where(eq(events.id, id));
         expect(after[0].updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime());

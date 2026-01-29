@@ -118,21 +118,28 @@ export async function setConfigValue(key: string, value: any, propertyId: number
 
 /**
  * Update system status
+ * @param propertyId - Required property ID for tenant isolation
  */
 export async function updateSystemStatus(
+  propertyId: number,
   systemId: string,
   status: SystemStatus,
   count?: string,
   note?: string
 ): Promise<void> {
-  // Check if exists
+  // Check if exists for this property
   const existing = await db
     .select()
     .from(systemStatus)
-    .where(eq(systemStatus.systemId, systemId));
+    .where(
+      and(
+        eq(systemStatus.propertyId, propertyId),
+        eq(systemStatus.systemId, systemId)
+      )
+    );
 
   if (existing.length > 0) {
-    // Update
+    // Update - scoped to property
     await db
       .update(systemStatus)
       .set({
@@ -141,10 +148,16 @@ export async function updateSystemStatus(
         note,
         updatedAt: new Date(),
       })
-      .where(eq(systemStatus.systemId, systemId));
+      .where(
+        and(
+          eq(systemStatus.propertyId, propertyId),
+          eq(systemStatus.systemId, systemId)
+        )
+      );
   } else {
-    // Insert
+    // Insert with propertyId
     await db.insert(systemStatus).values({
+      propertyId,
       systemId,
       status,
       count,
@@ -156,8 +169,10 @@ export async function updateSystemStatus(
 
 /**
  * Create a new announcement
+ * @param propertyId - Required property ID for tenant isolation
  */
 export async function createAnnouncement(
+  propertyId: number,
   type: string,
   message: string,
   expiresAt?: Date
@@ -165,6 +180,7 @@ export async function createAnnouncement(
   const result = await db
     .insert(announcements)
     .values({
+      propertyId,
       type,
       message,
       expiresAt,
@@ -177,15 +193,27 @@ export async function createAnnouncement(
 
 /**
  * Update an announcement
+ * @param propertyId - Required property ID for ownership verification
  */
 export async function updateAnnouncement(
   id: number,
+  propertyId: number,
   updates: {
     type?: string;
     message?: string;
     expiresAt?: Date | null;
   }
 ): Promise<void> {
+  // Verify ownership
+  const [existing] = await db
+    .select()
+    .from(announcements)
+    .where(and(eq(announcements.id, id), eq(announcements.propertyId, propertyId)));
+
+  if (!existing) {
+    throw new Error('Announcement not found or access denied');
+  }
+
   await db
     .update(announcements)
     .set(updates)
@@ -194,15 +222,28 @@ export async function updateAnnouncement(
 
 /**
  * Delete an announcement
+ * @param propertyId - Required property ID for ownership verification
  */
-export async function deleteAnnouncement(id: number): Promise<void> {
+export async function deleteAnnouncement(id: number, propertyId: number): Promise<void> {
+  // Verify ownership
+  const [existing] = await db
+    .select()
+    .from(announcements)
+    .where(and(eq(announcements.id, id), eq(announcements.propertyId, propertyId)));
+
+  if (!existing) {
+    throw new Error('Announcement not found or access denied');
+  }
+
   await db.delete(announcements).where(eq(announcements.id, id));
 }
 
 /**
  * Create a new issue
+ * @param propertyId - Required property ID for tenant isolation
  */
 export async function createIssue(
+  propertyId: number,
   category: string,
   location: string,
   detail: string,
@@ -212,6 +253,7 @@ export async function createIssue(
   const result = await db
     .insert(issues)
     .values({
+      propertyId,
       category,
       location,
       detail,
@@ -226,9 +268,11 @@ export async function createIssue(
 
 /**
  * Update an issue
+ * @param propertyId - Required property ID for ownership verification
  */
 export async function updateIssue(
   id: number,
+  propertyId: number,
   updates: {
     category?: string;
     location?: string;
@@ -237,6 +281,16 @@ export async function updateIssue(
     icon?: string;
   }
 ): Promise<void> {
+  // Verify ownership
+  const [existing] = await db
+    .select()
+    .from(issues)
+    .where(and(eq(issues.id, id), eq(issues.propertyId, propertyId)));
+
+  if (!existing) {
+    throw new Error('Issue not found or access denied');
+  }
+
   await db
     .update(issues)
     .set(updates)
@@ -245,8 +299,19 @@ export async function updateIssue(
 
 /**
  * Resolve an issue (soft delete)
+ * @param propertyId - Required property ID for ownership verification
  */
-export async function resolveIssue(id: number): Promise<void> {
+export async function resolveIssue(id: number, propertyId: number): Promise<void> {
+  // Verify ownership
+  const [existing] = await db
+    .select()
+    .from(issues)
+    .where(and(eq(issues.id, id), eq(issues.propertyId, propertyId)));
+
+  if (!existing) {
+    throw new Error('Issue not found or access denied');
+  }
+
   await db
     .update(issues)
     .set({ resolvedAt: new Date() })
@@ -255,14 +320,17 @@ export async function resolveIssue(id: number): Promise<void> {
 
 /**
  * Create a new maintenance item
+ * @param propertyId - Required property ID for tenant isolation
  */
 export async function createMaintenance(
+  propertyId: number,
   date: string,
   description: string
 ): Promise<number> {
   const result = await db
     .insert(maintenance)
     .values({
+      propertyId,
       date,
       description,
       createdAt: new Date(),
@@ -274,14 +342,26 @@ export async function createMaintenance(
 
 /**
  * Update a maintenance item
+ * @param propertyId - Required property ID for ownership verification
  */
 export async function updateMaintenance(
   id: number,
+  propertyId: number,
   updates: {
     date?: string;
     description?: string;
   }
 ): Promise<void> {
+  // Verify ownership
+  const [existing] = await db
+    .select()
+    .from(maintenance)
+    .where(and(eq(maintenance.id, id), eq(maintenance.propertyId, propertyId)));
+
+  if (!existing) {
+    throw new Error('Maintenance item not found or access denied');
+  }
+
   await db
     .update(maintenance)
     .set(updates)
@@ -290,8 +370,19 @@ export async function updateMaintenance(
 
 /**
  * Complete a maintenance item (soft delete)
+ * @param propertyId - Required property ID for ownership verification
  */
-export async function completeMaintenance(id: number): Promise<void> {
+export async function completeMaintenance(id: number, propertyId: number): Promise<void> {
+  // Verify ownership
+  const [existing] = await db
+    .select()
+    .from(maintenance)
+    .where(and(eq(maintenance.id, id), eq(maintenance.propertyId, propertyId)));
+
+  if (!existing) {
+    throw new Error('Maintenance item not found or access denied');
+  }
+
   await db
     .update(maintenance)
     .set({ completedAt: new Date() })
@@ -305,24 +396,24 @@ export async function completeMaintenance(id: number): Promise<void> {
 /**
  * Get upcoming events (for calendar feed and display)
  * Includes events starting in the past 7 days up to 90 days in the future
+ * @param propertyId - Required property ID for tenant isolation
  */
-export async function getUpcomingEvents(types?: EventType[]): Promise<CalendarEvent[]> {
+export async function getUpcomingEvents(propertyId: number, types?: EventType[]): Promise<CalendarEvent[]> {
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   const ninetyDaysFromNow = new Date(Date.now() + 90 * 24 * 60 * 60 * 1000);
 
-  let query = db
+  const result = await db
     .select()
     .from(events)
     .where(
       and(
+        eq(events.propertyId, propertyId),
         gte(events.startsAt, sevenDaysAgo),
         lte(events.startsAt, ninetyDaysFromNow),
         ne(events.status, 'cancelled')
       )
     )
     .orderBy(asc(events.startsAt));
-
-  const result = await query;
 
   // Filter by type if specified
   if (types && types.length > 0) {
@@ -334,15 +425,19 @@ export async function getUpcomingEvents(types?: EventType[]): Promise<CalendarEv
 
 /**
  * Get all scheduled (not completed/cancelled) events for display
+ * @param propertyId - Required property ID for tenant isolation
  */
-export async function getScheduledEvents(): Promise<CalendarEvent[]> {
+export async function getScheduledEvents(propertyId: number): Promise<CalendarEvent[]> {
   const result = await db
     .select()
     .from(events)
     .where(
-      or(
-        eq(events.status, 'scheduled'),
-        eq(events.status, 'in_progress')
+      and(
+        eq(events.propertyId, propertyId),
+        or(
+          eq(events.status, 'scheduled'),
+          eq(events.status, 'in_progress')
+        )
       )
     )
     .orderBy(asc(events.startsAt));
@@ -352,20 +447,28 @@ export async function getScheduledEvents(): Promise<CalendarEvent[]> {
 
 /**
  * Get a single event by ID
+ * @param propertyId - Optional property ID for ownership verification
  */
-export async function getEventById(id: number): Promise<CalendarEvent | null> {
+export async function getEventById(id: number, propertyId?: number): Promise<CalendarEvent | null> {
+  const conditions = [eq(events.id, id)];
+  if (propertyId !== undefined) {
+    conditions.push(eq(events.propertyId, propertyId));
+  }
+
   const result = await db
     .select()
     .from(events)
-    .where(eq(events.id, id));
+    .where(and(...conditions));
 
   return result[0] as CalendarEvent || null;
 }
 
 /**
  * Create a new calendar event
+ * @param propertyId - Required property ID for tenant isolation
  */
 export async function createEvent(
+  propertyId: number,
   type: EventType,
   title: string,
   startsAt: Date,
@@ -382,6 +485,7 @@ export async function createEvent(
   const result = await db
     .insert(events)
     .values({
+      propertyId,
       type,
       title,
       startsAt,
@@ -403,9 +507,11 @@ export async function createEvent(
 
 /**
  * Update an existing calendar event
+ * @param propertyId - Required property ID for ownership verification
  */
 export async function updateEvent(
   id: number,
+  propertyId: number,
   updates: {
     type?: EventType;
     title?: string;
@@ -419,6 +525,16 @@ export async function updateEvent(
     notifyBeforeMinutes?: number[] | null;
   }
 ): Promise<void> {
+  // Verify ownership
+  const [existing] = await db
+    .select()
+    .from(events)
+    .where(and(eq(events.id, id), eq(events.propertyId, propertyId)));
+
+  if (!existing) {
+    throw new Error('Event not found or access denied');
+  }
+
   await db
     .update(events)
     .set({
@@ -430,8 +546,19 @@ export async function updateEvent(
 
 /**
  * Mark an event as completed
+ * @param propertyId - Required property ID for ownership verification
  */
-export async function completeEvent(id: number): Promise<void> {
+export async function completeEvent(id: number, propertyId: number): Promise<void> {
+  // Verify ownership
+  const [existing] = await db
+    .select()
+    .from(events)
+    .where(and(eq(events.id, id), eq(events.propertyId, propertyId)));
+
+  if (!existing) {
+    throw new Error('Event not found or access denied');
+  }
+
   await db
     .update(events)
     .set({
@@ -444,8 +571,19 @@ export async function completeEvent(id: number): Promise<void> {
 
 /**
  * Mark an event as cancelled
+ * @param propertyId - Required property ID for ownership verification
  */
-export async function cancelEvent(id: number): Promise<void> {
+export async function cancelEvent(id: number, propertyId: number): Promise<void> {
+  // Verify ownership
+  const [existing] = await db
+    .select()
+    .from(events)
+    .where(and(eq(events.id, id), eq(events.propertyId, propertyId)));
+
+  if (!existing) {
+    throw new Error('Event not found or access denied');
+  }
+
   await db
     .update(events)
     .set({
@@ -457,8 +595,19 @@ export async function cancelEvent(id: number): Promise<void> {
 
 /**
  * Delete an event permanently
+ * @param propertyId - Required property ID for ownership verification
  */
-export async function deleteEvent(id: number): Promise<void> {
+export async function deleteEvent(id: number, propertyId: number): Promise<void> {
+  // Verify ownership
+  const [existing] = await db
+    .select()
+    .from(events)
+    .where(and(eq(events.id, id), eq(events.propertyId, propertyId)));
+
+  if (!existing) {
+    throw new Error('Event not found or access denied');
+  }
+
   await db.delete(events).where(eq(events.id, id));
 }
 
