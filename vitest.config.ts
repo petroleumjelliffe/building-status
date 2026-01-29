@@ -18,6 +18,8 @@ export default defineConfig({
       ],
     },
     testTimeout: 10000,
+    // Run tests sequentially to avoid database state conflicts
+    fileParallelism: false,
   },
   resolve: {
     alias: {

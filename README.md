@@ -93,6 +93,71 @@ npm run db:seed      # Seed database with initial data
 npm run db:setup     # Full setup (generate + migrate + seed)
 ```
 
+## Testing
+
+### Running Tests
+
+```bash
+npm test                 # Run all tests in watch mode
+npm test -- --run        # Run tests once (CI mode)
+npm run test:ui          # Open Vitest UI in browser
+npm run test:coverage    # Generate coverage report
+```
+
+### Test Setup
+
+Tests use Vitest with a separate test database:
+
+1. **Create test database**
+   ```bash
+   createdb building_status_test
+   ```
+
+2. **Create test environment file**
+
+   Create `.env.test.local`:
+   ```bash
+   DATABASE_URL="postgresql://user:password@localhost:5432/building_status_test"
+   EDITOR_PASSWORD_HASH="<test-password-hash>"
+   NEXT_PUBLIC_SITE_URL="http://localhost:3000"
+   NODE_ENV="test"
+   ```
+
+3. **Run migrations on test database**
+   ```bash
+   DATABASE_URL="postgresql://user:password@localhost:5432/building_status_test" npm run db:migrate
+   ```
+
+4. **Run tests**
+   ```bash
+   npm test -- --run
+   ```
+
+### Test Coverage
+
+Current test coverage focuses on:
+- ✅ Authentication functions (100% coverage)
+- ✅ Database query functions (CRUD operations)
+- ✅ QR code generation
+- ✅ Multi-tenant data isolation
+
+Target: 70%+ overall coverage with 95%+ on critical paths.
+
+### Git Hooks
+
+Git hooks automatically run tests before commits and pushes:
+
+- **Pre-commit**: Runs full test suite before allowing commit
+- **Pre-push**: Runs tests + linting before allowing push
+
+These hooks are configured via Husky and installed automatically with `npm install`.
+
+To skip hooks (not recommended):
+```bash
+git commit --no-verify
+git push --no-verify
+```
+
 ## Deployment
 
 ### Render.com Setup
