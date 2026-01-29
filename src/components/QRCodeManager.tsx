@@ -334,7 +334,7 @@ export function QRCodeManager({ sessionToken, onClose, propertyId, propertyName,
             <div style={{ textAlign: 'center', padding: '2rem' }}>Loading QR codes...</div>
           ) : qrCodes.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
-              No QR codes generated yet. Click "Generate New QR Code" to create one.
+              No QR codes generated yet. Click &quot;Generate New QR Code&quot; to create one.
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>

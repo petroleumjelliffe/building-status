@@ -25,7 +25,7 @@ export default function RootPage() {
         color: 'var(--text-secondary)',
         marginBottom: '2rem'
       }}>
-        Access your property's status page using the unique link provided by your building management.
+        Access your property&apos;s status page using the unique link provided by your building management.
       </p>
       <div style={{
         padding: '1rem',
