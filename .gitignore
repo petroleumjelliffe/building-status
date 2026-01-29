@@ -28,6 +28,7 @@ next-env.d.ts
 .env.local
 .env.production.local
 .env.development.local
+.env.test.local
 
 # Session storage (development)
 .sessions.json
@@ -35,3 +36,6 @@ next-env.d.ts
 # Database
 drizzle/*.db
 drizzle/*.db-journal
+
+# Test coverage
+coverage/

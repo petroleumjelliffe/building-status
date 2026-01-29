@@ -11,7 +11,11 @@
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "db:seed": "dotenv -e .env.local -- tsx src/lib/seed.ts",
-    "db:setup": "npm run db:generate && npm run db:migrate && npm run db:seed"
+    "db:setup": "npm run db:generate && npm run db:migrate && npm run db:seed",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
+    "test:watch": "vitest --watch"
   },
   "dependencies": {
     "@types/qrcode": "^1.5.6",
@@ -26,17 +30,23 @@
     "rrule": "^2.8.1"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^22.10.2",
     "@types/react": "^18.3.17",
     "@types/react-dom": "^18.3.5",
+    "@vitest/coverage-v8": "^4.0.18",
+    "@vitest/ui": "^4.0.18",
     "dotenv": "^17.2.3",
     "dotenv-cli": "^11.0.0",
     "drizzle-kit": "^0.28.1",
     "eslint": "^9.17.0",
     "eslint-config-next": "^15.1.0",
+    "happy-dom": "^20.4.0",
     "tsx": "^4.19.2",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "^4.0.18"
   },
   "description": "Building status page for apartment residents with server-side rendering and live editing",
   "keywords": [
