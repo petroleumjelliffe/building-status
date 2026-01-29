@@ -22,7 +22,7 @@ services:
   - key: NEXT_PUBLIC_SITE_URL
     sync: false
   region: virginia
-  buildCommand: rm -rf .next && npm install && npm run build
+  buildCommand: rm -rf .next && npm install && npm run db:migrate && npm run build
   startCommand: npm run start
   autoDeployTrigger: commit
 
