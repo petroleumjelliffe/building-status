@@ -42,13 +42,18 @@ export async function getStatusData(propertyId: number = 1): Promise<StatusPageD
         isNull(maintenance.completedAt)
       )
     ), // Only incomplete
-    // Scheduled events (not completed/cancelled)
+    // Scheduled events (not completed/cancelled, and not past)
     db.select().from(events).where(
       and(
         eq(events.propertyId, propertyId),
         or(
           eq(events.status, 'scheduled'),
           eq(events.status, 'in_progress')
+        ),
+        // Hide past events: either endsAt is in the future, or if no endsAt, startsAt is in the future
+        or(
+          gte(events.endsAt, new Date()),
+          and(isNull(events.endsAt), gte(events.startsAt, new Date()))
         )
       )
     ).orderBy(asc(events.startsAt)),
