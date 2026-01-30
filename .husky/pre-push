@@ -5,5 +5,8 @@ npm test -- --run
 echo "Running linter..."
 npm run lint
 
+echo "Cleaning build cache..."
+rm -rf .next
+
 echo "Running build..."
 npm run build
