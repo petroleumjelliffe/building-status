@@ -53,9 +53,17 @@ export function EventForm({ event, sessionToken, onSubmit, onCancel, propertyHas
       const method = event ? 'PATCH' : 'POST';
 
       // Convert to ISO strings
+      // For all-day events, we need to ensure the time is noon UTC to avoid date shifting
       const startsAtDate = allDay
-        ? new Date(startsAt + 'T00:00:00')
+        ? new Date(startsAt + 'T12:00:00Z')
         : new Date(startsAt);
+
+      // Validate date
+      if (isNaN(startsAtDate.getTime())) {
+        setError('Invalid start date');
+        setIsSubmitting(false);
+        return;
+      }
 
       const payload: Record<string, unknown> = {
         type,
@@ -63,15 +71,29 @@ export function EventForm({ event, sessionToken, onSubmit, onCancel, propertyHas
         description: description || undefined,
         startsAt: startsAtDate.toISOString(),
         allDay,
+        timezone: 'America/New_York', // Add timezone for proper handling
         recurrenceRule: recurrenceRule || undefined,
       };
 
       if (endsAt) {
         const endsAtDate = allDay
-          ? new Date(endsAt + 'T23:59:59')
+          ? new Date(endsAt + 'T12:00:00Z')
           : new Date(endsAt);
+
+        // Validate end date
+        if (isNaN(endsAtDate.getTime())) {
+          setError('Invalid end date');
+          setIsSubmitting(false);
+          return;
+        }
+
         payload.endsAt = endsAtDate.toISOString();
       }
+
+      console.log('[EventForm] Submitting to:', url);
+      console.log('[EventForm] Payload:', payload);
+      console.log('[EventForm] All-day:', allDay);
+      console.log('[EventForm] Raw startsAt:', startsAt);
 
       const response = await fetch(url, {
         method,
@@ -82,14 +104,25 @@ export function EventForm({ event, sessionToken, onSubmit, onCancel, propertyHas
         body: JSON.stringify(payload),
       });
 
+      console.log('[EventForm] Response status:', response.status);
+
       if (response.ok) {
         onSubmit();
       } else {
-        const data = await response.json();
-        setError(data.error || 'Failed to save event');
+        let errorMessage = 'Failed to save event';
+        try {
+          const data = await response.json();
+          errorMessage = data.error || errorMessage;
+          console.error('[EventForm] Server error:', data);
+        } catch (parseError) {
+          console.error('[EventForm] Failed to parse error response:', parseError);
+          errorMessage = `Server error (${response.status})`;
+        }
+        setError(errorMessage);
       }
     } catch (err) {
-      setError('Network error. Please try again.');
+      console.error('[EventForm] Network error:', err);
+      setError(err instanceof Error ? err.message : 'Network error. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
