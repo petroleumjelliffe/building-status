@@ -15,18 +15,26 @@ describe('Auth Functions', () => {
   const TEST_PASSWORD = 'testpassword123';
   const WRONG_PASSWORD = 'wrongpassword';
   const SESSION_FILE = path.join(process.cwd(), '.sessions.json');
+  const SESSION_BACKUP = path.join(process.cwd(), '.sessions.backup.json');
 
   beforeEach(() => {
-    // Clean up session file before each test
+    // Backup existing session file if it exists
     if (fs.existsSync(SESSION_FILE)) {
+      fs.copyFileSync(SESSION_FILE, SESSION_BACKUP);
       fs.unlinkSync(SESSION_FILE);
     }
   });
 
   afterEach(() => {
-    // Clean up session file after each test
+    // Clean up test session file
     if (fs.existsSync(SESSION_FILE)) {
       fs.unlinkSync(SESSION_FILE);
+    }
+
+    // Restore original session file
+    if (fs.existsSync(SESSION_BACKUP)) {
+      fs.copyFileSync(SESSION_BACKUP, SESSION_FILE);
+      fs.unlinkSync(SESSION_BACKUP);
     }
   });
 
