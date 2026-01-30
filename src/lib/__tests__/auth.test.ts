@@ -6,6 +6,7 @@ import {
   validateSessionToken,
   verifyAdminToken,
   revokeSession,
+  getSessionPropertyId,
 } from '@/lib/auth';
 import fs from 'fs';
 import path from 'path';
@@ -261,6 +262,159 @@ describe('Auth Functions', () => {
       // When module loads, it should ignore sessions older than 7 days
       // We can verify the file exists but we can't test module initialization here
       expect(fs.existsSync(SESSION_FILE)).toBe(true);
+    });
+  });
+
+  describe('Property Binding and Token Isolation', () => {
+    it('getSessionPropertyId returns null for non-existent token', () => {
+      const result = getSessionPropertyId('nonexistent-token');
+      expect(result).toBeNull();
+    });
+
+    it('getSessionPropertyId returns null for null/undefined token', () => {
+      expect(getSessionPropertyId(null)).toBeNull();
+      expect(getSessionPropertyId(undefined)).toBeNull();
+    });
+
+    it('validateSessionToken rejects token bound to different property', async () => {
+      // Create a session file with a token bound to property 1
+      const token = generateSessionToken();
+      const sessionData = {
+        sessions: {
+          [token]: { propertyId: 1, createdAt: Date.now() },
+        },
+        lastUpdated: Date.now(),
+      };
+      fs.writeFileSync(SESSION_FILE, JSON.stringify(sessionData, null, 2));
+
+      // Reload auth module to pick up new session
+      vi.resetModules();
+      const { validateSessionToken: validate } = await import('@/lib/auth');
+
+      // Token bound to property 1 should be valid for property 1
+      expect(validate(token, 1)).toBe(true);
+
+      // Token bound to property 1 should be INVALID for property 2
+      expect(validate(token, 2)).toBe(false);
+
+      // Token bound to property 1 should be INVALID for property 99
+      expect(validate(token, 99)).toBe(false);
+    });
+
+    it('validateSessionToken accepts token when no propertyId specified', async () => {
+      // Create a session file with a token bound to property 1
+      const token = generateSessionToken();
+      const sessionData = {
+        sessions: {
+          [token]: { propertyId: 1, createdAt: Date.now() },
+        },
+        lastUpdated: Date.now(),
+      };
+      fs.writeFileSync(SESSION_FILE, JSON.stringify(sessionData, null, 2));
+
+      // Reload auth module to pick up new session
+      vi.resetModules();
+      const { validateSessionToken: validate } = await import('@/lib/auth');
+
+      // Token should be valid when no propertyId is specified (backward compat)
+      expect(validate(token)).toBe(true);
+    });
+
+    it('legacy sessions (propertyId = null) work for any property', async () => {
+      // Create a session file with a legacy/global token (propertyId = null)
+      const token = generateSessionToken();
+      const sessionData = {
+        sessions: {
+          [token]: { propertyId: null, createdAt: Date.now() },
+        },
+        lastUpdated: Date.now(),
+      };
+      fs.writeFileSync(SESSION_FILE, JSON.stringify(sessionData, null, 2));
+
+      // Reload auth module to pick up new session
+      vi.resetModules();
+      const { validateSessionToken: validate } = await import('@/lib/auth');
+
+      // Legacy token should be valid for any property
+      expect(validate(token, 1)).toBe(true);
+      expect(validate(token, 2)).toBe(true);
+      expect(validate(token, 999)).toBe(true);
+      expect(validate(token)).toBe(true);
+    });
+
+    it('getSessionPropertyId returns correct property ID', async () => {
+      const tokenA = generateSessionToken();
+      const tokenB = generateSessionToken();
+      const sessionData = {
+        sessions: {
+          [tokenA]: { propertyId: 1, createdAt: Date.now() },
+          [tokenB]: { propertyId: 42, createdAt: Date.now() },
+        },
+        lastUpdated: Date.now(),
+      };
+      fs.writeFileSync(SESSION_FILE, JSON.stringify(sessionData, null, 2));
+
+      // Reload auth module to pick up new sessions
+      vi.resetModules();
+      const { getSessionPropertyId: getPropId } = await import('@/lib/auth');
+
+      expect(getPropId(tokenA)).toBe(1);
+      expect(getPropId(tokenB)).toBe(42);
+    });
+
+    it('multiple properties have isolated sessions', async () => {
+      // Create tokens for different properties
+      const tokenForProperty1 = generateSessionToken();
+      const tokenForProperty2 = generateSessionToken();
+      const tokenForProperty3 = generateSessionToken();
+
+      const sessionData = {
+        sessions: {
+          [tokenForProperty1]: { propertyId: 1, createdAt: Date.now() },
+          [tokenForProperty2]: { propertyId: 2, createdAt: Date.now() },
+          [tokenForProperty3]: { propertyId: 3, createdAt: Date.now() },
+        },
+        lastUpdated: Date.now(),
+      };
+      fs.writeFileSync(SESSION_FILE, JSON.stringify(sessionData, null, 2));
+
+      // Reload auth module
+      vi.resetModules();
+      const { validateSessionToken: validate } = await import('@/lib/auth');
+
+      // Each token should only work for its own property
+      expect(validate(tokenForProperty1, 1)).toBe(true);
+      expect(validate(tokenForProperty1, 2)).toBe(false);
+      expect(validate(tokenForProperty1, 3)).toBe(false);
+
+      expect(validate(tokenForProperty2, 1)).toBe(false);
+      expect(validate(tokenForProperty2, 2)).toBe(true);
+      expect(validate(tokenForProperty2, 3)).toBe(false);
+
+      expect(validate(tokenForProperty3, 1)).toBe(false);
+      expect(validate(tokenForProperty3, 2)).toBe(false);
+      expect(validate(tokenForProperty3, 3)).toBe(true);
+    });
+
+    it('token for one property cannot access another property resources', async () => {
+      // This simulates the real-world scenario where user authenticates
+      // on property A and tries to access property B's resources
+      const attackerToken = generateSessionToken();
+
+      const sessionData = {
+        sessions: {
+          [attackerToken]: { propertyId: 1, createdAt: Date.now() }, // Attacker's property
+        },
+        lastUpdated: Date.now(),
+      };
+      fs.writeFileSync(SESSION_FILE, JSON.stringify(sessionData, null, 2));
+
+      vi.resetModules();
+      const { validateSessionToken: validate } = await import('@/lib/auth');
+
+      // Attacker tries to access victim's property (id: 999)
+      const canAccessVictimProperty = validate(attackerToken, 999);
+      expect(canAccessVictimProperty).toBe(false);
     });
   });
 });
