@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 interface CalendarSubscribeProps {
   siteUrl: string;
+  propertyHash: string;
 }
 
 /**
@@ -11,11 +12,11 @@ interface CalendarSubscribeProps {
  * Provides links to subscribe to the building calendar
  * Now designed to be used within a modal
  */
-export function CalendarSubscribe({ siteUrl }: CalendarSubscribeProps) {
+export function CalendarSubscribe({ siteUrl, propertyHash }: CalendarSubscribeProps) {
   const [copied, setCopied] = useState(false);
 
-  // Build URLs
-  const icsUrl = `${siteUrl}/api/calendar.ics`;
+  // Build URL using property-scoped route
+  const icsUrl = `${siteUrl}/api/${propertyHash}/calendar.ics`;
   const webcalUrl = icsUrl.replace(/^https?:/, 'webcal:');
   const googleCalUrl = `https://calendar.google.com/calendar/r?cid=${encodeURIComponent(webcalUrl)}`;
 

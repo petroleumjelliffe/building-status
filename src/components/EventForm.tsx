@@ -1,20 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import type { CalendarEvent, EventType } from '@/types';
+import { buildApiUrl } from '@/lib/api';
 
 interface EventFormProps {
   event?: CalendarEvent; // If provided, we're editing; otherwise creating
   sessionToken: string;
   onSubmit: () => void;
   onCancel: () => void;
+  propertyHash: string;
 }
 
 /**
  * Form for creating or editing calendar events
  * Used within Modal component
  */
-export function EventForm({ event, sessionToken, onSubmit, onCancel }: EventFormProps) {
+export function EventForm({ event, sessionToken, onSubmit, onCancel, propertyHash }: EventFormProps) {
   const [type, setType] = useState<EventType>(event?.type || 'maintenance');
   const [title, setTitle] = useState(event?.title || '');
   const [description, setDescription] = useState(event?.description || '');
@@ -46,15 +48,22 @@ export function EventForm({ event, sessionToken, onSubmit, onCancel }: EventForm
 
     try {
       const url = event
-        ? `/api/events/${event.id}`
-        : '/api/events';
-
+        ? buildApiUrl(propertyHash, `/events/${event.id}`)
+        : buildApiUrl(propertyHash, '/events');
       const method = event ? 'PATCH' : 'POST';
 
       // Convert to ISO strings
+      // For all-day events, we need to ensure the time is noon UTC to avoid date shifting
       const startsAtDate = allDay
-        ? new Date(startsAt + 'T00:00:00')
+        ? new Date(startsAt.split('T')[0] + 'T12:00:00Z')
         : new Date(startsAt);
+
+      // Validate date
+      if (isNaN(startsAtDate.getTime())) {
+        setError('Invalid start date');
+        setIsSubmitting(false);
+        return;
+      }
 
       const payload: Record<string, unknown> = {
         type,
@@ -62,13 +71,22 @@ export function EventForm({ event, sessionToken, onSubmit, onCancel }: EventForm
         description: description || undefined,
         startsAt: startsAtDate.toISOString(),
         allDay,
+        timezone: 'America/New_York', // Add timezone for proper handling
         recurrenceRule: recurrenceRule || undefined,
       };
 
       if (endsAt) {
         const endsAtDate = allDay
-          ? new Date(endsAt + 'T23:59:59')
+          ? new Date(endsAt.split('T')[0] + 'T12:00:00Z')
           : new Date(endsAt);
+
+        // Validate end date
+        if (isNaN(endsAtDate.getTime())) {
+          setError('Invalid end date');
+          setIsSubmitting(false);
+          return;
+        }
+
         payload.endsAt = endsAtDate.toISOString();
       }
 
@@ -84,11 +102,17 @@ export function EventForm({ event, sessionToken, onSubmit, onCancel }: EventForm
       if (response.ok) {
         onSubmit();
       } else {
-        const data = await response.json();
-        setError(data.error || 'Failed to save event');
+        let errorMessage = 'Failed to save event';
+        try {
+          const data = await response.json();
+          errorMessage = data.error || errorMessage;
+        } catch {
+          errorMessage = `Server error (${response.status})`;
+        }
+        setError(errorMessage);
       }
     } catch (err) {
-      setError('Network error. Please try again.');
+      setError(err instanceof Error ? err.message : 'Network error. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

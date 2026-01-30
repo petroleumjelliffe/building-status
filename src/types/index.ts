@@ -447,3 +447,179 @@ export interface NotificationConfirmResponse {
   requiresApproval: boolean;
   message: string;
 }
+
+// ============================================================================
+// API Response Types
+// ============================================================================
+// These types define the shape of all API responses for type safety between
+// backend routes and frontend consumers.
+
+/**
+ * Base error response - all API errors follow this shape
+ */
+export interface ApiErrorResponse {
+  success: false;
+  error: string;
+}
+
+/**
+ * Generic success response for mutations that return an ID
+ */
+export interface ApiCreateResponse {
+  success: true;
+  id: number | string;
+}
+
+/**
+ * Generic success response for mutations with no return data
+ */
+export interface ApiSuccessResponse {
+  success: true;
+}
+
+/**
+ * Union type for mutation responses (create/update/delete)
+ */
+export type ApiMutationResponse = ApiCreateResponse | ApiSuccessResponse | ApiErrorResponse;
+
+// --- Issues ---
+export interface IssueListResponse {
+  success: true;
+  issues: Issue[];
+}
+
+export interface IssueResponse {
+  success: true;
+  issue: Issue;
+}
+
+export type GetIssuesResponse = IssueListResponse | ApiErrorResponse;
+export type CreateIssueResponse = ApiCreateResponse | ApiErrorResponse;
+export type UpdateIssueResponse = ApiSuccessResponse | ApiErrorResponse;
+export type ResolveIssueResponse = ApiSuccessResponse | ApiErrorResponse;
+
+// --- Events ---
+export interface EventListResponse {
+  success: true;
+  events: CalendarEvent[];
+}
+
+export interface EventResponse {
+  success: true;
+  event: CalendarEvent;
+}
+
+export type GetEventsResponse = EventListResponse | ApiErrorResponse;
+export type CreateEventResponse = ApiCreateResponse | ApiErrorResponse;
+export type UpdateEventResponse = ApiSuccessResponse | ApiErrorResponse;
+export type CompleteEventResponse = ApiSuccessResponse | ApiErrorResponse;
+export type CancelEventResponse = ApiSuccessResponse | ApiErrorResponse;
+
+// --- Maintenance ---
+export interface MaintenanceListResponse {
+  success: true;
+  maintenance: Maintenance[];
+}
+
+export interface MaintenanceResponse {
+  success: true;
+  maintenance: Maintenance;
+}
+
+export type GetMaintenanceResponse = MaintenanceListResponse | ApiErrorResponse;
+export type CreateMaintenanceResponse = ApiCreateResponse | ApiErrorResponse;
+export type UpdateMaintenanceResponse = ApiSuccessResponse | ApiErrorResponse;
+export type CompleteMaintenanceResponse = ApiSuccessResponse | ApiErrorResponse;
+
+// --- Announcements ---
+export interface AnnouncementListResponse {
+  success: true;
+  announcements: Announcement[];
+}
+
+export interface AnnouncementResponse {
+  success: true;
+  announcement: Announcement;
+}
+
+export type GetAnnouncementsResponse = AnnouncementListResponse | ApiErrorResponse;
+export type CreateAnnouncementResponse = ApiCreateResponse | ApiErrorResponse;
+export type UpdateAnnouncementResponse = ApiSuccessResponse | ApiErrorResponse;
+export type DeleteAnnouncementResponse = ApiSuccessResponse | ApiErrorResponse;
+
+// --- Contacts ---
+export interface ContactListResponse {
+  success: true;
+  contacts: Contact[];
+}
+
+export interface ContactResponse {
+  success: true;
+  contact: Contact;
+}
+
+export type GetContactsResponse = ContactListResponse | ApiErrorResponse;
+export type CreateContactResponse = ApiCreateResponse | ApiErrorResponse;
+export type UpdateContactResponse = ApiSuccessResponse | ApiErrorResponse;
+export type DeleteContactResponse = ApiSuccessResponse | ApiErrorResponse;
+
+// --- Helpful Links ---
+export interface HelpfulLinkListResponse {
+  success: true;
+  links: HelpfulLink[];
+}
+
+export interface HelpfulLinkResponse {
+  success: true;
+  link: HelpfulLink;
+}
+
+export type GetHelpfulLinksResponse = HelpfulLinkListResponse | ApiErrorResponse;
+export type CreateHelpfulLinkResponse = ApiCreateResponse | ApiErrorResponse;
+export type UpdateHelpfulLinkResponse = ApiSuccessResponse | ApiErrorResponse;
+export type DeleteHelpfulLinkResponse = ApiSuccessResponse | ApiErrorResponse;
+
+// --- Garbage Schedule ---
+export interface GarbageScheduleResponse {
+  success: true;
+  schedule: GarbageSchedule;
+}
+
+export type GetGarbageScheduleResponse = GarbageScheduleResponse | ApiErrorResponse;
+export type UpdateGarbageScheduleResponse = ApiSuccessResponse | ApiErrorResponse;
+
+// --- System Status ---
+export interface SystemStatusListResponse {
+  success: true;
+  status: SystemStatusData[];
+}
+
+export type GetSystemStatusResponse = SystemStatusListResponse | ApiErrorResponse;
+export type UpdateSystemStatusResponse = ApiSuccessResponse | ApiErrorResponse;
+
+// --- Settings ---
+export interface SettingsResponse {
+  success: true;
+  reportEmail: string;
+}
+
+export type GetSettingsResponse = SettingsResponse | ApiErrorResponse;
+export type UpdateSettingsResponse = ApiSuccessResponse | ApiErrorResponse;
+
+// --- Auth ---
+export interface LoginSuccessResponse {
+  success: true;
+  token: string;
+}
+
+export type LoginResponse = LoginSuccessResponse | ApiErrorResponse;
+export type LogoutResponse = ApiSuccessResponse | ApiErrorResponse;
+export type VerifyResponse = ApiSuccessResponse | ApiErrorResponse;
+
+// --- Status Page Data ---
+export interface StatusPageDataResponse {
+  success: true;
+  data: StatusPageData;
+}
+
+export type GetStatusPageDataResponse = StatusPageDataResponse | ApiErrorResponse;

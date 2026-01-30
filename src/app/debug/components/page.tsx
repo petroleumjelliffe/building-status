@@ -18,6 +18,7 @@ import type { Issue, CalendarEvent, Maintenance, Contact, GarbageSchedule as Gar
 export default function ComponentDebugPage() {
   const [editMode, setEditMode] = useState(false);
   const [sessionToken] = useState('debug-token-12345');
+  const debugPropertyHash = 'debug123'; // Debug property hash for testing
 
   // Sample data for each component type
   const sampleIssues: Issue[] = [
@@ -299,6 +300,7 @@ export default function ComponentDebugPage() {
               editable={editMode}
               password={editMode ? sessionToken : undefined}
               onUpdate={() => console.log('Issue updated:', issue.id)}
+              propertyHash={debugPropertyHash}
             />
           ))}
         </div>
@@ -315,6 +317,7 @@ export default function ComponentDebugPage() {
               editable={editMode}
               sessionToken={editMode ? sessionToken : undefined}
               onUpdate={() => console.log('Event updated:', event.id)}
+              propertyHash={debugPropertyHash}
             />
           ))}
         </div>
@@ -331,6 +334,7 @@ export default function ComponentDebugPage() {
               editable={editMode}
               password={editMode ? sessionToken : undefined}
               onUpdate={() => console.log('Maintenance updated:', item.id)}
+              propertyHash={debugPropertyHash}
             />
           ))}
         </div>
@@ -341,7 +345,7 @@ export default function ComponentDebugPage() {
         <h2 style={{ marginBottom: '1rem', color: '#333' }}>Contact Cards</h2>
         <div className="contacts-grid">
           {sampleContacts.map((contact, index) => (
-            <ContactCard key={index} contact={contact} />
+            <ContactCard key={index} contact={contact} propertyHash={debugPropertyHash} />
           ))}
         </div>
       </section>
@@ -349,13 +353,13 @@ export default function ComponentDebugPage() {
       {/* Garbage Schedule */}
       <section style={{ marginBottom: '3rem' }}>
         <h2 style={{ marginBottom: '1rem', color: '#333' }}>Garbage Schedule</h2>
-        <GarbageSchedule schedule={sampleGarbageSchedule} />
+        <GarbageSchedule schedule={sampleGarbageSchedule} propertyHash={debugPropertyHash} />
       </section>
 
       {/* Helpful Links */}
       <section style={{ marginBottom: '3rem' }}>
         <h2 style={{ marginBottom: '1rem', color: '#333' }}>Helpful Links</h2>
-        <HelpfulLinks links={sampleLinks} />
+        <HelpfulLinks links={sampleLinks} propertyHash={debugPropertyHash} />
       </section>
 
       {/* Footer */}

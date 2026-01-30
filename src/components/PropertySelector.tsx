@@ -53,7 +53,7 @@ export function PropertySelector({
     }
 
     fetchProperties();
-  }, [sessionToken]);
+  }, [sessionToken, selectedPropertyId, onPropertySelect]);
 
   if (loading) {
     return <div className="property-selector">Loading properties...</div>;

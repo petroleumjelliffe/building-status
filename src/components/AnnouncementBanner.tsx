@@ -2,12 +2,14 @@
 
 import { useState } from 'react';
 import type { Announcement, AnnouncementType } from '@/types';
+import { buildApiUrl } from '@/lib/api';
 
 interface AnnouncementBannerProps {
   announcements: Announcement[];
   editable: boolean;
   password?: string;
   onUpdate?: () => void;
+  propertyHash: string;
 }
 
 /**
@@ -20,6 +22,7 @@ export function AnnouncementBanner({
   editable,
   password,
   onUpdate,
+  propertyHash,
 }: AnnouncementBannerProps) {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editedMessage, setEditedMessage] = useState('');
@@ -37,14 +40,15 @@ export function AnnouncementBanner({
         : 'warning';
 
     try {
-      const response = await fetch('/api/announcements', {
-        method: 'POST',
+      const url = buildApiUrl(propertyHash, `/announcements/${announcement.id}`);
+
+      const response = await fetch(url, {
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${password}`, // password is actually sessionToken
+          'Authorization': `Bearer ${password}`,
         },
         body: JSON.stringify({
-          id: announcement.id,
           type: nextType,
           message: announcement.message,
           expiresAt: announcement.expiresAt,
@@ -73,14 +77,15 @@ export function AnnouncementBanner({
     if (!editable || !password || editedMessage.trim().length === 0) return;
 
     try {
-      const response = await fetch('/api/announcements', {
-        method: 'POST',
+      const url = buildApiUrl(propertyHash, `/announcements/${announcement.id}`);
+
+      const response = await fetch(url, {
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${password}`, // password is actually sessionToken
+          'Authorization': `Bearer ${password}`,
         },
         body: JSON.stringify({
-          id: announcement.id,
           type: announcement.type,
           message: editedMessage,
           expiresAt: announcement.expiresAt,

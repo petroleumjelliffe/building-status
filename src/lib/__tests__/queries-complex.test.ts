@@ -85,7 +85,7 @@ describe('Complex Query Functions - Business Logic', () => {
 
     it('filters resolved issues older than 24 hours', async () => {
       // Create old resolved issue
-      const oldResolvedId = await createIssue('Old', 'Location', 'Detail', 'resolved');
+      const oldResolvedId = await createIssue(testProperty.id, 'Old', 'Location', 'Detail', 'resolved');
       const db = getTestDb();
       const twentySixHoursAgo = new Date(Date.now() - 26 * 60 * 60 * 1000);
       await db.update(issues)
@@ -93,11 +93,11 @@ describe('Complex Query Functions - Business Logic', () => {
         .where(eq(issues.id, oldResolvedId));
 
       // Create recent resolved issue
-      const recentResolvedId = await createIssue('Recent', 'Location', 'Detail', 'resolved');
-      await resolveIssue(recentResolvedId);
+      const recentResolvedId = await createIssue(testProperty.id, 'Recent', 'Location', 'Detail', 'resolved');
+      await resolveIssue(recentResolvedId, testProperty.id);
 
       // Create unresolved issue
-      const unresolvedId = await createIssue('Unresolved', 'Location', 'Detail', 'reported');
+      const unresolvedId = await createIssue(testProperty.id, 'Unresolved', 'Location', 'Detail', 'reported');
 
       const result = await getStatusData(testProperty.id);
 
@@ -110,9 +110,9 @@ describe('Complex Query Functions - Business Logic', () => {
       const pastDate = new Date(Date.now() - 1 * 24 * 60 * 60 * 1000);
       const futureDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
-      const expiredId = await createAnnouncement('info', 'Expired', pastDate);
-      const activeId = await createAnnouncement('warning', 'Active', futureDate);
-      const permanentId = await createAnnouncement('alert', 'Permanent', undefined);
+      const expiredId = await createAnnouncement(testProperty.id, 'info', 'Expired', pastDate);
+      const activeId = await createAnnouncement(testProperty.id, 'warning', 'Active', futureDate);
+      const permanentId = await createAnnouncement(testProperty.id, 'alert', 'Permanent', undefined);
 
       const result = await getStatusData(testProperty.id);
 
@@ -124,7 +124,7 @@ describe('Complex Query Functions - Business Logic', () => {
     it('only shows scheduled and in_progress events', async () => {
       const futureDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
-      const scheduledId = await createEvent('maintenance', 'Scheduled', futureDate);
+      const scheduledId = await createEvent(testProperty.id, 'maintenance', 'Scheduled', futureDate);
 
       const result = await getStatusData(testProperty.id);
 
@@ -147,10 +147,10 @@ describe('Complex Query Functions - Business Logic', () => {
       const sixDaysAgo = new Date(Date.now() - 6 * 24 * 60 * 60 * 1000);
       const eightyDaysFromNow = new Date(Date.now() + 80 * 24 * 60 * 60 * 1000);
 
-      const id1 = await createEvent('maintenance', 'Recent past', sixDaysAgo);
-      const id2 = await createEvent('maintenance', 'Near future', eightyDaysFromNow);
+      const id1 = await createEvent(testProperty.id, 'maintenance', 'Recent past', sixDaysAgo);
+      const id2 = await createEvent(testProperty.id, 'maintenance', 'Near future', eightyDaysFromNow);
 
-      const result = await getUpcomingEvents();
+      const result = await getUpcomingEvents(testProperty.id);
 
       expect(result.find((e: any) => e.id === id1)).toBeDefined();
       expect(result.find((e: any) => e.id === id2)).toBeDefined();
@@ -158,18 +158,18 @@ describe('Complex Query Functions - Business Logic', () => {
 
     it('excludes events older than 7 days', async () => {
       const eightDaysAgo = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000);
-      const id = await createEvent('maintenance', 'Old event', eightDaysAgo);
+      const id = await createEvent(testProperty.id, 'maintenance', 'Old event', eightDaysAgo);
 
-      const result = await getUpcomingEvents();
+      const result = await getUpcomingEvents(testProperty.id);
 
       expect(result.find((e: any) => e.id === id)).toBeUndefined();
     });
 
     it('excludes events more than 90 days in future', async () => {
       const ninetyOneDaysFromNow = new Date(Date.now() + 91 * 24 * 60 * 60 * 1000);
-      const id = await createEvent('maintenance', 'Far future', ninetyOneDaysFromNow);
+      const id = await createEvent(testProperty.id, 'maintenance', 'Far future', ninetyOneDaysFromNow);
 
-      const result = await getUpcomingEvents();
+      const result = await getUpcomingEvents(testProperty.id);
 
       expect(result.find((e: any) => e.id === id)).toBeUndefined();
     });
@@ -177,12 +177,12 @@ describe('Complex Query Functions - Business Logic', () => {
     it('filters by event type when specified', async () => {
       const futureDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
-      const maintenanceId = await createEvent('maintenance', 'Maintenance', futureDate);
-      const outageId = await createEvent('outage', 'Outage', futureDate);
-      const announcementId = await createEvent('announcement', 'Announcement', futureDate);
+      const maintenanceId = await createEvent(testProperty.id, 'maintenance', 'Maintenance', futureDate);
+      const outageId = await createEvent(testProperty.id, 'outage', 'Outage', futureDate);
+      const announcementId = await createEvent(testProperty.id, 'announcement', 'Announcement', futureDate);
 
-      const maintenanceOnly = await getUpcomingEvents(['maintenance']);
-      const maintenanceAndOutage = await getUpcomingEvents(['maintenance', 'outage']);
+      const maintenanceOnly = await getUpcomingEvents(testProperty.id, ['maintenance']);
+      const maintenanceAndOutage = await getUpcomingEvents(testProperty.id, ['maintenance', 'outage']);
 
       expect(maintenanceOnly.find((e: any) => e.id === maintenanceId)).toBeDefined();
       expect(maintenanceOnly.find((e: any) => e.id === outageId)).toBeUndefined();
@@ -196,11 +196,11 @@ describe('Complex Query Functions - Business Logic', () => {
     it('returns all types when no filter specified', async () => {
       const futureDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
-      const id1 = await createEvent('maintenance', 'Event 1', futureDate);
-      const id2 = await createEvent('outage', 'Event 2', futureDate);
-      const id3 = await createEvent('announcement', 'Event 3', futureDate);
+      const id1 = await createEvent(testProperty.id, 'maintenance', 'Event 1', futureDate);
+      const id2 = await createEvent(testProperty.id, 'outage', 'Event 2', futureDate);
+      const id3 = await createEvent(testProperty.id, 'announcement', 'Event 3', futureDate);
 
-      const result = await getUpcomingEvents();
+      const result = await getUpcomingEvents(testProperty.id);
 
       expect(result.find((e: any) => e.id === id1)).toBeDefined();
       expect(result.find((e: any) => e.id === id2)).toBeDefined();
@@ -212,11 +212,11 @@ describe('Complex Query Functions - Business Logic', () => {
       const date2 = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000);
       const date3 = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000);
 
-      await createEvent('maintenance', 'Event 3 days', date1);
-      await createEvent('maintenance', 'Event 1 day', date2);
-      await createEvent('maintenance', 'Event 5 days', date3);
+      await createEvent(testProperty.id, 'maintenance', 'Event 3 days', date1);
+      await createEvent(testProperty.id, 'maintenance', 'Event 1 day', date2);
+      await createEvent(testProperty.id, 'maintenance', 'Event 5 days', date3);
 
-      const result = await getUpcomingEvents();
+      const result = await getUpcomingEvents(testProperty.id);
 
       expect(result[0].title).toBe('Event 1 day');
       expect(result[1].title).toBe('Event 3 days');

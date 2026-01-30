@@ -1,19 +1,21 @@
 'use client';
 
 import { useState } from 'react';
+import { buildApiUrl } from '@/lib/api';
 
 interface SettingsFormProps {
   reportEmail: string;
   sessionToken: string;
   onSubmit: () => void;
   onCancel: () => void;
+  propertyHash: string;
 }
 
 /**
  * Form for editing site settings (report email)
  * Used within Modal component
  */
-export function SettingsForm({ reportEmail, sessionToken, onSubmit, onCancel }: SettingsFormProps) {
+export function SettingsForm({ reportEmail, sessionToken, onSubmit, onCancel, propertyHash }: SettingsFormProps) {
   const [email, setEmail] = useState(reportEmail);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -24,7 +26,9 @@ export function SettingsForm({ reportEmail, sessionToken, onSubmit, onCancel }: 
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/settings', {
+      const url = buildApiUrl(propertyHash, '/settings');
+
+      const response = await fetch(url, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

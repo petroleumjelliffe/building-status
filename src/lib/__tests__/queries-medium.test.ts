@@ -32,7 +32,7 @@ describe('Medium Complexity Query Functions', () => {
 
   describe('createAnnouncement', () => {
     it('returns generated ID', async () => {
-      const id = await createAnnouncement('info', 'Test message', undefined);
+      const id = await createAnnouncement(testProperty.id, 'info', 'Test message', undefined);
 
       expect(id).toBeDefined();
       expect(typeof id).toBe('number');
@@ -41,7 +41,7 @@ describe('Medium Complexity Query Functions', () => {
 
     it('creates announcement with all fields', async () => {
       const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-      const id = await createAnnouncement('warning', 'Important message', expiresAt);
+      const id = await createAnnouncement(testProperty.id, 'warning', 'Important message', expiresAt);
 
       const db = getTestDb();
       const result = await db.select().from(announcements).where(eq(announcements.id, id));
@@ -53,7 +53,7 @@ describe('Medium Complexity Query Functions', () => {
     });
 
     it('handles undefined expiresAt', async () => {
-      const id = await createAnnouncement('info', 'Permanent message', undefined);
+      const id = await createAnnouncement(testProperty.id, 'info', 'Permanent message', undefined);
 
       const db = getTestDb();
       const result = await db.select().from(announcements).where(eq(announcements.id, id));
@@ -62,9 +62,9 @@ describe('Medium Complexity Query Functions', () => {
     });
 
     it('returns unique IDs for multiple announcements', async () => {
-      const id1 = await createAnnouncement('info', 'Message 1', undefined);
-      const id2 = await createAnnouncement('info', 'Message 2', undefined);
-      const id3 = await createAnnouncement('info', 'Message 3', undefined);
+      const id1 = await createAnnouncement(testProperty.id, 'info', 'Message 1', undefined);
+      const id2 = await createAnnouncement(testProperty.id, 'info', 'Message 2', undefined);
+      const id3 = await createAnnouncement(testProperty.id, 'info', 'Message 3', undefined);
 
       expect(id1).not.toBe(id2);
       expect(id2).not.toBe(id3);
@@ -74,7 +74,7 @@ describe('Medium Complexity Query Functions', () => {
 
   describe('createIssue', () => {
     it('returns generated ID', async () => {
-      const id = await createIssue('Plumbing', 'Floor 2', 'Leak detected', 'reported');
+      const id = await createIssue(testProperty.id, 'Plumbing', 'Floor 2', 'Leak detected', 'reported');
 
       expect(id).toBeDefined();
       expect(typeof id).toBe('number');
@@ -82,7 +82,7 @@ describe('Medium Complexity Query Functions', () => {
     });
 
     it('creates issue without icon', async () => {
-      const id = await createIssue('Plumbing', 'Floor 2', 'Leak detected', 'reported');
+      const id = await createIssue(testProperty.id, 'Plumbing', 'Floor 2', 'Leak detected', 'reported');
 
       const db = getTestDb();
       const result = await db.select().from(issues).where(eq(issues.id, id));
@@ -95,7 +95,7 @@ describe('Medium Complexity Query Functions', () => {
     });
 
     it('creates issue with icon', async () => {
-      const id = await createIssue('Plumbing', 'Floor 2', 'Leak detected', 'reported', '💧');
+      const id = await createIssue(testProperty.id, 'Plumbing', 'Floor 2', 'Leak detected', 'reported', '💧');
 
       const db = getTestDb();
       const result = await db.select().from(issues).where(eq(issues.id, id));
@@ -105,7 +105,7 @@ describe('Medium Complexity Query Functions', () => {
 
     it('injects reportedAt timestamp', async () => {
       const beforeCreate = new Date();
-      const id = await createIssue('Plumbing', 'Floor 2', 'Leak', 'reported');
+      const id = await createIssue(testProperty.id, 'Plumbing', 'Floor 2', 'Leak', 'reported');
 
       const db = getTestDb();
       const result = await db.select().from(issues).where(eq(issues.id, id));
@@ -115,7 +115,7 @@ describe('Medium Complexity Query Functions', () => {
     });
 
     it('initializes resolvedAt as null', async () => {
-      const id = await createIssue('Plumbing', 'Floor 2', 'Leak', 'reported');
+      const id = await createIssue(testProperty.id, 'Plumbing', 'Floor 2', 'Leak', 'reported');
 
       const db = getTestDb();
       const result = await db.select().from(issues).where(eq(issues.id, id));
@@ -126,7 +126,7 @@ describe('Medium Complexity Query Functions', () => {
 
   describe('updateSystemStatus', () => {
     it('inserts new system status', async () => {
-      await updateSystemStatus('heat', 'ok', undefined, undefined);
+      await updateSystemStatus(testProperty.id, 'heat', 'ok', undefined, undefined);
 
       const db = getTestDb();
       const result = await db.select().from(systemStatus).where(eq(systemStatus.systemId, 'heat'));
@@ -138,10 +138,10 @@ describe('Medium Complexity Query Functions', () => {
 
     it('updates existing system status', async () => {
       // First insert
-      await updateSystemStatus('water', 'ok', '3/3', 'All systems operational');
+      await updateSystemStatus(testProperty.id, 'water', 'ok', '3/3', 'All systems operational');
 
       // Then update
-      await updateSystemStatus('water', 'issue', '2/3', 'One floor affected');
+      await updateSystemStatus(testProperty.id, 'water', 'issue', '2/3', 'One floor affected');
 
       const db = getTestDb();
       const result = await db.select().from(systemStatus).where(eq(systemStatus.systemId, 'water'));
@@ -153,7 +153,7 @@ describe('Medium Complexity Query Functions', () => {
     });
 
     it('handles optional count and note', async () => {
-      await updateSystemStatus('laundry', 'ok', undefined, undefined);
+      await updateSystemStatus(testProperty.id, 'laundry', 'ok', undefined, undefined);
 
       const db = getTestDb();
       const result = await db.select().from(systemStatus).where(eq(systemStatus.systemId, 'laundry'));
@@ -163,7 +163,7 @@ describe('Medium Complexity Query Functions', () => {
     });
 
     it('updates updatedAt timestamp on update', async () => {
-      await updateSystemStatus('heat', 'ok', undefined, undefined);
+      await updateSystemStatus(testProperty.id, 'heat', 'ok', undefined, undefined);
 
       const db = getTestDb();
       const firstResult = await db.select().from(systemStatus).where(eq(systemStatus.systemId, 'heat'));
@@ -172,7 +172,7 @@ describe('Medium Complexity Query Functions', () => {
       // Wait a bit
       await new Promise(resolve => setTimeout(resolve, 10));
 
-      await updateSystemStatus('heat', 'issue', undefined, 'Problem detected');
+      await updateSystemStatus(testProperty.id, 'heat', 'issue', undefined, 'Problem detected');
 
       const secondResult = await db.select().from(systemStatus).where(eq(systemStatus.systemId, 'heat'));
       const secondUpdatedAt = secondResult[0].updatedAt;
@@ -183,7 +183,7 @@ describe('Medium Complexity Query Functions', () => {
 
   describe('createMaintenance', () => {
     it('returns generated ID', async () => {
-      const id = await createMaintenance('Mon, Jan 1', 'Test maintenance');
+      const id = await createMaintenance(testProperty.id, 'Mon, Jan 1', 'Test maintenance');
 
       expect(id).toBeDefined();
       expect(typeof id).toBe('number');
@@ -192,7 +192,7 @@ describe('Medium Complexity Query Functions', () => {
 
     it('injects createdAt timestamp', async () => {
       const beforeCreate = new Date();
-      const id = await createMaintenance('Mon, Jan 1', 'Test maintenance');
+      const id = await createMaintenance(testProperty.id, 'Mon, Jan 1', 'Test maintenance');
 
       const db = getTestDb();
       const result = await db.select().from(maintenance).where(eq(maintenance.id, id));
@@ -202,7 +202,7 @@ describe('Medium Complexity Query Functions', () => {
     });
 
     it('initializes completedAt as null', async () => {
-      const id = await createMaintenance('Mon, Jan 1', 'Test maintenance');
+      const id = await createMaintenance(testProperty.id, 'Mon, Jan 1', 'Test maintenance');
 
       const db = getTestDb();
       const result = await db.select().from(maintenance).where(eq(maintenance.id, id));
@@ -215,7 +215,7 @@ describe('Medium Complexity Query Functions', () => {
     const futureDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
     it('returns generated ID', async () => {
-      const id = await createEvent('maintenance', 'Test event', futureDate);
+      const id = await createEvent(testProperty.id, 'maintenance', 'Test event', futureDate);
 
       expect(id).toBeDefined();
       expect(typeof id).toBe('number');
@@ -223,7 +223,7 @@ describe('Medium Complexity Query Functions', () => {
     });
 
     it('creates event with minimal options', async () => {
-      const id = await createEvent('maintenance', 'Simple event', futureDate);
+      const id = await createEvent(testProperty.id, 'maintenance', 'Simple event', futureDate);
 
       const db = getTestDb();
       const result = await db.select().from(events).where(eq(events.id, id));
@@ -237,7 +237,7 @@ describe('Medium Complexity Query Functions', () => {
     });
 
     it('applies default values for optional fields', async () => {
-      const id = await createEvent('maintenance', 'Test event', futureDate, {});
+      const id = await createEvent(testProperty.id, 'maintenance', 'Test event', futureDate, {});
 
       const db = getTestDb();
       const result = await db.select().from(events).where(eq(events.id, id));
@@ -249,7 +249,7 @@ describe('Medium Complexity Query Functions', () => {
 
     it('creates event with all options', async () => {
       const endsAt = new Date(futureDate.getTime() + 2 * 60 * 60 * 1000);
-      const id = await createEvent('outage', 'Power outage', futureDate, {
+      const id = await createEvent(testProperty.id, 'outage', 'Power outage', futureDate, {
         description: 'Scheduled power maintenance',
         endsAt,
         allDay: true,
@@ -273,7 +273,7 @@ describe('Medium Complexity Query Functions', () => {
 
     it('injects timestamps', async () => {
       const beforeCreate = new Date();
-      const id = await createEvent('maintenance', 'Test event', futureDate);
+      const id = await createEvent(testProperty.id, 'maintenance', 'Test event', futureDate);
 
       const db = getTestDb();
       const result = await db.select().from(events).where(eq(events.id, id));
@@ -289,13 +289,13 @@ describe('Medium Complexity Query Functions', () => {
     const futureDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
     it('merges partial updates correctly', async () => {
-      const id = await createEvent('maintenance', 'Original title', futureDate, {
+      const id = await createEvent(testProperty.id, 'maintenance', 'Original title', futureDate, {
         description: 'Original description',
         allDay: false,
         timezone: 'America/New_York',
       });
 
-      await updateEvent(id, {
+      await updateEvent(id, testProperty.id, {
         title: 'Updated title',
         allDay: true,
       });
@@ -310,9 +310,9 @@ describe('Medium Complexity Query Functions', () => {
     });
 
     it('updates single field', async () => {
-      const id = await createEvent('maintenance', 'Test event', futureDate);
+      const id = await createEvent(testProperty.id, 'maintenance', 'Test event', futureDate);
 
-      await updateEvent(id, { status: 'in_progress' });
+      await updateEvent(id, testProperty.id, { status: 'in_progress' });
 
       const db = getTestDb();
       const result = await db.select().from(events).where(eq(events.id, id));
@@ -322,12 +322,12 @@ describe('Medium Complexity Query Functions', () => {
     });
 
     it('can set nullable fields to null', async () => {
-      const id = await createEvent('maintenance', 'Test event', futureDate, {
+      const id = await createEvent(testProperty.id, 'maintenance', 'Test event', futureDate, {
         description: 'Has description',
         recurrenceRule: 'FREQ=WEEKLY',
       });
 
-      await updateEvent(id, {
+      await updateEvent(id, testProperty.id, {
         endsAt: null,
         recurrenceRule: null,
       });
@@ -340,7 +340,7 @@ describe('Medium Complexity Query Functions', () => {
     });
 
     it('updates updatedAt timestamp', async () => {
-      const id = await createEvent('maintenance', 'Test event', futureDate);
+      const id = await createEvent(testProperty.id, 'maintenance', 'Test event', futureDate);
 
       const db = getTestDb();
       const before = await db.select().from(events).where(eq(events.id, id));
@@ -348,7 +348,7 @@ describe('Medium Complexity Query Functions', () => {
 
       await new Promise(resolve => setTimeout(resolve, 10));
 
-      await updateEvent(id, { title: 'Updated' });
+      await updateEvent(id, testProperty.id, { title: 'Updated' });
 
       const after = await db.select().from(events).where(eq(events.id, id));
       expect(after[0].updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime());
@@ -358,9 +358,9 @@ describe('Medium Complexity Query Functions', () => {
   describe('deleteEvent', () => {
     it('permanently deletes event', async () => {
       const futureDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-      const id = await createEvent('maintenance', 'Test event', futureDate);
+      const id = await createEvent(testProperty.id, 'maintenance', 'Test event', futureDate);
 
-      await deleteEvent(id);
+      await deleteEvent(id, testProperty.id);
 
       const db = getTestDb();
       const result = await db.select().from(events).where(eq(events.id, id));
@@ -369,10 +369,10 @@ describe('Medium Complexity Query Functions', () => {
 
     it('only deletes specified event', async () => {
       const futureDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-      const id1 = await createEvent('maintenance', 'Event 1', futureDate);
-      const id2 = await createEvent('outage', 'Event 2', futureDate);
+      const id1 = await createEvent(testProperty.id, 'maintenance', 'Event 1', futureDate);
+      const id2 = await createEvent(testProperty.id, 'outage', 'Event 2', futureDate);
 
-      await deleteEvent(id1);
+      await deleteEvent(id1, testProperty.id);
 
       const db = getTestDb();
       const remaining = await db.select().from(events);

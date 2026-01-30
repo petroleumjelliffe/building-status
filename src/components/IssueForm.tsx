@@ -2,19 +2,21 @@
 
 import { useState } from 'react';
 import type { Issue, IssueStatus } from '@/types';
+import { buildApiUrl } from '@/lib/api';
 
 interface IssueFormProps {
   issue?: Issue; // If provided, we're editing; otherwise creating
   password: string;
   onSubmit: () => void;
   onCancel: () => void;
+  propertyHash: string;
 }
 
 /**
  * Form for creating or editing issues
  * Used within Modal component
  */
-export function IssueForm({ issue, password, onSubmit, onCancel }: IssueFormProps) {
+export function IssueForm({ issue, password, onSubmit, onCancel, propertyHash }: IssueFormProps) {
   const [category, setCategory] = useState(issue?.category || '');
   const [location, setLocation] = useState(issue?.location || '');
   const [detail, setDetail] = useState(issue?.detail || '');
@@ -28,16 +30,15 @@ export function IssueForm({ issue, password, onSubmit, onCancel }: IssueFormProp
 
     try {
       const url = issue
-        ? `/api/issues/${issue.id}`
-        : '/api/issues';
-
+        ? buildApiUrl(propertyHash, `/issues/${issue.id}`)
+        : buildApiUrl(propertyHash, '/issues');
       const method = issue ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${password}`, // password is actually sessionToken
+          'Authorization': `Bearer ${password}`,
         },
         body: JSON.stringify({
           category,

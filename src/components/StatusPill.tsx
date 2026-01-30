@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import type { SystemStatus } from '@/types';
+import { buildApiUrl } from '@/lib/api';
 
 interface StatusPillProps {
   systemId: string;
@@ -12,6 +13,7 @@ interface StatusPillProps {
   editable: boolean;
   password?: string; // sessionToken passed as password prop for now
   onUpdate?: () => void;
+  propertyHash: string;
 }
 
 /**
@@ -28,6 +30,7 @@ export function StatusPill({
   editable,
   password, // This is actually the sessionToken
   onUpdate,
+  propertyHash,
 }: StatusPillProps) {
   const [isEditingTotal, setIsEditingTotal] = useState(false);
   const [editTotal, setEditTotal] = useState('');
@@ -64,11 +67,13 @@ export function StatusPill({
     });
 
     try {
-      const response = await fetch('/api/status/update', {
+      const url = buildApiUrl(propertyHash, '/status/update');
+
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${password}`, // password is actually sessionToken
+          'Authorization': `Bearer ${password}`,
         },
         body: JSON.stringify({
           systemId,
@@ -78,7 +83,6 @@ export function StatusPill({
       });
 
       if (response.ok) {
-        // Trigger parent component refresh
         onUpdate?.();
       } else {
         const data = await response.json();
@@ -111,11 +115,13 @@ export function StatusPill({
       current === newTotal ? 'ok' : current === 0 ? 'down' : 'issue';
 
     try {
-      const response = await fetch('/api/status/update', {
+      const url = buildApiUrl(propertyHash, '/status/update');
+
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${password}`, // password is actually sessionToken
+          'Authorization': `Bearer ${password}`,
         },
         body: JSON.stringify({
           systemId,

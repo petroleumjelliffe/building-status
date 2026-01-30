@@ -6,19 +6,21 @@ import { Card } from './Card';
 import { Section } from './Section';
 import { Modal } from './Modal';
 import { HelpfulLinkForm } from './HelpfulLinkForm';
+import { buildApiUrl } from '@/lib/api';
 
 interface HelpfulLinksProps {
   links: HelpfulLink[];
   editable?: boolean;
   sessionToken?: string;
   onUpdate?: () => void;
+  propertyHash: string;
 }
 
 /**
  * HelpfulLinks component - displays helpful resource links
  * In edit mode, shows edit/delete buttons per link and add button
  */
-export function HelpfulLinks({ links, editable, sessionToken, onUpdate }: HelpfulLinksProps) {
+export function HelpfulLinks({ links, editable, sessionToken, onUpdate, propertyHash }: HelpfulLinksProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingLink, setEditingLink] = useState<HelpfulLink | null>(null);
   const [deletingLinkId, setDeletingLinkId] = useState<string | null>(null);
@@ -30,7 +32,9 @@ export function HelpfulLinks({ links, editable, sessionToken, onUpdate }: Helpfu
 
     setDeletingLinkId(link.id);
     try {
-      const response = await fetch(`/api/helpful-links/${link.id}`, {
+      const url = buildApiUrl(propertyHash, `/helpful-links/${link.id}`);
+
+      const response = await fetch(url, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${sessionToken}`,
@@ -129,6 +133,7 @@ export function HelpfulLinks({ links, editable, sessionToken, onUpdate }: Helpfu
               sessionToken={sessionToken}
               onSubmit={handleAddSuccess}
               onCancel={() => setIsAddModalOpen(false)}
+              propertyHash={propertyHash}
             />
           </Modal>
 
@@ -143,6 +148,7 @@ export function HelpfulLinks({ links, editable, sessionToken, onUpdate }: Helpfu
                 sessionToken={sessionToken}
                 onSubmit={handleEditSuccess}
                 onCancel={() => setEditingLink(null)}
+                propertyHash={propertyHash}
               />
             )}
           </Modal>
