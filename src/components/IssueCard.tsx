@@ -5,19 +5,21 @@ import type { Issue } from '@/types';
 import { Card } from './Card';
 import { Modal } from './Modal';
 import { IssueForm } from './IssueForm';
+import { buildApiUrl } from '@/lib/api';
 
 interface IssueCardProps {
   issue: Issue;
   editable?: boolean;
   password?: string;
   onUpdate?: () => void;
+  propertyHash?: string;
 }
 
 /**
  * IssueCard component - displays current issue
  * In edit mode, shows edit and resolve buttons
  */
-export function IssueCard({ issue, editable, password, onUpdate }: IssueCardProps) {
+export function IssueCard({ issue, editable, password, onUpdate, propertyHash }: IssueCardProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isResolving, setIsResolving] = useState(false);
   const isResolved = issue.resolvedAt !== null;
@@ -27,7 +29,12 @@ export function IssueCard({ issue, editable, password, onUpdate }: IssueCardProp
 
     setIsResolving(true);
     try {
-      const response = await fetch(`/api/issues/${issue.id}/resolve`, {
+      // Use property-scoped route if propertyHash available, otherwise fall back to legacy
+      const url = propertyHash
+        ? buildApiUrl(propertyHash, `/issues/${issue.id}/resolve`)
+        : `/api/issues/${issue.id}/resolve`;
+
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -122,6 +129,7 @@ export function IssueCard({ issue, editable, password, onUpdate }: IssueCardProp
             password={password}
             onSubmit={handleEditSuccess}
             onCancel={() => setIsEditModalOpen(false)}
+            propertyHash={propertyHash}
           />
         </Modal>
       )}

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import type { SystemStatus } from '@/types';
+import { buildApiUrl } from '@/lib/api';
 
 interface StatusPillProps {
   systemId: string;
@@ -12,6 +13,7 @@ interface StatusPillProps {
   editable: boolean;
   password?: string; // sessionToken passed as password prop for now
   onUpdate?: () => void;
+  propertyHash?: string;
 }
 
 /**
@@ -28,6 +30,7 @@ export function StatusPill({
   editable,
   password, // This is actually the sessionToken
   onUpdate,
+  propertyHash,
 }: StatusPillProps) {
   const [isEditingTotal, setIsEditingTotal] = useState(false);
   const [editTotal, setEditTotal] = useState('');
@@ -64,7 +67,12 @@ export function StatusPill({
     });
 
     try {
-      const response = await fetch('/api/status/update', {
+      // Use property-scoped route if propertyHash available, otherwise fall back to legacy
+      const url = propertyHash
+        ? buildApiUrl(propertyHash, '/status/update')
+        : '/api/status/update';
+
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -111,7 +119,12 @@ export function StatusPill({
       current === newTotal ? 'ok' : current === 0 ? 'down' : 'issue';
 
     try {
-      const response = await fetch('/api/status/update', {
+      // Use property-scoped route if propertyHash available, otherwise fall back to legacy
+      const url = propertyHash
+        ? buildApiUrl(propertyHash, '/status/update')
+        : '/api/status/update';
+
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

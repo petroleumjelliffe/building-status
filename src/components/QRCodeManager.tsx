@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { buildApiUrl } from '@/lib/api';
 
 interface QRCode {
   id: number;
@@ -50,7 +51,7 @@ export function QRCodeManager({ sessionToken, onClose, propertyId, propertyName,
     setError(null);
 
     try {
-      const response = await fetch(`/api/admin/qr-codes?propertyId=${propertyId}`, {
+      const response = await fetch(buildApiUrl(propertyHash, '/admin/qr-codes'), {
         headers: {
           'Authorization': `Bearer ${sessionToken}`,
         },
@@ -82,14 +83,13 @@ export function QRCodeManager({ sessionToken, onClose, propertyId, propertyName,
     setError(null);
 
     try {
-      const response = await fetch('/api/admin/qr-codes', {
+      const response = await fetch(buildApiUrl(propertyHash, '/admin/qr-codes'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${sessionToken}`,
         },
         body: JSON.stringify({
-          propertyId: propertyId,
           label: formLabel.trim(),
           expiresAt: formExpires && formExpiresDate ? new Date(formExpiresDate).toISOString() : null,
         }),
@@ -126,7 +126,7 @@ export function QRCodeManager({ sessionToken, onClose, propertyId, propertyName,
 
   const handleToggleActive = async (qrCodeId: number, currentStatus: boolean) => {
     try {
-      const response = await fetch(`/api/admin/qr-codes/${qrCodeId}`, {
+      const response = await fetch(buildApiUrl(propertyHash, `/admin/qr-codes/${qrCodeId}`), {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -162,7 +162,7 @@ export function QRCodeManager({ sessionToken, onClose, propertyId, propertyName,
   const handleViewQRCode = async (qrCode: QRCode) => {
     try {
       // Regenerate the QR code image
-      const response = await fetch(`/api/admin/qr-codes/${qrCode.id}/regenerate`, {
+      const response = await fetch(buildApiUrl(propertyHash, `/admin/qr-codes/${qrCode.id}/regenerate`), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${sessionToken}`,

@@ -2,19 +2,21 @@
 
 import { useState } from 'react';
 import type { HelpfulLink } from '@/types';
+import { buildApiUrl } from '@/lib/api';
 
 interface HelpfulLinkFormProps {
   link?: HelpfulLink; // If provided, we're editing; otherwise creating
   sessionToken: string;
   onSubmit: () => void;
   onCancel: () => void;
+  propertyHash?: string;
 }
 
 /**
  * Form for creating or editing helpful links
  * Used within Modal component
  */
-export function HelpfulLinkForm({ link, sessionToken, onSubmit, onCancel }: HelpfulLinkFormProps) {
+export function HelpfulLinkForm({ link, sessionToken, onSubmit, onCancel, propertyHash }: HelpfulLinkFormProps) {
   const [title, setTitle] = useState(link?.title || '');
   const [url, setUrl] = useState(link?.url || '');
   const [icon, setIcon] = useState(link?.icon || '');
@@ -27,9 +29,15 @@ export function HelpfulLinkForm({ link, sessionToken, onSubmit, onCancel }: Help
     setIsSubmitting(true);
 
     try {
-      const apiUrl = link
-        ? `/api/helpful-links/${link.id}`
-        : '/api/helpful-links';
+      // Use property-scoped route if propertyHash available, otherwise fall back to legacy
+      let apiUrl: string;
+      if (propertyHash) {
+        apiUrl = link
+          ? buildApiUrl(propertyHash, `/helpful-links/${link.id}`)
+          : buildApiUrl(propertyHash, '/helpful-links');
+      } else {
+        apiUrl = link ? `/api/helpful-links/${link.id}` : '/api/helpful-links';
+      }
 
       const method = link ? 'PUT' : 'POST';
 

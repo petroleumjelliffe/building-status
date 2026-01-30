@@ -11,6 +11,7 @@ interface GarbageScheduleProps {
   editable?: boolean;
   sessionToken?: string;
   onUpdate?: () => void;
+  propertyHash?: string;
 }
 
 /**
@@ -18,7 +19,7 @@ interface GarbageScheduleProps {
  * Time is optional and only displayed if present
  * In edit mode, shows edit button
  */
-export function GarbageSchedule({ schedule, editable, sessionToken, onUpdate }: GarbageScheduleProps) {
+export function GarbageSchedule({ schedule, editable, sessionToken, onUpdate, propertyHash }: GarbageScheduleProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const handleEditSuccess = () => {
@@ -76,6 +77,7 @@ export function GarbageSchedule({ schedule, editable, sessionToken, onUpdate }: 
             sessionToken={sessionToken}
             onSubmit={handleEditSuccess}
             onCancel={() => setIsEditModalOpen(false)}
+            propertyHash={propertyHash}
           />
         </Modal>
       )}

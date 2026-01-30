@@ -3,18 +3,20 @@
 import { useState } from 'react';
 import { Modal } from './Modal';
 import { saveSession } from '@/lib/session';
+import { buildApiUrl } from '@/lib/api';
 
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: (token: string) => void;
+  propertyHash?: string;
 }
 
 /**
  * LoginModal component - password input for authentication
  * Opened from hamburger menu Login button
  */
-export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
+export function LoginModal({ isOpen, onClose, onSuccess, propertyHash }: LoginModalProps) {
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -25,7 +27,13 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/auth/login', {
+      // Use property-scoped login route if propertyHash available
+      // This binds the session token to the specific property
+      const url = propertyHash
+        ? buildApiUrl(propertyHash, '/auth/login')
+        : '/api/auth/login';
+
+      const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password }),

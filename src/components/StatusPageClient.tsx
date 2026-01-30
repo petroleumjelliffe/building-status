@@ -331,6 +331,7 @@ export function StatusPageClient({
             editable={isEditable}
             password={sessionToken || ''}
             onUpdate={handleUpdate}
+            propertyHash={propertyHash}
           />
         )}
 
@@ -361,6 +362,7 @@ export function StatusPageClient({
                   editable={isEditable}
                   password={sessionToken || ''}
                   onUpdate={handleUpdate}
+                  propertyHash={propertyHash}
                 />
               );
             })}
@@ -399,6 +401,7 @@ export function StatusPageClient({
                   editable={isEditable}
                   password={sessionToken || ''}
                   onUpdate={handleUpdate}
+                  propertyHash={propertyHash}
                 />
               ))}
             </div>
@@ -439,6 +442,7 @@ export function StatusPageClient({
                   editable={isEditable}
                   sessionToken={sessionToken || ''}
                   onUpdate={handleUpdate}
+                  propertyHash={propertyHash}
                 />
               ))}
             </div>
@@ -474,6 +478,7 @@ export function StatusPageClient({
                     sessionToken={sessionToken || ''}
                     onUpdate={handleUpdate}
                     locked={requireAuthForContacts && !isLoggedIn && !hasResidentAccess}
+                    propertyHash={propertyHash}
                   />
                 ))}
               </div>
@@ -491,6 +496,7 @@ export function StatusPageClient({
               editable={isEditable}
               sessionToken={sessionToken || ''}
               onUpdate={handleUpdate}
+              propertyHash={propertyHash}
             />
           </Section>
         )}
@@ -501,6 +507,7 @@ export function StatusPageClient({
           editable={isEditable}
           sessionToken={sessionToken || ''}
           onUpdate={handleUpdate}
+          propertyHash={propertyHash}
         />
 
         {/* QR Code Management */}
@@ -670,6 +677,7 @@ export function StatusPageClient({
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
         onSuccess={handleLoginSuccess}
+        propertyHash={propertyHash}
       />
 
       {/* Add Issue/Event/Contact Modals */}
@@ -684,6 +692,7 @@ export function StatusPageClient({
               password={sessionToken}
               onSubmit={handleAddIssueSuccess}
               onCancel={() => setIsAddIssueModalOpen(false)}
+              propertyHash={propertyHash}
             />
           </Modal>
 
@@ -696,6 +705,7 @@ export function StatusPageClient({
               sessionToken={sessionToken}
               onSubmit={handleAddEventSuccess}
               onCancel={() => setIsAddEventModalOpen(false)}
+              propertyHash={propertyHash}
             />
           </Modal>
 
@@ -708,6 +718,7 @@ export function StatusPageClient({
               sessionToken={sessionToken}
               onSubmit={handleAddContactSuccess}
               onCancel={() => setIsAddContactModalOpen(false)}
+              propertyHash={propertyHash}
             />
           </Modal>
 
@@ -721,6 +732,7 @@ export function StatusPageClient({
               sessionToken={sessionToken}
               onSubmit={handleSettingsSuccess}
               onCancel={() => setIsSettingsModalOpen(false)}
+              propertyHash={propertyHash}
             />
           </Modal>
 
@@ -746,7 +758,7 @@ export function StatusPageClient({
         onClose={() => setIsCalendarSubscribeOpen(false)}
         title="Subscribe to Calendar"
       >
-        <CalendarSubscribe siteUrl={siteUrl} />
+        <CalendarSubscribe siteUrl={siteUrl} propertyHash={propertyHash} />
       </Modal>
 
       {/* Pinned Edit Toggle */}

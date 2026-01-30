@@ -5,12 +5,14 @@ import type { CalendarEvent } from '@/types';
 import { Card } from './Card';
 import { Modal } from './Modal';
 import { EventForm } from './EventForm';
+import { buildApiUrl } from '@/lib/api';
 
 interface EventCardProps {
   event: CalendarEvent;
   editable?: boolean;
   sessionToken?: string;
   onUpdate?: () => void;
+  propertyHash?: string;
 }
 
 /**
@@ -66,7 +68,7 @@ function getEventTypeIcon(type: string): string {
  * EventCard component - displays a calendar event
  * In edit mode, shows edit and complete/cancel buttons
  */
-export function EventCard({ event, editable, sessionToken, onUpdate }: EventCardProps) {
+export function EventCard({ event, editable, sessionToken, onUpdate, propertyHash }: EventCardProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
 
@@ -75,7 +77,12 @@ export function EventCard({ event, editable, sessionToken, onUpdate }: EventCard
 
     setIsCompleting(true);
     try {
-      const response = await fetch(`/api/events/${event.id}/complete`, {
+      // Use property-scoped route if propertyHash available, otherwise fall back to legacy
+      const url = propertyHash
+        ? buildApiUrl(propertyHash, `/events/${event.id}/complete`)
+        : `/api/events/${event.id}/complete`;
+
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -158,6 +165,7 @@ export function EventCard({ event, editable, sessionToken, onUpdate }: EventCard
             sessionToken={sessionToken}
             onSubmit={handleEditSuccess}
             onCancel={() => setIsEditModalOpen(false)}
+            propertyHash={propertyHash}
           />
         </Modal>
       )}

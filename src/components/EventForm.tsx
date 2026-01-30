@@ -2,19 +2,21 @@
 
 import { useState } from 'react';
 import type { CalendarEvent, EventType } from '@/types';
+import { buildApiUrl } from '@/lib/api';
 
 interface EventFormProps {
   event?: CalendarEvent; // If provided, we're editing; otherwise creating
   sessionToken: string;
   onSubmit: () => void;
   onCancel: () => void;
+  propertyHash?: string;
 }
 
 /**
  * Form for creating or editing calendar events
  * Used within Modal component
  */
-export function EventForm({ event, sessionToken, onSubmit, onCancel }: EventFormProps) {
+export function EventForm({ event, sessionToken, onSubmit, onCancel, propertyHash }: EventFormProps) {
   const [type, setType] = useState<EventType>(event?.type || 'maintenance');
   const [title, setTitle] = useState(event?.title || '');
   const [description, setDescription] = useState(event?.description || '');
@@ -45,9 +47,15 @@ export function EventForm({ event, sessionToken, onSubmit, onCancel }: EventForm
     setIsSubmitting(true);
 
     try {
-      const url = event
-        ? `/api/events/${event.id}`
-        : '/api/events';
+      // Use property-scoped route if propertyHash available, otherwise fall back to legacy
+      let url: string;
+      if (propertyHash) {
+        url = event
+          ? buildApiUrl(propertyHash, `/events/${event.id}`)
+          : buildApiUrl(propertyHash, '/events');
+      } else {
+        url = event ? `/api/events/${event.id}` : '/api/events';
+      }
 
       const method = event ? 'PATCH' : 'POST';
 

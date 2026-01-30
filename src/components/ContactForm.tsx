@@ -2,19 +2,21 @@
 
 import { useState } from 'react';
 import type { Contact } from '@/types';
+import { buildApiUrl } from '@/lib/api';
 
 interface ContactFormProps {
   contact?: Contact; // If provided, we're editing; otherwise creating
   sessionToken: string;
   onSubmit: () => void;
   onCancel: () => void;
+  propertyHash?: string;
 }
 
 /**
  * Form for creating or editing emergency contacts
  * Used within Modal component
  */
-export function ContactForm({ contact, sessionToken, onSubmit, onCancel }: ContactFormProps) {
+export function ContactForm({ contact, sessionToken, onSubmit, onCancel, propertyHash }: ContactFormProps) {
   const [label, setLabel] = useState(contact?.label || '');
   const [phone, setPhone] = useState(contact?.phone || '');
   const [email, setEmail] = useState(contact?.email || '');
@@ -52,9 +54,15 @@ export function ContactForm({ contact, sessionToken, onSubmit, onCancel }: Conta
     setIsSubmitting(true);
 
     try {
-      const url = contact
-        ? `/api/contacts/${contact.id}`
-        : '/api/contacts';
+      // Use property-scoped route if propertyHash available, otherwise fall back to legacy
+      let url: string;
+      if (propertyHash) {
+        url = contact
+          ? buildApiUrl(propertyHash, `/contacts/${contact.id}`)
+          : buildApiUrl(propertyHash, '/contacts');
+      } else {
+        url = contact ? `/api/contacts/${contact.id}` : '/api/contacts';
+      }
 
       const method = contact ? 'PUT' : 'POST';
 

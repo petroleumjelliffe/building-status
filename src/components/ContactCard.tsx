@@ -6,6 +6,7 @@ import { Card } from './Card';
 import { Modal } from './Modal';
 import { ContactForm } from './ContactForm';
 import { LockIcon } from './LockIcon';
+import { buildApiUrl } from '@/lib/api';
 
 interface ContactCardProps {
   contact: Contact;
@@ -13,6 +14,7 @@ interface ContactCardProps {
   sessionToken?: string;
   onUpdate?: () => void;
   locked?: boolean; // If true, show locked state instead of contact details
+  propertyHash?: string;
 }
 
 /**
@@ -20,7 +22,7 @@ interface ContactCardProps {
  * In edit mode, shows edit and delete buttons
  * When locked=true, shows lock icon and message instead of contact details
  */
-export function ContactCard({ contact, editable, sessionToken, onUpdate, locked = false }: ContactCardProps) {
+export function ContactCard({ contact, editable, sessionToken, onUpdate, locked = false, propertyHash }: ContactCardProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -29,7 +31,12 @@ export function ContactCard({ contact, editable, sessionToken, onUpdate, locked 
 
     setIsDeleting(true);
     try {
-      const response = await fetch(`/api/contacts/${contact.id}`, {
+      // Use property-scoped route if propertyHash available, otherwise fall back to legacy
+      const url = propertyHash
+        ? buildApiUrl(propertyHash, `/contacts/${contact.id}`)
+        : `/api/contacts/${contact.id}`;
+
+      const response = await fetch(url, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${sessionToken}`,
@@ -129,6 +136,7 @@ export function ContactCard({ contact, editable, sessionToken, onUpdate, locked 
             sessionToken={sessionToken}
             onSubmit={handleEditSuccess}
             onCancel={() => setIsEditModalOpen(false)}
+            propertyHash={propertyHash}
           />
         </Modal>
       )}
