@@ -33,7 +33,7 @@ export async function PATCH(
     }
 
     const token = authHeader.substring(7);
-    const isValid = await verifyAdminToken(token);
+    const isValid = await verifyAdminToken(token, property.id);
 
     if (!isValid) {
       return NextResponse.json(

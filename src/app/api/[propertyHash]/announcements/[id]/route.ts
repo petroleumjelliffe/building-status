@@ -33,7 +33,7 @@ export async function PATCH(
     const authHeader = request.headers.get('Authorization');
     const token = authHeader?.replace('Bearer ', '');
 
-    if (!validateSessionToken(token)) {
+    if (!validateSessionToken(token, property.id)) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized - Invalid or missing session token' },
         { status: 401 }
@@ -113,7 +113,7 @@ export async function DELETE(
     const authHeader = request.headers.get('Authorization');
     const token = authHeader?.replace('Bearer ', '');
 
-    if (!validateSessionToken(token)) {
+    if (!validateSessionToken(token, property.id)) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized - Invalid or missing session token' },
         { status: 401 }

@@ -28,38 +28,64 @@ export async function verifyPassword(password: string): Promise<boolean> {
  */
 const SESSION_FILE = path.join(process.cwd(), '.sessions.json');
 
+interface SessionInfo {
+  propertyId: number | null; // null = global session (backward compat)
+  createdAt: number;
+}
+
 interface SessionData {
+  sessions: Record<string, SessionInfo>;
+  lastUpdated: number;
+}
+
+// Legacy format for backward compatibility
+interface LegacySessionData {
   tokens: string[];
   lastUpdated: number;
 }
 
 // Load sessions from file on module initialization
-function loadSessions(): Set<string> {
+function loadSessions(): Map<string, SessionInfo> {
   try {
     if (fs.existsSync(SESSION_FILE)) {
-      const data: SessionData = JSON.parse(fs.readFileSync(SESSION_FILE, 'utf-8'));
-      // Only load sessions less than 7 days old
+      const rawData = JSON.parse(fs.readFileSync(SESSION_FILE, 'utf-8'));
       const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
-      if (data.lastUpdated > sevenDaysAgo) {
-        console.log('[auth] Loaded', data.tokens.length, 'sessions from file');
-        return new Set(data.tokens);
+
+      // Handle legacy format (array of tokens)
+      if (Array.isArray(rawData.tokens)) {
+        const legacyData = rawData as LegacySessionData;
+        if (legacyData.lastUpdated > sevenDaysAgo) {
+          console.log('[auth] Migrating', legacyData.tokens.length, 'legacy sessions');
+          const sessions = new Map<string, SessionInfo>();
+          for (const token of legacyData.tokens) {
+            sessions.set(token, { propertyId: null, createdAt: legacyData.lastUpdated });
+          }
+          return sessions;
+        }
+      } else if (rawData.sessions) {
+        // New format with session info
+        const data = rawData as SessionData;
+        if (data.lastUpdated > sevenDaysAgo) {
+          console.log('[auth] Loaded', Object.keys(data.sessions).length, 'sessions from file');
+          return new Map(Object.entries(data.sessions));
+        }
       }
     }
   } catch (error) {
     console.error('[auth] Error loading sessions:', error);
   }
-  return new Set<string>();
+  return new Map<string, SessionInfo>();
 }
 
 // Save sessions to file
-function saveSessions(sessions: Set<string>): void {
+function saveSessions(sessions: Map<string, SessionInfo>): void {
   try {
     const data: SessionData = {
-      tokens: Array.from(sessions),
+      sessions: Object.fromEntries(sessions),
       lastUpdated: Date.now(),
     };
     fs.writeFileSync(SESSION_FILE, JSON.stringify(data, null, 2));
-    console.log('[auth] Saved', data.tokens.length, 'sessions to file');
+    console.log('[auth] Saved', sessions.size, 'sessions to file');
   } catch (error) {
     console.error('[auth] Error saving sessions:', error);
   }
@@ -76,36 +102,81 @@ export function generateSessionToken(): string {
 
 /**
  * Validate a session token
+ * @param token - The session token to validate
+ * @param propertyId - Optional property ID to verify the session is bound to
  */
-export function validateSessionToken(token: string | null | undefined): boolean {
+export function validateSessionToken(
+  token: string | null | undefined,
+  propertyId?: number
+): boolean {
   if (!token) {
     console.log('[auth] validateSessionToken: No token provided');
     return false;
   }
 
-  const isValid = activeSessions.has(token);
+  const sessionInfo = activeSessions.get(token);
+  if (!sessionInfo) {
+    console.log('[auth] validateSessionToken:', {
+      tokenPreview: token.substring(0, 8) + '...',
+      isValid: false,
+      activeSessionsCount: activeSessions.size,
+    });
+    return false;
+  }
+
+  // If propertyId is specified, verify session is bound to that property
+  // Sessions with null propertyId (legacy/global) are valid for any property
+  if (propertyId !== undefined && sessionInfo.propertyId !== null) {
+    if (sessionInfo.propertyId !== propertyId) {
+      console.log('[auth] validateSessionToken: Property mismatch', {
+        tokenPreview: token.substring(0, 8) + '...',
+        sessionPropertyId: sessionInfo.propertyId,
+        requestedPropertyId: propertyId,
+      });
+      return false;
+    }
+  }
+
   console.log('[auth] validateSessionToken:', {
     tokenPreview: token.substring(0, 8) + '...',
-    isValid,
+    isValid: true,
+    propertyId: sessionInfo.propertyId,
     activeSessionsCount: activeSessions.size,
   });
 
-  return isValid;
+  return true;
 }
 
 /**
  * Verify admin token (alias for validateSessionToken)
  * Used by API endpoints for consistency
  */
-export function verifyAdminToken(token: string | null | undefined): boolean {
-  return validateSessionToken(token);
+export function verifyAdminToken(
+  token: string | null | undefined,
+  propertyId?: number
+): boolean {
+  return validateSessionToken(token, propertyId);
+}
+
+/**
+ * Get the property ID bound to a session token
+ */
+export function getSessionPropertyId(token: string | null | undefined): number | null {
+  if (!token) return null;
+  const sessionInfo = activeSessions.get(token);
+  return sessionInfo?.propertyId ?? null;
 }
 
 /**
  * Create a new session after password verification
+ * @param password - The password to verify
+ * @param propertyId - Optional property ID to bind session to
  * Returns session token or null if password invalid
  */
-export async function createSession(password: string): Promise<string | null> {
+export async function createSession(
+  password: string,
+  propertyId?: number
+): Promise<string | null> {
   const isValid = await verifyPassword(password);
   if (!isValid) {
     console.log('[auth] createSession: Invalid password');
@@ -113,11 +184,15 @@ export async function createSession(password: string): Promise<string | null> {
   }
 
   const token = generateSessionToken();
-  activeSessions.add(token);
+  activeSessions.set(token, {
+    propertyId: propertyId ?? null,
+    createdAt: Date.now(),
+  });
   saveSessions(activeSessions); // Persist to file
 
   console.log('[auth] createSession: New session created', {
     tokenPreview: token.substring(0, 8) + '...',
+    propertyId: propertyId ?? null,
     activeSessionsCount: activeSessions.size,
   });
 

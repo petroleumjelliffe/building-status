@@ -60,11 +60,11 @@ export async function POST(
       );
     }
 
-    // Verify session token
+    // Verify session token is valid and bound to this property
     const authHeader = request.headers.get('Authorization');
     const token = authHeader?.replace('Bearer ', '');
 
-    if (!validateSessionToken(token)) {
+    if (!validateSessionToken(token, property.id)) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized - Invalid or missing session token' },
         { status: 401 }

@@ -30,7 +30,7 @@ export async function POST(
     const authHeader = request.headers.get('authorization');
     const token = authHeader?.replace('Bearer ', '');
 
-    if (!verifyAdminToken(token)) {
+    if (!verifyAdminToken(token, property.id)) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
