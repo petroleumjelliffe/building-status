@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import type { CalendarEvent, EventType } from '@/types';
 import { buildApiUrl } from '@/lib/api';
 
@@ -90,11 +90,6 @@ export function EventForm({ event, sessionToken, onSubmit, onCancel, propertyHas
         payload.endsAt = endsAtDate.toISOString();
       }
 
-      console.log('[EventForm] Submitting to:', url);
-      console.log('[EventForm] Payload:', payload);
-      console.log('[EventForm] All-day:', allDay);
-      console.log('[EventForm] Raw startsAt:', startsAt);
-
       const response = await fetch(url, {
         method,
         headers: {
@@ -104,8 +99,6 @@ export function EventForm({ event, sessionToken, onSubmit, onCancel, propertyHas
         body: JSON.stringify(payload),
       });
 
-      console.log('[EventForm] Response status:', response.status);
-
       if (response.ok) {
         onSubmit();
       } else {
@@ -113,15 +106,12 @@ export function EventForm({ event, sessionToken, onSubmit, onCancel, propertyHas
         try {
           const data = await response.json();
           errorMessage = data.error || errorMessage;
-          console.error('[EventForm] Server error:', data);
-        } catch (parseError) {
-          console.error('[EventForm] Failed to parse error response:', parseError);
+        } catch {
           errorMessage = `Server error (${response.status})`;
         }
         setError(errorMessage);
       }
     } catch (err) {
-      console.error('[EventForm] Network error:', err);
       setError(err instanceof Error ? err.message : 'Network error. Please try again.');
     } finally {
       setIsSubmitting(false);
