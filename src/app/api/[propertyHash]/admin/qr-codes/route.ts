@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminToken } from '@/lib/auth';
 import { generatePropertyQRCode, getAccessTokensForProperty } from '@/lib/qr-code';
 import { getPropertyByHash } from '@/lib/property';
+import { errorResponse, ApiErrors } from '@/lib/api-response';
 
 /**
  * GET /api/[propertyHash]/admin/qr-codes
@@ -10,36 +11,27 @@ import { getPropertyByHash } from '@/lib/property';
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ propertyHash: string }> }
-) {
+): Promise<Response> {
   try {
     const { propertyHash } = await params;
 
     // Validate property hash
     const property = await getPropertyByHash(propertyHash);
     if (!property) {
-      return NextResponse.json(
-        { error: 'Property not found' },
-        { status: 404 }
-      );
+      return ApiErrors.propertyNotFound();
     }
 
     // Verify admin authentication
     const authHeader = request.headers.get('authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return ApiErrors.unauthorized();
     }
 
     const token = authHeader.substring(7);
     const isValid = await verifyAdminToken(token, property.id);
 
     if (!isValid) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return ApiErrors.unauthorized();
     }
 
     // Get QR codes for this property only
@@ -58,10 +50,7 @@ export async function GET(
     });
   } catch (error) {
     console.error('[API] Error fetching QR codes:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return ApiErrors.internal();
   }
 }
 
@@ -72,36 +61,27 @@ export async function GET(
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ propertyHash: string }> }
-) {
+): Promise<Response> {
   try {
     const { propertyHash } = await params;
 
     // Validate property hash
     const property = await getPropertyByHash(propertyHash);
     if (!property) {
-      return NextResponse.json(
-        { error: 'Property not found' },
-        { status: 404 }
-      );
+      return ApiErrors.propertyNotFound();
     }
 
     // Verify admin authentication
     const authHeader = request.headers.get('authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return ApiErrors.unauthorized();
     }
 
     const token = authHeader.substring(7);
     const isValid = await verifyAdminToken(token, property.id);
 
     if (!isValid) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return ApiErrors.unauthorized();
     }
 
     // Parse request body
@@ -109,10 +89,7 @@ export async function POST(
     const { label, expiresAt } = body;
 
     if (!label) {
-      return NextResponse.json(
-        { error: 'label is required' },
-        { status: 400 }
-      );
+      return errorResponse('label is required', 400);
     }
 
     // Generate QR code using property from hash
@@ -131,9 +108,6 @@ export async function POST(
     }, { status: 201 });
   } catch (error) {
     console.error('[API] Error generating QR code:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return ApiErrors.internal();
   }
 }

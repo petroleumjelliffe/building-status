@@ -3,8 +3,9 @@ import { verifyAdminToken } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { accessTokens } from '@/lib/schema';
 import { eq, and } from 'drizzle-orm';
-import { createQRCodeImage, getAccessTokenById } from '@/lib/qr-code';
+import { createQRCodeImage } from '@/lib/qr-code';
 import { getPropertyByHash } from '@/lib/property';
+import { errorResponse, ApiErrors } from '@/lib/api-response';
 
 /**
  * POST /api/[propertyHash]/admin/qr-codes/[id]/regenerate
@@ -13,17 +14,14 @@ import { getPropertyByHash } from '@/lib/property';
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ propertyHash: string; id: string }> }
-) {
+): Promise<Response> {
   try {
     const { propertyHash, id } = await params;
 
     // Validate property hash
     const property = await getPropertyByHash(propertyHash);
     if (!property) {
-      return NextResponse.json(
-        { error: 'Property not found' },
-        { status: 404 }
-      );
+      return ApiErrors.propertyNotFound();
     }
 
     // Verify admin authentication
@@ -31,19 +29,13 @@ export async function POST(
     const token = authHeader?.replace('Bearer ', '');
 
     if (!verifyAdminToken(token, property.id)) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return ApiErrors.unauthorized();
     }
 
     const qrCodeId = parseInt(id, 10);
 
     if (isNaN(qrCodeId)) {
-      return NextResponse.json(
-        { error: 'Invalid QR code ID' },
-        { status: 400 }
-      );
+      return errorResponse('Invalid QR code ID', 400);
     }
 
     // Fetch the existing QR code/access token and verify it belongs to this property
@@ -59,19 +51,13 @@ export async function POST(
       .limit(1);
 
     if (!accessToken) {
-      return NextResponse.json(
-        { error: 'QR code not found' },
-        { status: 404 }
-      );
+      return ApiErrors.notFound('QR code');
     }
 
     // Build the URL with the existing token
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL;
     if (!baseUrl) {
-      return NextResponse.json(
-        { error: 'NEXT_PUBLIC_SITE_URL environment variable is not set' },
-        { status: 500 }
-      );
+      return errorResponse('NEXT_PUBLIC_SITE_URL environment variable is not set', 500);
     }
 
     const fullUrl = `${baseUrl}/${property.hash}?auth=${accessToken.token}`;
@@ -85,9 +71,6 @@ export async function POST(
     });
   } catch (error) {
     console.error('[API] Error regenerating QR code:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return ApiErrors.internal();
   }
 }

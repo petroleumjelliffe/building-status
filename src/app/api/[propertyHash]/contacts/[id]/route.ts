@@ -1,9 +1,9 @@
-import { NextResponse } from 'next/server';
 import { validateSessionToken } from '@/lib/auth';
 import { updateContact, deleteContact } from '@/lib/queries';
 import { getPropertyByHash } from '@/lib/property';
 import { revalidatePath } from 'next/cache';
-import type { UpdateContactRequest } from '@/types';
+import { successResponse, ApiErrors } from '@/lib/api-response';
+import type { UpdateContactRequest, UpdateContactResponse, DeleteContactResponse } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,21 +12,19 @@ export const dynamic = 'force-dynamic';
  * Update an emergency contact for a property
  *
  * Headers: Authorization: Bearer <token>
+ * @returns {UpdateContactResponse}
  */
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ propertyHash: string; id: string }> }
-) {
+): Promise<Response> {
   try {
     const { propertyHash, id } = await params;
 
     // Validate property hash
     const property = await getPropertyByHash(propertyHash);
     if (!property) {
-      return NextResponse.json(
-        { success: false, error: 'Property not found' },
-        { status: 404 }
-      );
+      return ApiErrors.propertyNotFound();
     }
 
     // Verify session token
@@ -34,10 +32,7 @@ export async function PUT(
     const token = authHeader?.replace('Bearer ', '');
 
     if (!validateSessionToken(token, property.id)) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized - Invalid or missing session token' },
-        { status: 401 }
-      );
+      return ApiErrors.unauthorized();
     }
 
     const body: UpdateContactRequest = await request.json();
@@ -49,13 +44,10 @@ export async function PUT(
     // Revalidate the status page for this property
     revalidatePath(`/${propertyHash}`);
 
-    return NextResponse.json({ success: true });
+    return successResponse();
   } catch (error) {
     console.error('Error updating contact:', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
+    return ApiErrors.internal();
   }
 }
 
@@ -64,21 +56,19 @@ export async function PUT(
  * Delete an emergency contact for a property
  *
  * Headers: Authorization: Bearer <token>
+ * @returns {DeleteContactResponse}
  */
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ propertyHash: string; id: string }> }
-) {
+): Promise<Response> {
   try {
     const { propertyHash, id } = await params;
 
     // Validate property hash
     const property = await getPropertyByHash(propertyHash);
     if (!property) {
-      return NextResponse.json(
-        { success: false, error: 'Property not found' },
-        { status: 404 }
-      );
+      return ApiErrors.propertyNotFound();
     }
 
     // Verify session token
@@ -86,10 +76,7 @@ export async function DELETE(
     const token = authHeader?.replace('Bearer ', '');
 
     if (!validateSessionToken(token, property.id)) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized - Invalid or missing session token' },
-        { status: 401 }
-      );
+      return ApiErrors.unauthorized();
     }
 
     // Delete contact with propertyId
@@ -98,12 +85,9 @@ export async function DELETE(
     // Revalidate the status page for this property
     revalidatePath(`/${propertyHash}`);
 
-    return NextResponse.json({ success: true });
+    return successResponse();
   } catch (error) {
     console.error('Error deleting contact:', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
+    return ApiErrors.internal();
   }
 }

@@ -1,9 +1,9 @@
-import { NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import { validateSessionToken } from '@/lib/auth';
 import { updateSystemStatus } from '@/lib/queries';
 import { getPropertyByHash } from '@/lib/property';
-import type { SystemStatus } from '@/types';
+import { successResponse, errorResponse, ApiErrors } from '@/lib/api-response';
+import type { SystemStatus, UpdateSystemStatusResponse } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,21 +18,19 @@ export const dynamic = 'force-dynamic';
  *   count?: string,
  *   note?: string
  * }
+ * @returns {UpdateSystemStatusResponse}
  */
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ propertyHash: string }> }
-) {
+): Promise<Response> {
   try {
     const { propertyHash } = await params;
 
     // Validate property hash
     const property = await getPropertyByHash(propertyHash);
     if (!property) {
-      return NextResponse.json(
-        { success: false, error: 'Property not found' },
-        { status: 404 }
-      );
+      return ApiErrors.propertyNotFound();
     }
 
     // Verify session token
@@ -40,13 +38,7 @@ export async function POST(
     const token = authHeader?.replace('Bearer ', '');
 
     if (!validateSessionToken(token, property.id)) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Unauthorized - Invalid or missing session token',
-        },
-        { status: 401 }
-      );
+      return ApiErrors.unauthorized();
     }
 
     const body = await request.json();
@@ -54,24 +46,12 @@ export async function POST(
 
     // Validate inputs
     if (!systemId || typeof systemId !== 'string') {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'System ID is required',
-        },
-        { status: 400 }
-      );
+      return errorResponse('System ID is required', 400);
     }
 
     const validStatuses: SystemStatus[] = ['ok', 'issue', 'down'];
     if (!status || !validStatuses.includes(status as SystemStatus)) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Valid status is required (ok, issue, or down)',
-        },
-        { status: 400 }
-      );
+      return errorResponse('Valid status is required (ok, issue, or down)', 400);
     }
 
     // Update the system status with propertyId
@@ -86,19 +66,9 @@ export async function POST(
     // Revalidate the status page for this property
     revalidatePath(`/${propertyHash}`);
 
-    return NextResponse.json({
-      success: true,
-      message: 'Status updated successfully',
-    });
+    return successResponse();
   } catch (error) {
     console.error('Error updating status:', error);
-
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to update status',
-      },
-      { status: 500 }
-    );
+    return ApiErrors.internal();
   }
 }

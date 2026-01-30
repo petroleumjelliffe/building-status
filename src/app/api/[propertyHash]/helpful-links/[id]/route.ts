@@ -1,9 +1,9 @@
-import { NextResponse } from 'next/server';
 import { validateSessionToken } from '@/lib/auth';
 import { updateHelpfulLink, deleteHelpfulLink } from '@/lib/queries';
 import { getPropertyByHash } from '@/lib/property';
 import { revalidatePath } from 'next/cache';
-import type { UpdateHelpfulLinkRequest } from '@/types';
+import { successResponse, ApiErrors } from '@/lib/api-response';
+import type { UpdateHelpfulLinkRequest, UpdateHelpfulLinkResponse, DeleteHelpfulLinkResponse } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,21 +12,19 @@ export const dynamic = 'force-dynamic';
  * Update a helpful link for a property
  *
  * Headers: Authorization: Bearer <token>
+ * @returns {UpdateHelpfulLinkResponse}
  */
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ propertyHash: string; id: string }> }
-) {
+): Promise<Response> {
   try {
     const { propertyHash, id } = await params;
 
     // Validate property hash
     const property = await getPropertyByHash(propertyHash);
     if (!property) {
-      return NextResponse.json(
-        { success: false, error: 'Property not found' },
-        { status: 404 }
-      );
+      return ApiErrors.propertyNotFound();
     }
 
     // Verify session token
@@ -34,10 +32,7 @@ export async function PUT(
     const token = authHeader?.replace('Bearer ', '');
 
     if (!validateSessionToken(token, property.id)) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized - Invalid or missing session token' },
-        { status: 401 }
-      );
+      return ApiErrors.unauthorized();
     }
 
     const body: UpdateHelpfulLinkRequest = await request.json();
@@ -49,13 +44,10 @@ export async function PUT(
     // Revalidate the status page for this property
     revalidatePath(`/${propertyHash}`);
 
-    return NextResponse.json({ success: true });
+    return successResponse();
   } catch (error) {
     console.error('Error updating helpful link:', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
+    return ApiErrors.internal();
   }
 }
 
@@ -64,21 +56,19 @@ export async function PUT(
  * Delete a helpful link for a property
  *
  * Headers: Authorization: Bearer <token>
+ * @returns {DeleteHelpfulLinkResponse}
  */
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ propertyHash: string; id: string }> }
-) {
+): Promise<Response> {
   try {
     const { propertyHash, id } = await params;
 
     // Validate property hash
     const property = await getPropertyByHash(propertyHash);
     if (!property) {
-      return NextResponse.json(
-        { success: false, error: 'Property not found' },
-        { status: 404 }
-      );
+      return ApiErrors.propertyNotFound();
     }
 
     // Verify session token
@@ -86,10 +76,7 @@ export async function DELETE(
     const token = authHeader?.replace('Bearer ', '');
 
     if (!validateSessionToken(token, property.id)) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized - Invalid or missing session token' },
-        { status: 401 }
-      );
+      return ApiErrors.unauthorized();
     }
 
     // Delete helpful link with propertyId
@@ -98,12 +85,9 @@ export async function DELETE(
     // Revalidate the status page for this property
     revalidatePath(`/${propertyHash}`);
 
-    return NextResponse.json({ success: true });
+    return successResponse();
   } catch (error) {
     console.error('Error deleting helpful link:', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
+    return ApiErrors.internal();
   }
 }

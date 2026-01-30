@@ -1,48 +1,40 @@
-import { NextResponse } from 'next/server';
 import { validateSessionToken } from '@/lib/auth';
 import { getEventById, updateEvent, deleteEvent } from '@/lib/queries';
 import { getPropertyByHash } from '@/lib/property';
 import { revalidatePath } from 'next/cache';
-import type { UpdateEventRequest, EventType, EventStatus } from '@/types';
+import { dataResponse, successResponse, errorResponse, ApiErrors } from '@/lib/api-response';
+import type { UpdateEventRequest, EventType, EventStatus, EventResponse, UpdateEventResponse } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
 /**
  * GET /api/[propertyHash]/events/[id]
  * Get a single event by ID for a property
+ * @returns {EventResponse | ApiErrorResponse}
  */
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ propertyHash: string; id: string }> }
-) {
+): Promise<Response> {
   try {
     const { propertyHash, id } = await params;
 
     // Validate property hash
     const property = await getPropertyByHash(propertyHash);
     if (!property) {
-      return NextResponse.json(
-        { success: false, error: 'Property not found' },
-        { status: 404 }
-      );
+      return ApiErrors.propertyNotFound();
     }
 
     const event = await getEventById(parseInt(id, 10), property.id);
 
     if (!event) {
-      return NextResponse.json(
-        { success: false, error: 'Event not found' },
-        { status: 404 }
-      );
+      return ApiErrors.notFound('Event');
     }
 
-    return NextResponse.json({ success: true, event });
+    return dataResponse<EventResponse>({ success: true, event });
   } catch (error) {
     console.error('Error fetching event:', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
+    return ApiErrors.internal();
   }
 }
 
@@ -51,21 +43,19 @@ export async function GET(
  * Update an existing event for a property
  *
  * Headers: Authorization: Bearer <token>
+ * @returns {UpdateEventResponse}
  */
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ propertyHash: string; id: string }> }
-) {
+): Promise<Response> {
   try {
     const { propertyHash, id } = await params;
 
     // Validate property hash
     const property = await getPropertyByHash(propertyHash);
     if (!property) {
-      return NextResponse.json(
-        { success: false, error: 'Property not found' },
-        { status: 404 }
-      );
+      return ApiErrors.propertyNotFound();
     }
 
     // Verify session token
@@ -73,10 +63,7 @@ export async function PATCH(
     const token = authHeader?.replace('Bearer ', '');
 
     if (!validateSessionToken(token, property.id)) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized - Invalid or missing session token' },
-        { status: 401 }
-      );
+      return ApiErrors.unauthorized();
     }
 
     const eventId = parseInt(id, 10);
@@ -85,10 +72,7 @@ export async function PATCH(
     // Check if event exists for this property
     const existing = await getEventById(eventId, property.id);
     if (!existing) {
-      return NextResponse.json(
-        { success: false, error: 'Event not found' },
-        { status: 404 }
-      );
+      return ApiErrors.notFound('Event');
     }
 
     // Build update object
@@ -97,10 +81,7 @@ export async function PATCH(
     if (body.type !== undefined) {
       const validTypes: EventType[] = ['maintenance', 'announcement', 'outage'];
       if (!validTypes.includes(body.type)) {
-        return NextResponse.json(
-          { success: false, error: 'Invalid event type' },
-          { status: 400 }
-        );
+        return errorResponse('Invalid event type', 400);
       }
       updates.type = body.type;
     }
@@ -115,10 +96,7 @@ export async function PATCH(
     if (body.status !== undefined) {
       const validStatuses: EventStatus[] = ['scheduled', 'in_progress', 'completed', 'cancelled'];
       if (!validStatuses.includes(body.status)) {
-        return NextResponse.json(
-          { success: false, error: 'Invalid event status' },
-          { status: 400 }
-        );
+        return errorResponse('Invalid event status', 400);
       }
       updates.status = body.status;
     }
@@ -129,13 +107,10 @@ export async function PATCH(
     // Revalidate the status page for this property
     revalidatePath(`/${propertyHash}`);
 
-    return NextResponse.json({ success: true });
+    return successResponse();
   } catch (error) {
     console.error('Error updating event:', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
+    return ApiErrors.internal();
   }
 }
 
@@ -144,21 +119,19 @@ export async function PATCH(
  * Delete an event permanently for a property
  *
  * Headers: Authorization: Bearer <token>
+ * @returns {ApiSuccessResponse | ApiErrorResponse}
  */
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ propertyHash: string; id: string }> }
-) {
+): Promise<Response> {
   try {
     const { propertyHash, id } = await params;
 
     // Validate property hash
     const property = await getPropertyByHash(propertyHash);
     if (!property) {
-      return NextResponse.json(
-        { success: false, error: 'Property not found' },
-        { status: 404 }
-      );
+      return ApiErrors.propertyNotFound();
     }
 
     // Verify session token
@@ -166,10 +139,7 @@ export async function DELETE(
     const token = authHeader?.replace('Bearer ', '');
 
     if (!validateSessionToken(token, property.id)) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized - Invalid or missing session token' },
-        { status: 401 }
-      );
+      return ApiErrors.unauthorized();
     }
 
     const eventId = parseInt(id, 10);
@@ -177,10 +147,7 @@ export async function DELETE(
     // Check if event exists for this property
     const existing = await getEventById(eventId, property.id);
     if (!existing) {
-      return NextResponse.json(
-        { success: false, error: 'Event not found' },
-        { status: 404 }
-      );
+      return ApiErrors.notFound('Event');
     }
 
     await deleteEvent(eventId, property.id);
@@ -188,12 +155,9 @@ export async function DELETE(
     // Revalidate the status page for this property
     revalidatePath(`/${propertyHash}`);
 
-    return NextResponse.json({ success: true });
+    return successResponse();
   } catch (error) {
     console.error('Error deleting event:', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
+    return ApiErrors.internal();
   }
 }

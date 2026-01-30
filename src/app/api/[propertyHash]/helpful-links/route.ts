@@ -1,9 +1,9 @@
-import { NextResponse } from 'next/server';
 import { validateSessionToken } from '@/lib/auth';
 import { createHelpfulLink } from '@/lib/queries';
 import { getPropertyByHash } from '@/lib/property';
 import { revalidatePath } from 'next/cache';
-import type { CreateHelpfulLinkRequest } from '@/types';
+import { createResponse, ApiErrors } from '@/lib/api-response';
+import type { CreateHelpfulLinkRequest, CreateHelpfulLinkResponse } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,21 +12,19 @@ export const dynamic = 'force-dynamic';
  * Create a new helpful link for a property
  *
  * Headers: Authorization: Bearer <token>
+ * @returns {CreateHelpfulLinkResponse}
  */
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ propertyHash: string }> }
-) {
+): Promise<Response> {
   try {
     const { propertyHash } = await params;
 
     // Validate property hash
     const property = await getPropertyByHash(propertyHash);
     if (!property) {
-      return NextResponse.json(
-        { success: false, error: 'Property not found' },
-        { status: 404 }
-      );
+      return ApiErrors.propertyNotFound();
     }
 
     // Verify session token
@@ -34,10 +32,7 @@ export async function POST(
     const token = authHeader?.replace('Bearer ', '');
 
     if (!validateSessionToken(token, property.id)) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized - Invalid or missing session token' },
-        { status: 401 }
-      );
+      return ApiErrors.unauthorized();
     }
 
     const body: CreateHelpfulLinkRequest = await request.json();
@@ -45,10 +40,7 @@ export async function POST(
 
     // Validate required fields
     if (!title || !url || !icon) {
-      return NextResponse.json(
-        { success: false, error: 'Missing required fields' },
-        { status: 400 }
-      );
+      return ApiErrors.missingFields('title, url, icon');
     }
 
     // Create helpful link with propertyId
@@ -57,12 +49,9 @@ export async function POST(
     // Revalidate the status page for this property
     revalidatePath(`/${propertyHash}`);
 
-    return NextResponse.json({ success: true, id });
+    return createResponse(id);
   } catch (error) {
     console.error('Error creating helpful link:', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
+    return ApiErrors.internal();
   }
 }

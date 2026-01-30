@@ -1,9 +1,9 @@
-import { NextResponse } from 'next/server';
 import { validateSessionToken } from '@/lib/auth';
 import { createContact } from '@/lib/queries';
 import { getPropertyByHash } from '@/lib/property';
 import { revalidatePath } from 'next/cache';
-import type { CreateContactRequest } from '@/types';
+import { createResponse, errorResponse, ApiErrors } from '@/lib/api-response';
+import type { CreateContactRequest, CreateContactResponse } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,21 +12,19 @@ export const dynamic = 'force-dynamic';
  * Create a new emergency contact for a property
  *
  * Headers: Authorization: Bearer <token>
+ * @returns {CreateContactResponse}
  */
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ propertyHash: string }> }
-) {
+): Promise<Response> {
   try {
     const { propertyHash } = await params;
 
     // Validate property hash
     const property = await getPropertyByHash(propertyHash);
     if (!property) {
-      return NextResponse.json(
-        { success: false, error: 'Property not found' },
-        { status: 404 }
-      );
+      return ApiErrors.propertyNotFound();
     }
 
     // Verify session token
@@ -34,10 +32,7 @@ export async function POST(
     const token = authHeader?.replace('Bearer ', '');
 
     if (!validateSessionToken(token, property.id)) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized - Invalid or missing session token' },
-        { status: 401 }
-      );
+      return ApiErrors.unauthorized();
     }
 
     const body: CreateContactRequest = await request.json();
@@ -45,18 +40,12 @@ export async function POST(
 
     // Validate required fields
     if (!label || !hours) {
-      return NextResponse.json(
-        { success: false, error: 'Missing required fields' },
-        { status: 400 }
-      );
+      return ApiErrors.missingFields('label, hours');
     }
 
     // Validate that at least one of phone or email is provided
     if (!phone && !email) {
-      return NextResponse.json(
-        { success: false, error: 'At least one of phone or email is required' },
-        { status: 400 }
-      );
+      return errorResponse('At least one of phone or email is required', 400);
     }
 
     // Create contact with propertyId
@@ -65,12 +54,9 @@ export async function POST(
     // Revalidate the status page for this property
     revalidatePath(`/${propertyHash}`);
 
-    return NextResponse.json({ success: true, id });
+    return createResponse(id);
   } catch (error) {
     console.error('Error creating contact:', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
+    return ApiErrors.internal();
   }
 }

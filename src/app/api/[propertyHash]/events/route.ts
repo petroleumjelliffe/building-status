@@ -1,40 +1,35 @@
-import { NextResponse } from 'next/server';
 import { validateSessionToken } from '@/lib/auth';
 import { createEvent, getScheduledEvents } from '@/lib/queries';
 import { getPropertyByHash } from '@/lib/property';
 import { revalidatePath } from 'next/cache';
-import type { CreateEventRequest, EventType } from '@/types';
+import { dataResponse, createResponse, errorResponse, ApiErrors } from '@/lib/api-response';
+import type { CreateEventRequest, EventType, GetEventsResponse, CreateEventResponse, EventListResponse } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
 /**
  * GET /api/[propertyHash]/events
  * Get all scheduled events for a property
+ * @returns {GetEventsResponse}
  */
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ propertyHash: string }> }
-) {
+): Promise<Response> {
   try {
     const { propertyHash } = await params;
 
     // Validate property hash
     const property = await getPropertyByHash(propertyHash);
     if (!property) {
-      return NextResponse.json(
-        { success: false, error: 'Property not found' },
-        { status: 404 }
-      );
+      return ApiErrors.propertyNotFound();
     }
 
     const events = await getScheduledEvents(property.id);
-    return NextResponse.json({ success: true, events });
+    return dataResponse<EventListResponse>({ success: true, events });
   } catch (error) {
     console.error('Error fetching events:', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
+    return ApiErrors.internal();
   }
 }
 
@@ -43,21 +38,19 @@ export async function GET(
  * Create a new calendar event for a property
  *
  * Headers: Authorization: Bearer <token>
+ * @returns {CreateEventResponse}
  */
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ propertyHash: string }> }
-) {
+): Promise<Response> {
   try {
     const { propertyHash } = await params;
 
     // Validate property hash
     const property = await getPropertyByHash(propertyHash);
     if (!property) {
-      return NextResponse.json(
-        { success: false, error: 'Property not found' },
-        { status: 404 }
-      );
+      return ApiErrors.propertyNotFound();
     }
 
     // Verify session token is valid and bound to this property
@@ -65,10 +58,7 @@ export async function POST(
     const token = authHeader?.replace('Bearer ', '');
 
     if (!validateSessionToken(token, property.id)) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized - Invalid or missing session token' },
-        { status: 401 }
-      );
+      return ApiErrors.unauthorized();
     }
 
     const body: CreateEventRequest = await request.json();
@@ -76,19 +66,13 @@ export async function POST(
 
     // Validate required fields
     if (!type || !title || !startsAt) {
-      return NextResponse.json(
-        { success: false, error: 'Missing required fields: type, title, startsAt' },
-        { status: 400 }
-      );
+      return ApiErrors.missingFields('type, title, startsAt');
     }
 
     // Validate event type
     const validTypes: EventType[] = ['maintenance', 'announcement', 'outage'];
     if (!validTypes.includes(type)) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid event type' },
-        { status: 400 }
-      );
+      return errorResponse('Invalid event type', 400);
     }
 
     // Create event with propertyId
@@ -104,12 +88,9 @@ export async function POST(
     // Revalidate the status page for this property
     revalidatePath(`/${propertyHash}`);
 
-    return NextResponse.json({ success: true, id });
+    return createResponse(id);
   } catch (error) {
     console.error('Error creating event:', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
+    return ApiErrors.internal();
   }
 }
