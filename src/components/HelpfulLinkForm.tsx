@@ -9,7 +9,7 @@ interface HelpfulLinkFormProps {
   sessionToken: string;
   onSubmit: () => void;
   onCancel: () => void;
-  propertyHash?: string;
+  propertyHash: string;
 }
 
 /**
@@ -29,16 +29,9 @@ export function HelpfulLinkForm({ link, sessionToken, onSubmit, onCancel, proper
     setIsSubmitting(true);
 
     try {
-      // Use property-scoped route if propertyHash available, otherwise fall back to legacy
-      let apiUrl: string;
-      if (propertyHash) {
-        apiUrl = link
-          ? buildApiUrl(propertyHash, `/helpful-links/${link.id}`)
-          : buildApiUrl(propertyHash, '/helpful-links');
-      } else {
-        apiUrl = link ? `/api/helpful-links/${link.id}` : '/api/helpful-links';
-      }
-
+      const apiUrl = link
+        ? buildApiUrl(propertyHash, `/helpful-links/${link.id}`)
+        : buildApiUrl(propertyHash, '/helpful-links');
       const method = link ? 'PUT' : 'POST';
 
       const response = await fetch(apiUrl, {

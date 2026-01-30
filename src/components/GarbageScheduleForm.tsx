@@ -9,7 +9,7 @@ interface GarbageScheduleFormProps {
   sessionToken: string;
   onSubmit: () => void;
   onCancel: () => void;
-  propertyHash?: string;
+  propertyHash: string;
 }
 
 /**
@@ -35,10 +35,7 @@ export function GarbageScheduleForm({ schedule, sessionToken, onSubmit, onCancel
       const parseDays = (daysString: string) =>
         daysString.split(',').map(day => day.trim()).filter(day => day.length > 0);
 
-      // Use property-scoped route if propertyHash available, otherwise fall back to legacy
-      const url = propertyHash
-        ? buildApiUrl(propertyHash, '/garbage-schedule')
-        : '/api/garbage-schedule';
+      const url = buildApiUrl(propertyHash, '/garbage-schedule');
 
       const response = await fetch(url, {
         method: 'PUT',

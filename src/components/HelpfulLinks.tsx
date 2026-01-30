@@ -13,7 +13,7 @@ interface HelpfulLinksProps {
   editable?: boolean;
   sessionToken?: string;
   onUpdate?: () => void;
-  propertyHash?: string;
+  propertyHash: string;
 }
 
 /**
@@ -32,10 +32,7 @@ export function HelpfulLinks({ links, editable, sessionToken, onUpdate, property
 
     setDeletingLinkId(link.id);
     try {
-      // Use property-scoped route if propertyHash available, otherwise fall back to legacy
-      const url = propertyHash
-        ? buildApiUrl(propertyHash, `/helpful-links/${link.id}`)
-        : `/api/helpful-links/${link.id}`;
+      const url = buildApiUrl(propertyHash, `/helpful-links/${link.id}`);
 
       const response = await fetch(url, {
         method: 'DELETE',

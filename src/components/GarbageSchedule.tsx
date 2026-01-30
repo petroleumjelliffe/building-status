@@ -11,7 +11,7 @@ interface GarbageScheduleProps {
   editable?: boolean;
   sessionToken?: string;
   onUpdate?: () => void;
-  propertyHash?: string;
+  propertyHash: string;
 }
 
 /**

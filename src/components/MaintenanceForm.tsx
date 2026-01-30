@@ -2,19 +2,21 @@
 
 import { useState } from 'react';
 import type { Maintenance } from '@/types';
+import { buildApiUrl } from '@/lib/api';
 
 interface MaintenanceFormProps {
   maintenance?: Maintenance; // If provided, we're editing; otherwise creating
   password: string;
   onSubmit: () => void;
   onCancel: () => void;
+  propertyHash: string;
 }
 
 /**
  * Form for creating or editing scheduled maintenance
  * Used within Modal component
  */
-export function MaintenanceForm({ maintenance, password, onSubmit, onCancel }: MaintenanceFormProps) {
+export function MaintenanceForm({ maintenance, password, onSubmit, onCancel, propertyHash }: MaintenanceFormProps) {
   const [date, setDate] = useState(maintenance?.date || '');
   const [description, setDescription] = useState(maintenance?.description || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -27,16 +29,15 @@ export function MaintenanceForm({ maintenance, password, onSubmit, onCancel }: M
 
     try {
       const url = maintenance
-        ? `/api/maintenance/${maintenance.id}`
-        : '/api/maintenance';
-
+        ? buildApiUrl(propertyHash, `/maintenance/${maintenance.id}`)
+        : buildApiUrl(propertyHash, '/maintenance');
       const method = maintenance ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${password}`, // password is actually sessionToken
+          'Authorization': `Bearer ${password}`,
         },
         body: JSON.stringify({
           date,

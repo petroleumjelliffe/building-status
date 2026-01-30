@@ -9,7 +9,7 @@ interface EventFormProps {
   sessionToken: string;
   onSubmit: () => void;
   onCancel: () => void;
-  propertyHash?: string;
+  propertyHash: string;
 }
 
 /**
@@ -47,16 +47,9 @@ export function EventForm({ event, sessionToken, onSubmit, onCancel, propertyHas
     setIsSubmitting(true);
 
     try {
-      // Use property-scoped route if propertyHash available, otherwise fall back to legacy
-      let url: string;
-      if (propertyHash) {
-        url = event
-          ? buildApiUrl(propertyHash, `/events/${event.id}`)
-          : buildApiUrl(propertyHash, '/events');
-      } else {
-        url = event ? `/api/events/${event.id}` : '/api/events';
-      }
-
+      const url = event
+        ? buildApiUrl(propertyHash, `/events/${event.id}`)
+        : buildApiUrl(propertyHash, '/events');
       const method = event ? 'PATCH' : 'POST';
 
       // Convert to ISO strings

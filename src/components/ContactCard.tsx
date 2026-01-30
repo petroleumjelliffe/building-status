@@ -14,7 +14,7 @@ interface ContactCardProps {
   sessionToken?: string;
   onUpdate?: () => void;
   locked?: boolean; // If true, show locked state instead of contact details
-  propertyHash?: string;
+  propertyHash: string;
 }
 
 /**
@@ -31,10 +31,7 @@ export function ContactCard({ contact, editable, sessionToken, onUpdate, locked 
 
     setIsDeleting(true);
     try {
-      // Use property-scoped route if propertyHash available, otherwise fall back to legacy
-      const url = propertyHash
-        ? buildApiUrl(propertyHash, `/contacts/${contact.id}`)
-        : `/api/contacts/${contact.id}`;
+      const url = buildApiUrl(propertyHash, `/contacts/${contact.id}`);
 
       const response = await fetch(url, {
         method: 'DELETE',

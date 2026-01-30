@@ -12,7 +12,7 @@ interface IssueCardProps {
   editable?: boolean;
   password?: string;
   onUpdate?: () => void;
-  propertyHash?: string;
+  propertyHash: string;
 }
 
 /**
@@ -29,16 +29,13 @@ export function IssueCard({ issue, editable, password, onUpdate, propertyHash }:
 
     setIsResolving(true);
     try {
-      // Use property-scoped route if propertyHash available, otherwise fall back to legacy
-      const url = propertyHash
-        ? buildApiUrl(propertyHash, `/issues/${issue.id}/resolve`)
-        : `/api/issues/${issue.id}/resolve`;
+      const url = buildApiUrl(propertyHash, `/issues/${issue.id}/resolve`);
 
       const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${password}`, // password is actually sessionToken
+          'Authorization': `Bearer ${password}`,
         },
         body: JSON.stringify({}),
       });

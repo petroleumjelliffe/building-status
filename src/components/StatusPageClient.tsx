@@ -31,8 +31,8 @@ interface StatusPageClientProps {
   data: StatusPageData;
   siteUrl: string;
   formattedDate: string;
-  propertyId?: number; // Property database ID
-  propertyHash?: string; // Property hash from URL (for session management)
+  propertyId: number; // Property database ID
+  propertyHash: string; // Property hash from URL (for session management)
   propertyName?: string; // Property name for display
   requireAuthForContacts?: boolean; // Whether contact info requires authentication
 }

@@ -8,7 +8,7 @@ interface SettingsFormProps {
   sessionToken: string;
   onSubmit: () => void;
   onCancel: () => void;
-  propertyHash?: string;
+  propertyHash: string;
 }
 
 /**
@@ -26,10 +26,7 @@ export function SettingsForm({ reportEmail, sessionToken, onSubmit, onCancel, pr
     setIsSubmitting(true);
 
     try {
-      // Use property-scoped route if propertyHash available, otherwise fall back to legacy
-      const url = propertyHash
-        ? buildApiUrl(propertyHash, '/settings')
-        : '/api/settings';
+      const url = buildApiUrl(propertyHash, '/settings');
 
       const response = await fetch(url, {
         method: 'PUT',

@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 interface CalendarSubscribeProps {
   siteUrl: string;
-  propertyHash?: string;
+  propertyHash: string;
 }
 
 /**
@@ -15,10 +15,8 @@ interface CalendarSubscribeProps {
 export function CalendarSubscribe({ siteUrl, propertyHash }: CalendarSubscribeProps) {
   const [copied, setCopied] = useState(false);
 
-  // Build URLs - use property-scoped route if propertyHash available
-  const icsUrl = propertyHash
-    ? `${siteUrl}/api/${propertyHash}/calendar.ics`
-    : `${siteUrl}/api/calendar.ics`;
+  // Build URL using property-scoped route
+  const icsUrl = `${siteUrl}/api/${propertyHash}/calendar.ics`;
   const webcalUrl = icsUrl.replace(/^https?:/, 'webcal:');
   const googleCalUrl = `https://calendar.google.com/calendar/r?cid=${encodeURIComponent(webcalUrl)}`;
 

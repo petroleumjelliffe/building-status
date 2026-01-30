@@ -9,7 +9,7 @@ interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: (token: string) => void;
-  propertyHash?: string;
+  propertyHash: string;
 }
 
 /**
@@ -27,11 +27,8 @@ export function LoginModal({ isOpen, onClose, onSuccess, propertyHash }: LoginMo
     setIsSubmitting(true);
 
     try {
-      // Use property-scoped login route if propertyHash available
-      // This binds the session token to the specific property
-      const url = propertyHash
-        ? buildApiUrl(propertyHash, '/auth/login')
-        : '/api/auth/login';
+      // Use property-scoped login route to bind session token to this property
+      const url = buildApiUrl(propertyHash, '/auth/login');
 
       const response = await fetch(url, {
         method: 'POST',

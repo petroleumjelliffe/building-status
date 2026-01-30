@@ -9,7 +9,7 @@ interface ContactFormProps {
   sessionToken: string;
   onSubmit: () => void;
   onCancel: () => void;
-  propertyHash?: string;
+  propertyHash: string;
 }
 
 /**
@@ -54,16 +54,9 @@ export function ContactForm({ contact, sessionToken, onSubmit, onCancel, propert
     setIsSubmitting(true);
 
     try {
-      // Use property-scoped route if propertyHash available, otherwise fall back to legacy
-      let url: string;
-      if (propertyHash) {
-        url = contact
-          ? buildApiUrl(propertyHash, `/contacts/${contact.id}`)
-          : buildApiUrl(propertyHash, '/contacts');
-      } else {
-        url = contact ? `/api/contacts/${contact.id}` : '/api/contacts';
-      }
-
+      const url = contact
+        ? buildApiUrl(propertyHash, `/contacts/${contact.id}`)
+        : buildApiUrl(propertyHash, '/contacts');
       const method = contact ? 'PUT' : 'POST';
 
       const response = await fetch(url, {

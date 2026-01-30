@@ -13,7 +13,7 @@ interface StatusPillProps {
   editable: boolean;
   password?: string; // sessionToken passed as password prop for now
   onUpdate?: () => void;
-  propertyHash?: string;
+  propertyHash: string;
 }
 
 /**
@@ -67,16 +67,13 @@ export function StatusPill({
     });
 
     try {
-      // Use property-scoped route if propertyHash available, otherwise fall back to legacy
-      const url = propertyHash
-        ? buildApiUrl(propertyHash, '/status/update')
-        : '/api/status/update';
+      const url = buildApiUrl(propertyHash, '/status/update');
 
       const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${password}`, // password is actually sessionToken
+          'Authorization': `Bearer ${password}`,
         },
         body: JSON.stringify({
           systemId,
@@ -86,7 +83,6 @@ export function StatusPill({
       });
 
       if (response.ok) {
-        // Trigger parent component refresh
         onUpdate?.();
       } else {
         const data = await response.json();
@@ -119,16 +115,13 @@ export function StatusPill({
       current === newTotal ? 'ok' : current === 0 ? 'down' : 'issue';
 
     try {
-      // Use property-scoped route if propertyHash available, otherwise fall back to legacy
-      const url = propertyHash
-        ? buildApiUrl(propertyHash, '/status/update')
-        : '/api/status/update';
+      const url = buildApiUrl(propertyHash, '/status/update');
 
       const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${password}`, // password is actually sessionToken
+          'Authorization': `Bearer ${password}`,
         },
         body: JSON.stringify({
           systemId,

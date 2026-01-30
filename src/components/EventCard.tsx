@@ -12,7 +12,7 @@ interface EventCardProps {
   editable?: boolean;
   sessionToken?: string;
   onUpdate?: () => void;
-  propertyHash?: string;
+  propertyHash: string;
 }
 
 /**
@@ -77,10 +77,7 @@ export function EventCard({ event, editable, sessionToken, onUpdate, propertyHas
 
     setIsCompleting(true);
     try {
-      // Use property-scoped route if propertyHash available, otherwise fall back to legacy
-      const url = propertyHash
-        ? buildApiUrl(propertyHash, `/events/${event.id}/complete`)
-        : `/api/events/${event.id}/complete`;
+      const url = buildApiUrl(propertyHash, `/events/${event.id}/complete`);
 
       const response = await fetch(url, {
         method: 'POST',

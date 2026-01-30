@@ -5,13 +5,14 @@ import type { Maintenance } from '@/types';
 import { Card } from './Card';
 import { Modal } from './Modal';
 import { MaintenanceForm } from './MaintenanceForm';
+import { buildApiUrl } from '@/lib/api';
 
 interface MaintenanceCardProps {
   maintenance: Maintenance;
   editable?: boolean;
   password?: string;
   onUpdate?: () => void;
-  propertyHash?: string;
+  propertyHash: string;
 }
 
 /**
@@ -27,11 +28,13 @@ export function MaintenanceCard({ maintenance, editable, password, onUpdate, pro
 
     setIsCompleting(true);
     try {
-      const response = await fetch(`/api/maintenance/${maintenance.id}/complete`, {
+      const url = buildApiUrl(propertyHash, `/maintenance/${maintenance.id}/complete`);
+
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${password}`, // password is actually sessionToken
+          'Authorization': `Bearer ${password}`,
         },
         body: JSON.stringify({}),
       });
@@ -58,18 +61,16 @@ export function MaintenanceCard({ maintenance, editable, password, onUpdate, pro
   // Action buttons for edit mode
   const actions = editable && password ? (
     <>
-      {propertyHash && (
-        <button
-          className="btn-icon"
-          onClick={() => {
-            const printUrl = `/print/maintenance-sign/${propertyHash}?issueId=${maintenance.id}`;
-            window.open(printUrl, '_blank');
-          }}
-          title="Print sign for this maintenance"
-        >
-          🖨️
-        </button>
-      )}
+      <button
+        className="btn-icon"
+        onClick={() => {
+          const printUrl = `/print/maintenance-sign/${propertyHash}?issueId=${maintenance.id}`;
+          window.open(printUrl, '_blank');
+        }}
+        title="Print sign for this maintenance"
+      >
+        🖨️
+      </button>
       <button
         className="btn-icon"
         onClick={() => setIsEditModalOpen(true)}
@@ -110,6 +111,7 @@ export function MaintenanceCard({ maintenance, editable, password, onUpdate, pro
             password={password}
             onSubmit={handleEditSuccess}
             onCancel={() => setIsEditModalOpen(false)}
+            propertyHash={propertyHash}
           />
         </Modal>
       )}

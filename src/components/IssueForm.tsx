@@ -9,7 +9,7 @@ interface IssueFormProps {
   password: string;
   onSubmit: () => void;
   onCancel: () => void;
-  propertyHash?: string;
+  propertyHash: string;
 }
 
 /**
@@ -29,25 +29,16 @@ export function IssueForm({ issue, password, onSubmit, onCancel, propertyHash }:
     setIsSubmitting(true);
 
     try {
-      // Use property-scoped route if propertyHash available, otherwise fall back to legacy
-      let url: string;
-      let method: string;
-
-      if (propertyHash) {
-        url = issue
-          ? buildApiUrl(propertyHash, `/issues/${issue.id}`)
-          : buildApiUrl(propertyHash, '/issues');
-        method = issue ? 'PUT' : 'POST';
-      } else {
-        url = issue ? `/api/issues/${issue.id}` : '/api/issues';
-        method = issue ? 'PUT' : 'POST';
-      }
+      const url = issue
+        ? buildApiUrl(propertyHash, `/issues/${issue.id}`)
+        : buildApiUrl(propertyHash, '/issues');
+      const method = issue ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${password}`, // password is actually sessionToken
+          'Authorization': `Bearer ${password}`,
         },
         body: JSON.stringify({
           category,
