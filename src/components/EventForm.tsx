@@ -55,7 +55,7 @@ export function EventForm({ event, sessionToken, onSubmit, onCancel, propertyHas
       // Convert to ISO strings
       // For all-day events, we need to ensure the time is noon UTC to avoid date shifting
       const startsAtDate = allDay
-        ? new Date(startsAt + 'T12:00:00Z')
+        ? new Date(startsAt.split('T')[0] + 'T12:00:00Z')
         : new Date(startsAt);
 
       // Validate date
@@ -77,7 +77,7 @@ export function EventForm({ event, sessionToken, onSubmit, onCancel, propertyHas
 
       if (endsAt) {
         const endsAtDate = allDay
-          ? new Date(endsAt + 'T12:00:00Z')
+          ? new Date(endsAt.split('T')[0] + 'T12:00:00Z')
           : new Date(endsAt);
 
         // Validate end date
