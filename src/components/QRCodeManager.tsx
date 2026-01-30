@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { buildApiUrl } from '@/lib/api';
 
 interface QRCode {
@@ -40,13 +40,7 @@ export function QRCodeManager({ sessionToken, onClose, propertyId, propertyName,
     label: string;
   } | null>(null);
 
-  // Load QR codes on mount
-  useEffect(() => {
-    loadQRCodes();
-  }, []);
-
-  const loadQRCodes = async () => {
-
+  const loadQRCodes = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -69,7 +63,12 @@ export function QRCodeManager({ sessionToken, onClose, propertyId, propertyName,
     } finally {
       setLoading(false);
     }
-  };
+  }, [propertyHash, sessionToken]);
+
+  // Load QR codes on mount
+  useEffect(() => {
+    loadQRCodes();
+  }, [loadQRCodes]);
 
   const handleGenerateQRCode = async (e: React.FormEvent) => {
     e.preventDefault();
