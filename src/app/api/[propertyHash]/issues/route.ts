@@ -3,7 +3,7 @@ import { createIssue } from '@/lib/queries';
 import { getPropertyByHash } from '@/lib/property';
 import { revalidatePath } from 'next/cache';
 import { createResponse, ApiErrors } from '@/lib/api-response';
-import { getPostHogClient } from '@/lib/posthog';
+import { trackServerEvent } from '@/lib/posthog';
 import type { CreateIssueRequest, CreateIssueResponse } from '@/types';
 
 export const dynamic = 'force-dynamic';
@@ -47,10 +47,8 @@ export async function POST(
     // Create issue with propertyId
     const id = await createIssue(property.id, category, location, detail, status, icon);
 
-    getPostHogClient().capture({
-      distinctId: `property:${property.id}`,
-      event: 'issue_created',
-      properties: { propertyId: property.id, category },
+    trackServerEvent(request, 'issue_created', {
+      propertyId: property.id, category,
     });
 
     // Revalidate the status page for this property

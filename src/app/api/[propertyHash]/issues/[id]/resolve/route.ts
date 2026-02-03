@@ -3,7 +3,7 @@ import { resolveIssue } from '@/lib/queries';
 import { getPropertyByHash } from '@/lib/property';
 import { revalidatePath } from 'next/cache';
 import { successResponse, ApiErrors } from '@/lib/api-response';
-import { getPostHogClient } from '@/lib/posthog';
+import { trackServerEvent } from '@/lib/posthog';
 import type { ResolveIssueResponse } from '@/types';
 
 export const dynamic = 'force-dynamic';
@@ -41,10 +41,8 @@ export async function POST(
     // resolveIssue verifies ownership internally
     await resolveIssue(issueId, property.id);
 
-    getPostHogClient().capture({
-      distinctId: `property:${property.id}`,
-      event: 'issue_resolved',
-      properties: { propertyId: property.id, issueId },
+    trackServerEvent(request, 'issue_resolved', {
+      propertyId: property.id, issueId,
     });
 
     // Revalidate the status page for this property

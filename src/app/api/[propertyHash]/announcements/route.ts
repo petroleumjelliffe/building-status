@@ -3,7 +3,7 @@ import { validateSessionToken } from '@/lib/auth';
 import { createAnnouncement, updateAnnouncement } from '@/lib/queries';
 import { getPropertyByHash } from '@/lib/property';
 import { createResponse, errorResponse, ApiErrors } from '@/lib/api-response';
-import { getPostHogClient } from '@/lib/posthog';
+import { trackServerEvent } from '@/lib/posthog';
 import type { AnnouncementType, CreateAnnouncementResponse } from '@/types';
 
 export const dynamic = 'force-dynamic';
@@ -75,10 +75,8 @@ export async function POST(
       );
     }
 
-    getPostHogClient().capture({
-      distinctId: `property:${property.id}`,
-      event: id ? 'announcement_updated' : 'announcement_created',
-      properties: { propertyId: property.id, type },
+    trackServerEvent(request, id ? 'announcement_updated' : 'announcement_created', {
+      propertyId: property.id, type,
     });
 
     // Revalidate the status page for this property

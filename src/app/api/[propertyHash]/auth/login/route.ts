@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { createSession } from '@/lib/auth';
 import { getPropertyByHash } from '@/lib/property';
 import { dataResponse, errorResponse, ApiErrors } from '@/lib/api-response';
-import { getPostHogClient } from '@/lib/posthog';
+import { trackServerEvent } from '@/lib/posthog';
 import type { LoginResponse, LoginSuccessResponse } from '@/types';
 
 export const dynamic = 'force-dynamic';
@@ -39,10 +39,8 @@ export async function POST(
       return errorResponse('Invalid password', 401);
     }
 
-    getPostHogClient().capture({
-      distinctId: `property:${property.id}`,
-      event: 'admin_login',
-      properties: { propertyId: property.id },
+    trackServerEvent(request, 'admin_login', {
+      propertyId: property.id,
     });
 
     return dataResponse<LoginSuccessResponse>({

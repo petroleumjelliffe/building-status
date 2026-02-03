@@ -3,7 +3,7 @@ import { validateSessionToken } from '@/lib/auth';
 import { updateSystemStatus } from '@/lib/queries';
 import { getPropertyByHash } from '@/lib/property';
 import { successResponse, errorResponse, ApiErrors } from '@/lib/api-response';
-import { getPostHogClient } from '@/lib/posthog';
+import { trackServerEvent } from '@/lib/posthog';
 import type { SystemStatus, UpdateSystemStatusResponse } from '@/types';
 
 export const dynamic = 'force-dynamic';
@@ -64,10 +64,8 @@ export async function POST(
       note || undefined
     );
 
-    getPostHogClient().capture({
-      distinctId: `property:${property.id}`,
-      event: 'status_update',
-      properties: { propertyId: property.id, systemId, status },
+    trackServerEvent(request, 'status_update', {
+      propertyId: property.id, systemId, status,
     });
 
     // Revalidate the status page for this property
