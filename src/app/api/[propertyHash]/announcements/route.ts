@@ -75,7 +75,7 @@ export async function POST(
       );
     }
 
-    trackServerEvent(request, id ? 'announcement_updated' : 'announcement_created', {
+    trackServerEvent(request, id ? 'Announcement Updated' : 'Announcement Created', {
       propertyId: property.id, type,
     });
 

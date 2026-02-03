@@ -34,7 +34,7 @@ export function ShareButton({ url, title, text }: ShareButtonProps) {
 
   const handleShare = async () => {
     setIsSharing(true);
-    trackEvent('share_click', {});
+    trackEvent('Share Clicked', {});
 
     try {
       const imageUrl = getStatusImageUrl();
@@ -60,7 +60,7 @@ export function ShareButton({ url, title, text }: ShareButtonProps) {
           title,
           text,
         });
-        trackEvent('share_completed', { method: 'native_file' });
+        trackEvent('Share Completed', { method: 'native_file' });
         console.log('[ShareButton] Share with file succeeded');
       } else if (navigator.share) {
         // Fallback: share URL only
@@ -70,14 +70,14 @@ export function ShareButton({ url, title, text }: ShareButtonProps) {
           text,
           url,
         });
-        trackEvent('share_completed', { method: 'native_url' });
+        trackEvent('Share Completed', { method: 'native_url' });
         console.log('[ShareButton] Share URL succeeded');
       } else {
         // No share API - copy to clipboard
         console.log('[ShareButton] Web Share API not available, copying to clipboard');
         if (navigator.clipboard && navigator.clipboard.writeText) {
           await navigator.clipboard.writeText(url);
-          trackEvent('share_completed', { method: 'clipboard' });
+          trackEvent('Share Completed', { method: 'clipboard' });
           setCopied(true);
           setTimeout(() => setCopied(false), 2000);
         } else {
@@ -92,7 +92,7 @@ export function ShareButton({ url, title, text }: ShareButtonProps) {
           document.body.removeChild(input);
 
           if (success) {
-            trackEvent('share_completed', { method: 'clipboard_legacy' });
+            trackEvent('Share Completed', { method: 'clipboard_legacy' });
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
           } else {

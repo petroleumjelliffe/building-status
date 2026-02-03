@@ -3,6 +3,12 @@ import type { ServerEventName, AnalyticsEventProperties } from './analytics-even
 
 let posthogClient: PostHog | null = null;
 
+function getEnvironment(): string {
+  return process.env.NEXT_PUBLIC_VERCEL_ENV
+    || process.env.NODE_ENV
+    || 'development';
+}
+
 export function getPostHogClient(): PostHog {
   if (!posthogClient) {
     const apiKey = process.env.NEXT_PUBLIC_POSTHOG_KEY;
@@ -10,6 +16,7 @@ export function getPostHogClient(): PostHog {
       // Return a no-op client when not configured
       return {
         capture: () => {},
+        identify: () => {},
         shutdown: () => Promise.resolve(),
       } as unknown as PostHog;
     }
@@ -55,6 +62,8 @@ export function getPostHogDistinctId(request: Request, overrideKey?: string): st
  * Links to the browser session via PostHog cookie when available.
  * Falls back to property-scoped ID.
  *
+ * Automatically tags every event with the current environment.
+ *
  * Fire-and-forget — never throws, never blocks.
  */
 export function trackServerEvent<E extends ServerEventName>(
@@ -71,8 +80,31 @@ export function trackServerEvent<E extends ServerEventName>(
     event,
     properties: {
       ...properties,
-      // Tag server events so they're distinguishable in PostHog
       $lib: 'posthog-node',
+      environment: getEnvironment(),
+    },
+  });
+}
+
+/**
+ * Identify a property as a PostHog person with metadata.
+ * Call this on admin login so server-side events are attributed
+ * to a known entity with useful person properties.
+ */
+export function identifyProperty(
+  request: Request,
+  propertyId: number,
+  propertyName: string,
+): void {
+  const browserDistinctId = getPostHogDistinctId(request);
+  const distinctId = browserDistinctId || `property:${propertyId}`;
+
+  getPostHogClient().identify({
+    distinctId,
+    properties: {
+      property_id: propertyId,
+      property_name: propertyName,
+      environment: getEnvironment(),
     },
   });
 }

@@ -86,7 +86,7 @@ export async function POST(
       notifyBeforeMinutes,
     });
 
-    trackServerEvent(request, 'event_created', {
+    trackServerEvent(request, 'Event Created', {
       propertyId: property.id, eventType: type,
     });
 

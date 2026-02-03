@@ -41,7 +41,7 @@ export async function POST(
     // resolveIssue verifies ownership internally
     await resolveIssue(issueId, property.id);
 
-    trackServerEvent(request, 'issue_resolved', {
+    trackServerEvent(request, 'Issue Resolved', {
       propertyId: property.id, issueId,
     });
 

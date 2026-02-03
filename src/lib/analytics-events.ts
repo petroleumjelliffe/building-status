@@ -5,10 +5,13 @@
  * All tracking calls (server and client) must use events defined here.
  * Tests verify no direct posthog.capture() calls bypass this dictionary.
  *
+ * Naming convention: Title Case, "Noun Verbed" (past tense)
+ *   e.g. "Issue Created", "Admin Logged In", "QR Code Scanned"
+ *
  * To add a new event:
  *   1. Add it to ANALYTICS_EVENTS below
  *   2. Add its property type to AnalyticsEventProperties
- *   3. Use trackServerEvent() or trackClientEvent() to fire it
+ *   3. Use trackServerEvent() or useTrackEvent() to fire it
  */
 
 // ---------------------------------------------------------------------------
@@ -17,51 +20,51 @@
 
 export const ANALYTICS_EVENTS = {
   // -- Resident funnel --
-  qr_scan: {
+  'QR Code Scanned': {
     description: 'Resident scans a QR code to access the status page',
     source: 'server' as const,
   },
 
   // -- Manager funnel --
-  admin_login: {
+  'Admin Logged In': {
     description: 'Manager logs in to the admin dashboard',
     source: 'server' as const,
   },
-  status_update: {
+  'Status Updated': {
     description: 'Manager updates a system status (heat, water, laundry)',
     source: 'server' as const,
   },
-  issue_created: {
+  'Issue Created': {
     description: 'Manager creates a new building issue',
     source: 'server' as const,
   },
-  issue_resolved: {
+  'Issue Resolved': {
     description: 'Manager resolves a building issue',
     source: 'server' as const,
   },
-  announcement_created: {
+  'Announcement Created': {
     description: 'Manager creates a new announcement',
     source: 'server' as const,
   },
-  announcement_updated: {
+  'Announcement Updated': {
     description: 'Manager updates an existing announcement',
     source: 'server' as const,
   },
-  event_created: {
+  'Event Created': {
     description: 'Manager creates a calendar event',
     source: 'server' as const,
   },
 
   // -- Engagement --
-  calendar_feed_access: {
+  'Calendar Feed Accessed': {
     description: 'Someone accesses the iCal feed',
     source: 'server' as const,
   },
-  share_click: {
+  'Share Clicked': {
     description: 'User clicks the share button',
     source: 'client' as const,
   },
-  share_completed: {
+  'Share Completed': {
     description: 'Share action completes successfully',
     source: 'client' as const,
   },
@@ -96,44 +99,44 @@ export const CLIENT_EVENT_NAMES = Object.entries(ANALYTICS_EVENTS)
 // ---------------------------------------------------------------------------
 
 export interface AnalyticsEventProperties {
-  qr_scan: {
+  'QR Code Scanned': {
     propertyId: number;
     accessTokenId: number;
   };
-  admin_login: {
+  'Admin Logged In': {
     propertyId: number;
   };
-  status_update: {
+  'Status Updated': {
     propertyId: number;
     systemId: string;
     status: string;
   };
-  issue_created: {
+  'Issue Created': {
     propertyId: number;
     category: string;
   };
-  issue_resolved: {
+  'Issue Resolved': {
     propertyId: number;
     issueId: number;
   };
-  announcement_created: {
+  'Announcement Created': {
     propertyId: number;
     type: string;
   };
-  announcement_updated: {
+  'Announcement Updated': {
     propertyId: number;
     type: string;
   };
-  event_created: {
+  'Event Created': {
     propertyId: number;
     eventType: string;
   };
-  calendar_feed_access: {
+  'Calendar Feed Accessed': {
     propertyId: number;
     typeFilter: string;
   };
-  share_click: Record<string, never>;
-  share_completed: {
+  'Share Clicked': Record<string, never>;
+  'Share Completed': {
     method: 'native_file' | 'native_url' | 'clipboard' | 'clipboard_legacy';
   };
 }

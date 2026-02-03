@@ -96,7 +96,7 @@ export async function GET(
     // Generate calendar string
     const calendarString = calendar.toString();
 
-    trackServerEvent(request, 'calendar_feed_access', {
+    trackServerEvent(request, 'Calendar Feed Accessed', {
       propertyId: property.id, typeFilter: typeParam || 'all',
     });
 

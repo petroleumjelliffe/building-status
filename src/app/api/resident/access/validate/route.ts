@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
       validationResult.tokenId
     );
 
-    trackServerEvent(request, 'qr_scan', {
+    trackServerEvent(request, 'QR Code Scanned', {
       propertyId: validationResult.propertyId,
       accessTokenId: validationResult.tokenId,
     });

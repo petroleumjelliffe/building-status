@@ -33,6 +33,19 @@ describe('Analytics Data Dictionary', () => {
     const combined = [...SERVER_EVENT_NAMES, ...CLIENT_EVENT_NAMES].sort();
     expect([...ALL_EVENT_NAMES].sort()).toEqual(combined);
   });
+
+  it('all event names follow Title Case naming convention', () => {
+    for (const name of ALL_EVENT_NAMES) {
+      // Each word should start with an uppercase letter
+      const words = name.split(' ');
+      for (const word of words) {
+        expect(
+          word[0] === word[0].toUpperCase(),
+          `"${name}" has non-title-case word "${word}"`
+        ).toBe(true);
+      }
+    }
+  });
 });
 
 describe('getPostHogDistinctId', () => {

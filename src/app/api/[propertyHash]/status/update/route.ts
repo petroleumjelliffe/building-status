@@ -64,7 +64,7 @@ export async function POST(
       note || undefined
     );
 
-    trackServerEvent(request, 'status_update', {
+    trackServerEvent(request, 'Status Updated', {
       propertyId: property.id, systemId, status,
     });
 

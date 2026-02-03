@@ -47,7 +47,7 @@ export async function POST(
     // Create issue with propertyId
     const id = await createIssue(property.id, category, location, detail, status, icon);
 
-    trackServerEvent(request, 'issue_created', {
+    trackServerEvent(request, 'Issue Created', {
       propertyId: property.id, category,
     });
 

@@ -17,6 +17,14 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
       capture_pageleave: true,
       persistence: 'cookie',
     });
+
+    // Tag every client event with the environment so prod/dev
+    // are filterable in a single PostHog project.
+    posthog.register({
+      environment: process.env.NEXT_PUBLIC_VERCEL_ENV
+        || process.env.NODE_ENV
+        || 'development',
+    });
   }, []);
 
   return <PHProvider client={posthog}>{children}</PHProvider>;
