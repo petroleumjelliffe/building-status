@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import ical, { ICalEventStatus, ICalAlarmType } from 'ical-generator';
 import { getUpcomingEvents } from '@/lib/queries';
 import { getPropertyByHash } from '@/lib/property';
+import { getPostHogClient } from '@/lib/posthog';
 import type { EventType } from '@/types';
 
 export const dynamic = 'force-dynamic';
@@ -94,6 +95,12 @@ export async function GET(
 
     // Generate calendar string
     const calendarString = calendar.toString();
+
+    getPostHogClient().capture({
+      distinctId: `property:${property.id}`,
+      event: 'calendar_feed_access',
+      properties: { propertyId: property.id, typeFilter: typeParam || 'all' },
+    });
 
     // Return with proper headers
     return new NextResponse(calendarString, {

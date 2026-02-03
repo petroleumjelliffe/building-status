@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateAccessToken } from '@/lib/qr-code';
 import { createResidentSession } from '@/lib/resident-session';
+import { getPostHogClient } from '@/lib/posthog';
 
 /**
  * POST /api/resident/access/validate
@@ -37,6 +38,15 @@ export async function POST(request: NextRequest) {
       validationResult.propertyId,
       validationResult.tokenId
     );
+
+    getPostHogClient().capture({
+      distinctId: `property:${validationResult.propertyId}`,
+      event: 'qr_scan',
+      properties: {
+        propertyId: validationResult.propertyId,
+        accessTokenId: validationResult.tokenId,
+      },
+    });
 
     return NextResponse.json({
       success: true,
