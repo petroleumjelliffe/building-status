@@ -102,6 +102,7 @@ export interface AnalyticsEventProperties {
   'QR Code Scanned': {
     propertyId: number;
     accessTokenId: number;
+    unit?: string;
   };
   'Admin Logged In': {
     propertyId: number;
