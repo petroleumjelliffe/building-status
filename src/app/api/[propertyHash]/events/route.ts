@@ -3,6 +3,7 @@ import { createEvent, getScheduledEvents } from '@/lib/queries';
 import { getPropertyByHash } from '@/lib/property';
 import { revalidatePath } from 'next/cache';
 import { dataResponse, createResponse, errorResponse, ApiErrors } from '@/lib/api-response';
+import { trackServerEvent } from '@/lib/posthog';
 import type { CreateEventRequest, EventType, GetEventsResponse, CreateEventResponse, EventListResponse } from '@/types';
 
 export const dynamic = 'force-dynamic';
@@ -83,6 +84,10 @@ export async function POST(
       timezone,
       recurrenceRule,
       notifyBeforeMinutes,
+    });
+
+    trackServerEvent(request, 'Event Created', {
+      propertyId: property.id, eventType: type,
     });
 
     // Revalidate the status page for this property

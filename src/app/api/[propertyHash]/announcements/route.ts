@@ -3,6 +3,7 @@ import { validateSessionToken } from '@/lib/auth';
 import { createAnnouncement, updateAnnouncement } from '@/lib/queries';
 import { getPropertyByHash } from '@/lib/property';
 import { createResponse, errorResponse, ApiErrors } from '@/lib/api-response';
+import { trackServerEvent } from '@/lib/posthog';
 import type { AnnouncementType, CreateAnnouncementResponse } from '@/types';
 
 export const dynamic = 'force-dynamic';
@@ -73,6 +74,10 @@ export async function POST(
         expiresAt ? new Date(expiresAt) : undefined
       );
     }
+
+    trackServerEvent(request, id ? 'Announcement Updated' : 'Announcement Created', {
+      propertyId: property.id, type,
+    });
 
     // Revalidate the status page for this property
     revalidatePath(`/${propertyHash}`);

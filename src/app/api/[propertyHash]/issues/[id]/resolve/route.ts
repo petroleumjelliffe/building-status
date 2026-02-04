@@ -3,6 +3,7 @@ import { resolveIssue } from '@/lib/queries';
 import { getPropertyByHash } from '@/lib/property';
 import { revalidatePath } from 'next/cache';
 import { successResponse, ApiErrors } from '@/lib/api-response';
+import { trackServerEvent } from '@/lib/posthog';
 import type { ResolveIssueResponse } from '@/types';
 
 export const dynamic = 'force-dynamic';
@@ -39,6 +40,10 @@ export async function POST(
 
     // resolveIssue verifies ownership internally
     await resolveIssue(issueId, property.id);
+
+    trackServerEvent(request, 'Issue Resolved', {
+      propertyId: property.id, issueId,
+    });
 
     // Revalidate the status page for this property
     revalidatePath(`/${propertyHash}`);

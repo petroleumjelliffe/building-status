@@ -1,4 +1,6 @@
 import { DM_Sans, DM_Mono, Inter } from 'next/font/google';
+import { PostHogProvider } from '@/components/PostHogProvider';
+import { GoogleAnalytics } from '@/components/GoogleAnalytics';
 import './globals.css';
 
 const dmSans = DM_Sans({
@@ -29,7 +31,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${dmSans.variable} ${dmMono.variable} ${inter.variable}`}>
-      <body>{children}</body>
+      <body>
+        <PostHogProvider>{children}</PostHogProvider>
+        <GoogleAnalytics />
+      </body>
     </html>
   );
 }

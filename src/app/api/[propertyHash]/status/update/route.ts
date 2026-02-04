@@ -3,6 +3,7 @@ import { validateSessionToken } from '@/lib/auth';
 import { updateSystemStatus } from '@/lib/queries';
 import { getPropertyByHash } from '@/lib/property';
 import { successResponse, errorResponse, ApiErrors } from '@/lib/api-response';
+import { trackServerEvent } from '@/lib/posthog';
 import type { SystemStatus, UpdateSystemStatusResponse } from '@/types';
 
 export const dynamic = 'force-dynamic';
@@ -62,6 +63,10 @@ export async function POST(
       count || undefined,
       note || undefined
     );
+
+    trackServerEvent(request, 'Status Updated', {
+      propertyId: property.id, systemId, status,
+    });
 
     // Revalidate the status page for this property
     revalidatePath(`/${propertyHash}`);

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateAccessToken } from '@/lib/qr-code';
 import { createResidentSession } from '@/lib/resident-session';
+import { trackServerEvent } from '@/lib/posthog';
 
 /**
  * POST /api/resident/access/validate
@@ -37,6 +38,11 @@ export async function POST(request: NextRequest) {
       validationResult.propertyId,
       validationResult.tokenId
     );
+
+    trackServerEvent(request, 'QR Code Scanned', {
+      propertyId: validationResult.propertyId,
+      accessTokenId: validationResult.tokenId,
+    });
 
     return NextResponse.json({
       success: true,
