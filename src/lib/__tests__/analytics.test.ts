@@ -112,6 +112,63 @@ describe('getPostHogDistinctId', () => {
   });
 });
 
+describe('No internal database IDs in analytics properties', () => {
+  /**
+   * Internal numeric database IDs (e.g. propertyId) must never appear in
+   * analytics event properties. They leak implementation details to third-party
+   * services and are meaningless outside our database.
+   *
+   * Use opaque identifiers instead — e.g. propertyHash instead of propertyId.
+   */
+  const BANNED_PROPERTY_NAMES = [
+    'propertyId',  // use propertyHash
+  ];
+
+  it('AnalyticsEventProperties must not contain banned field names', () => {
+    const filePath = path.join(process.cwd(), 'src', 'lib', 'analytics-events.ts');
+    const content = fs.readFileSync(filePath, 'utf-8');
+
+    // Extract the AnalyticsEventProperties interface block
+    const propsMatch = content.match(
+      /export interface AnalyticsEventProperties \{[\s\S]*?\n\}/
+    );
+    expect(propsMatch, 'Could not find AnalyticsEventProperties interface').not.toBeNull();
+
+    const propsBlock = propsMatch![0];
+
+    for (const banned of BANNED_PROPERTY_NAMES) {
+      expect(
+        propsBlock.includes(banned),
+        `AnalyticsEventProperties contains "${banned}". ` +
+        `Internal database IDs must not be sent to analytics. ` +
+        `Use the opaque hash/string equivalent instead.`
+      ).toBe(false);
+    }
+  });
+
+  it('trackServerEvent call sites must not pass banned field names', () => {
+    const apiDir = path.join(process.cwd(), 'src', 'app', 'api');
+    const routeFiles = findFilesRecursive(apiDir, 'route.ts');
+
+    for (const file of routeFiles) {
+      const content = fs.readFileSync(file, 'utf-8');
+      const relativePath = path.relative(process.cwd(), file);
+
+      // Find all trackServerEvent calls and check their property objects
+      const trackCalls = content.match(/trackServerEvent\([\s\S]*?\}\)/g) || [];
+      for (const call of trackCalls) {
+        for (const banned of BANNED_PROPERTY_NAMES) {
+          expect(
+            call.includes(banned),
+            `${relativePath} passes "${banned}" to trackServerEvent. ` +
+            `Use the opaque hash/string equivalent instead.`
+          ).toBe(false);
+        }
+      }
+    }
+  });
+});
+
 describe('No direct posthog.capture() calls outside analytics modules', () => {
   it('API routes use trackServerEvent, not getPostHogClient().capture()', () => {
     const apiDir = path.join(process.cwd(), 'src', 'app', 'api');

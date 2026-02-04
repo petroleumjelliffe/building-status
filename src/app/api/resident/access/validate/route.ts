@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     );
 
     trackServerEvent(request, 'QR Code Scanned', {
-      propertyId: validationResult.propertyId,
+      propertyHash,
       accessTokenId: validationResult.tokenId,
       ...(unit && { unit: String(unit) }),
     });

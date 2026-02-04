@@ -76,7 +76,7 @@ export async function POST(
     }
 
     trackServerEvent(request, id ? 'Announcement Updated' : 'Announcement Created', {
-      propertyId: property.id, type,
+      propertyHash, type,
     });
 
     // Revalidate the status page for this property

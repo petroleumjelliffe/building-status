@@ -48,7 +48,7 @@ export async function POST(
     const id = await createIssue(property.id, category, location, detail, status, icon);
 
     trackServerEvent(request, 'Issue Created', {
-      propertyId: property.id, category,
+      propertyHash, category,
     });
 
     // Revalidate the status page for this property
