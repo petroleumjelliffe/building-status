@@ -65,7 +65,7 @@ export async function POST(
     );
 
     trackServerEvent(request, 'Status Updated', {
-      propertyId: property.id, systemId, status,
+      propertyHash, systemId, status,
     });
 
     // Revalidate the status page for this property

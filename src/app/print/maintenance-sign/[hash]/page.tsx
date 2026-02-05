@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { getPropertyByHash } from '@/lib/property';
 import { getStatusData } from '@/lib/queries';
-import { createQRCodeImage } from '@/lib/qr-code';
+import { createPublicShortLinkQR } from '@/lib/qr-code';
 import { PrintControls } from '@/components/print/PrintControls';
 import './print.css';
 
@@ -119,8 +119,16 @@ export default async function PrintMaintenanceSign({ params, searchParams }: Mai
   }
 
   const statusBadge = getStatusBadge(issue.status, issue.category);
-  const issueUrl = `${baseUrl}/${params.hash}${issueId ? `/issue/${issueId}` : ''}`;
-  const qrCodeDataUrl = await createQRCodeImage(issueUrl);
+
+  // Short link QR code — always points to /{hash} (the property page)
+  // Fixes previous bug where /issue/{id} path didn't exist
+  const { qrCodeDataUrl, shortUrl } = await createPublicShortLinkQR(
+    property.id,
+    'maintenance_sign',
+    'general',
+    issueId ? `Maintenance Sign - Issue #${issueId}` : 'Maintenance Sign - General'
+  );
+  const issueUrl = `${baseUrl}/${params.hash}`;
 
   return (
     <html lang="en">

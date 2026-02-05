@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
   try {
     // Parse request body
     const body = await request.json();
-    const { accessToken, propertyHash } = body;
+    const { accessToken, propertyHash, unit } = body;
 
     if (!accessToken || !propertyHash) {
       return NextResponse.json(
@@ -40,8 +40,9 @@ export async function POST(request: NextRequest) {
     );
 
     trackServerEvent(request, 'QR Code Scanned', {
-      propertyId: validationResult.propertyId,
+      propertyHash,
       accessTokenId: validationResult.tokenId,
+      ...(unit && { unit: String(unit) }),
     });
 
     return NextResponse.json({

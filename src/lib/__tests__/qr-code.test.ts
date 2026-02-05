@@ -9,7 +9,7 @@ import {
   getAllAccessTokens,
 } from '@/lib/qr-code';
 import { getTestDb, cleanDatabase, createTestProperty, closeTestDb } from '@/../test/db-utils';
-import { accessTokens } from '@/lib/schema';
+import { accessTokens, shortLinks } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
 
 describe('QR Code Functions', () => {
@@ -104,6 +104,8 @@ describe('QR Code Functions', () => {
       expect(result).toHaveProperty('token');
       expect(result).toHaveProperty('qrCodeDataUrl');
       expect(result).toHaveProperty('fullUrl');
+      expect(result).toHaveProperty('shortLinkId');
+      expect(result).toHaveProperty('code');
     });
 
     it('stores token in database', async () => {
@@ -125,14 +127,29 @@ describe('QR Code Functions', () => {
       expect(tokens[0].isActive).toBe(true);
     });
 
-    it('builds correct full URL', async () => {
+    it('creates a short link and returns short URL', async () => {
       const result = await generatePropertyQRCode(
         testProperty.id,
         testProperty.hash,
         'Test QR Code'
       );
 
-      expect(result.fullUrl).toBe(`${process.env.NEXT_PUBLIC_SITE_URL}/${testProperty.hash}?auth=${result.token}`);
+      // fullUrl should be the short URL format
+      expect(result.fullUrl).toBe(`${process.env.NEXT_PUBLIC_SITE_URL}/s/${result.code}`);
+
+      // Short link should exist in the database
+      const db = getTestDb();
+      const links = await db
+        .select()
+        .from(shortLinks)
+        .where(eq(shortLinks.id, result.shortLinkId));
+
+      expect(links.length).toBe(1);
+      expect(links[0].code).toBe(result.code);
+      expect(links[0].propertyId).toBe(testProperty.id);
+      expect(links[0].accessTokenId).toBe(result.tokenId);
+      expect(links[0].campaign).toBe('admin');
+      expect(links[0].content).toBe('Test QR Code');
     });
 
     it('generates valid QR code data URL', async () => {
@@ -161,6 +178,26 @@ describe('QR Code Functions', () => {
         .where(eq(accessTokens.id, result.tokenId));
 
       expect(tokens[0].expiresAt).toEqual(expiresAt);
+    });
+
+    it('passes campaign and content options to short link', async () => {
+      const result = await generatePropertyQRCode(
+        testProperty.id,
+        testProperty.hash,
+        'Unit 4A QR',
+        undefined,
+        { campaign: 'unit_card', content: '4A', unit: '4A' }
+      );
+
+      const db = getTestDb();
+      const links = await db
+        .select()
+        .from(shortLinks)
+        .where(eq(shortLinks.id, result.shortLinkId));
+
+      expect(links[0].campaign).toBe('unit_card');
+      expect(links[0].content).toBe('4A');
+      expect(links[0].unit).toBe('4A');
     });
 
     it('throws error if NEXT_PUBLIC_SITE_URL not set', async () => {

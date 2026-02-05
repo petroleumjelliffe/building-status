@@ -81,9 +81,16 @@ export function StatusPageClient({
         sessionStorage.setItem('pending_auth_token', authToken);
         sessionStorage.setItem('pending_auth_hash', propertyHash);
 
-        // Immediately redirect to clean URL
-        const cleanUrl = window.location.pathname;
-        window.location.replace(cleanUrl);
+        // Store unit param if present (for unit-specific analytics)
+        const unitParam = params.get('unit');
+        if (unitParam) {
+          sessionStorage.setItem('pending_auth_unit', unitParam);
+        }
+
+        // Redirect: strip auth but preserve UTMs and other params for analytics
+        const url = new URL(window.location.href);
+        url.searchParams.delete('auth');
+        window.location.replace(url.pathname + url.search);
         return; // Stop execution, page will reload
       }
 
@@ -95,8 +102,10 @@ export function StatusPageClient({
         console.log('[StatusPageClient] Processing pending auth token...');
 
         // Clear pending items
+        const pendingUnit = sessionStorage.getItem('pending_auth_unit');
         sessionStorage.removeItem('pending_auth_token');
         sessionStorage.removeItem('pending_auth_hash');
+        sessionStorage.removeItem('pending_auth_unit');
 
         try {
           const response = await fetch('/api/resident/access/validate', {
@@ -107,6 +116,7 @@ export function StatusPageClient({
             body: JSON.stringify({
               accessToken: pendingToken,
               propertyHash: pendingHash,
+              ...(pendingUnit && { unit: pendingUnit }),
             }),
           });
 

@@ -3,6 +3,7 @@ import QRCode from 'qrcode';
 import { db } from './db';
 import { accessTokens } from './schema';
 import { eq } from 'drizzle-orm';
+import { createShortLink } from './short-link';
 
 /**
  * Generate a cryptographically secure access token
@@ -32,23 +33,31 @@ export async function createQRCodeImage(url: string): Promise<string> {
 }
 
 /**
- * Generate a complete QR code for property access
+ * Generate a complete QR code for property access.
+ * Creates an access token and a short link, then generates a QR code
+ * encoding the short URL (e.g., status.example.com/s/a7x9Km).
+ * UTM parameters are injected at redirect time by the /s/[code] route.
+ *
  * @param propertyId - Database ID of the property
  * @param propertyHash - URL hash for the property
  * @param label - Human-readable label for this QR code
  * @param expiresAt - Optional expiration date
- * @returns Object with token, QR code image, and full URL
+ * @param options - Optional campaign/content for UTM tracking
+ * @returns Object with token, QR code image, short URL, and short link details
  */
 export async function generatePropertyQRCode(
   propertyId: number,
   propertyHash: string,
   label: string,
-  expiresAt?: Date
+  expiresAt?: Date,
+  options?: { campaign?: string; content?: string; unit?: string }
 ): Promise<{
   tokenId: number;
   token: string;
   qrCodeDataUrl: string;
   fullUrl: string;
+  shortLinkId: number;
+  code: string;
 }> {
   // Generate access token
   const token = generateAccessToken();
@@ -65,21 +74,67 @@ export async function generatePropertyQRCode(
     })
     .returning({ id: accessTokens.id });
 
-  // Build full URL with property hash and auth token
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL;
   if (!baseUrl) {
     throw new Error('NEXT_PUBLIC_SITE_URL environment variable must be set to generate QR codes');
   }
-  const fullUrl = `${baseUrl}/${propertyHash}?auth=${token}`;
 
-  // Generate QR code image
-  const qrCodeDataUrl = await createQRCodeImage(fullUrl);
+  // Create short link — QR code encodes the short URL
+  const shortLink = await createShortLink({
+    propertyId,
+    accessTokenId: accessToken.id,
+    unit: options?.unit,
+    campaign: options?.campaign || 'admin',
+    content: options?.content || label,
+    label,
+  });
+
+  // Generate QR code image encoding the short URL
+  const qrCodeDataUrl = await createQRCodeImage(shortLink.shortUrl);
 
   return {
     tokenId: accessToken.id,
     token,
     qrCodeDataUrl,
-    fullUrl,
+    fullUrl: shortLink.shortUrl,
+    shortLinkId: shortLink.id,
+    code: shortLink.code,
+  };
+}
+
+/**
+ * Create a QR code with a short link but no access token.
+ * Used for property signs, maintenance signs, and other public QR codes.
+ *
+ * @param propertyId - Database ID of the property
+ * @param campaign - UTM campaign value (e.g., 'property_sign', 'maintenance_sign')
+ * @param content - Optional UTM content value
+ * @param label - Optional admin-facing label
+ * @returns Object with QR code image and short URL
+ */
+export async function createPublicShortLinkQR(
+  propertyId: number,
+  campaign: string,
+  content?: string,
+  label?: string,
+): Promise<{
+  qrCodeDataUrl: string;
+  shortUrl: string;
+  code: string;
+}> {
+  const shortLink = await createShortLink({
+    propertyId,
+    campaign,
+    content,
+    label,
+  });
+
+  const qrCodeDataUrl = await createQRCodeImage(shortLink.shortUrl);
+
+  return {
+    qrCodeDataUrl,
+    shortUrl: shortLink.shortUrl,
+    code: shortLink.code,
   };
 }
 

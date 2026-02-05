@@ -42,7 +42,7 @@ export async function POST(
     await resolveIssue(issueId, property.id);
 
     trackServerEvent(request, 'Issue Resolved', {
-      propertyId: property.id, issueId,
+      propertyHash, issueId,
     });
 
     // Revalidate the status page for this property

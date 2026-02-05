@@ -41,7 +41,7 @@ export async function POST(
 
     identifyProperty(request, property.id, property.name);
     trackServerEvent(request, 'Admin Logged In', {
-      propertyId: property.id,
+      propertyHash,
     });
 
     return dataResponse<LoginSuccessResponse>({

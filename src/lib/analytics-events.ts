@@ -8,6 +8,10 @@
  * Naming convention: Title Case, "Noun Verbed" (past tense)
  *   e.g. "Issue Created", "Admin Logged In", "QR Code Scanned"
  *
+ * Property identification: Always use propertyHash (string), never propertyId
+ * (numeric DB ID). Internal database IDs must not leak into analytics.
+ * Enforced by test: "analytics properties must not contain internal database IDs".
+ *
  * To add a new event:
  *   1. Add it to ANALYTICS_EVENTS below
  *   2. Add its property type to AnalyticsEventProperties
@@ -100,39 +104,40 @@ export const CLIENT_EVENT_NAMES = Object.entries(ANALYTICS_EVENTS)
 
 export interface AnalyticsEventProperties {
   'QR Code Scanned': {
-    propertyId: number;
+    propertyHash: string;
     accessTokenId: number;
+    unit?: string;
   };
   'Admin Logged In': {
-    propertyId: number;
+    propertyHash: string;
   };
   'Status Updated': {
-    propertyId: number;
+    propertyHash: string;
     systemId: string;
     status: string;
   };
   'Issue Created': {
-    propertyId: number;
+    propertyHash: string;
     category: string;
   };
   'Issue Resolved': {
-    propertyId: number;
+    propertyHash: string;
     issueId: number;
   };
   'Announcement Created': {
-    propertyId: number;
+    propertyHash: string;
     type: string;
   };
   'Announcement Updated': {
-    propertyId: number;
+    propertyHash: string;
     type: string;
   };
   'Event Created': {
-    propertyId: number;
+    propertyHash: string;
     eventType: string;
   };
   'Calendar Feed Accessed': {
-    propertyId: number;
+    propertyHash: string;
     typeFilter: string;
   };
   'Share Clicked': Record<string, never>;

@@ -19,6 +19,7 @@ export async function cleanDatabase() {
   // Delete all data in reverse dependency order
   await db.delete(schema.notificationQueue);
   await db.delete(schema.notificationSubscriptions);
+  await db.delete(schema.shortLinks);
   await db.delete(schema.residentSessions);
   await db.delete(schema.accessTokens);
   await db.delete(schema.config);

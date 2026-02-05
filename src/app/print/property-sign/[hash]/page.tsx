@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { getPropertyByHash } from '@/lib/property';
 import { getStatusData } from '@/lib/queries';
-import { createQRCodeImage } from '@/lib/qr-code';
+import { createPublicShortLinkQR } from '@/lib/qr-code';
 import { PrintControls } from '@/components/print/PrintControls';
 import './print.css';
 
@@ -42,13 +42,18 @@ export default async function PrintPropertySign({ params, searchParams }: PrintS
 
   const data = await getStatusData(property.id);
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-
-  // Generate QR code pointing to property page
   const propertyUrl = `${baseUrl}/${params.hash}`;
-  const qrCodeDataUrl = await createQRCodeImage(propertyUrl);
 
   const signType = searchParams.type || 'common';
   const locationLabel = searchParams.location || 'Common Area';
+
+  // Generate QR code with short link for analytics tracking
+  const { qrCodeDataUrl } = await createPublicShortLinkQR(
+    property.id,
+    'property_sign',
+    locationLabel,
+    `Property Sign - ${locationLabel}`
+  );
 
   return (
     <html lang="en">

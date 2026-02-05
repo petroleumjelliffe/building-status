@@ -97,7 +97,7 @@ export async function GET(
     const calendarString = calendar.toString();
 
     trackServerEvent(request, 'Calendar Feed Accessed', {
-      propertyId: property.id, typeFilter: typeParam || 'all',
+      propertyHash, typeFilter: typeParam || 'all',
     });
 
     // Return with proper headers

@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { getPropertyByHash } from '@/lib/property';
 import { getStatusData } from '@/lib/queries';
-import { createQRCodeImage } from '@/lib/qr-code';
+import { generatePropertyQRCode } from '@/lib/qr-code';
 import { PrintControls } from '@/components/print/PrintControls';
 import './print.css';
 
@@ -41,7 +41,6 @@ export default async function PrintUnitCards({ params, searchParams }: UnitCards
   const data = await getStatusData(property.id);
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
   const propertyUrl = `${baseUrl}/${params.hash}`;
-  const qrCodeDataUrl = await createQRCodeImage(propertyUrl);
 
   // Parse units from query params or use default set
   const defaultUnits = ['1A', '1B', '2A', '2B'];
@@ -52,6 +51,20 @@ export default async function PrintUnitCards({ params, searchParams }: UnitCards
   // Only render 4 units per page
   const unitsToRender = unitNumbers.slice(0, 4);
 
+  // Generate a unique QR code per unit (each gets its own access token + short link)
+  const unitQRCodes = await Promise.all(
+    unitsToRender.map(async (unitNumber) => {
+      const result = await generatePropertyQRCode(
+        property.id,
+        params.hash,
+        `Unit ${unitNumber} Card`,
+        undefined,
+        { campaign: 'unit_card', content: unitNumber, unit: unitNumber }
+      );
+      return { unitNumber, qrCodeDataUrl: result.qrCodeDataUrl };
+    })
+  );
+
   return (
     <html lang="en">
       <head>
@@ -61,7 +74,7 @@ export default async function PrintUnitCards({ params, searchParams }: UnitCards
       </head>
       <body className="print-body">
         <div className="page">
-          {unitsToRender.map((unitNumber) => (
+          {unitQRCodes.map(({ unitNumber, qrCodeDataUrl }) => (
             <article key={unitNumber} className="unit-card">
               {/* Header */}
               <header className="card-header">

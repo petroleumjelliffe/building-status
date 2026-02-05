@@ -6,6 +6,7 @@ import { eq, and } from 'drizzle-orm';
 import { createQRCodeImage } from '@/lib/qr-code';
 import { getPropertyByHash } from '@/lib/property';
 import { errorResponse, ApiErrors } from '@/lib/api-response';
+import { createShortLink } from '@/lib/short-link';
 
 /**
  * POST /api/[propertyHash]/admin/qr-codes/[id]/regenerate
@@ -54,20 +55,21 @@ export async function POST(
       return ApiErrors.notFound('QR code');
     }
 
-    // Build the URL with the existing token
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL;
-    if (!baseUrl) {
-      return errorResponse('NEXT_PUBLIC_SITE_URL environment variable is not set', 500);
-    }
+    // Create a new short link for the existing access token
+    const shortLink = await createShortLink({
+      propertyId: property.id,
+      accessTokenId: accessToken.id,
+      campaign: 'admin',
+      content: accessToken.label,
+      label: accessToken.label,
+    });
 
-    const fullUrl = `${baseUrl}/${property.hash}?auth=${accessToken.token}`;
-
-    // Regenerate the QR code image
-    const qrCodeDataUrl = await createQRCodeImage(fullUrl);
+    // Regenerate the QR code image encoding the short URL
+    const qrCodeDataUrl = await createQRCodeImage(shortLink.shortUrl);
 
     return NextResponse.json({
       qrCodeDataUrl,
-      fullUrl,
+      fullUrl: shortLink.shortUrl,
     });
   } catch (error) {
     console.error('[API] Error regenerating QR code:', error);

@@ -148,6 +148,24 @@ export const residentSessions = pgTable('resident_sessions', {
   expiresIdx: index('idx_resident_sessions_expires').on(table.expiresAt),
 }));
 
+// Short links for QR codes (URL shortener)
+export const shortLinks = pgTable('short_links', {
+  id: serial('id').primaryKey(),
+  code: varchar('code', { length: 8 }).unique().notNull(), // randomBytes(6).toString('base64url') = 8 chars
+  propertyId: integer('property_id').references(() => properties.id, { onDelete: 'cascade' }).notNull(),
+  accessTokenId: integer('access_token_id').references(() => accessTokens.id, { onDelete: 'set null' }),
+  unit: varchar('unit', { length: 50 }), // e.g., "4A" for unit-specific links
+  campaign: varchar('campaign', { length: 100 }).notNull(), // utm_campaign value
+  content: varchar('content', { length: 255 }), // utm_content value
+  label: varchar('label', { length: 255 }), // admin-facing label
+  isActive: boolean('is_active').default(true).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  codeIdx: index('idx_short_links_code').on(table.code),
+  propertyIdIdx: index('idx_short_links_property').on(table.propertyId),
+  accessTokenIdIdx: index('idx_short_links_access_token').on(table.accessTokenId),
+}));
+
 // Notification subscriptions (board-invited + self-signup)
 export const notificationSubscriptions = pgTable('notification_subscriptions', {
   id: serial('id').primaryKey(),

@@ -87,7 +87,7 @@ export async function POST(
     });
 
     trackServerEvent(request, 'Event Created', {
-      propertyId: property.id, eventType: type,
+      propertyHash, eventType: type,
     });
 
     // Revalidate the status page for this property

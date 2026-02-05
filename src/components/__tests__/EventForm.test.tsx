@@ -336,7 +336,6 @@ describe('EventForm', () => {
   describe('Editing existing events', () => {
     const mockEvent: CalendarEvent = {
       id: 1,
-      propertyId: 1,
       type: 'maintenance',
       title: 'Existing Event',
       description: 'Test description',
@@ -345,6 +344,10 @@ describe('EventForm', () => {
       allDay: false,
       timezone: 'America/New_York',
       status: 'scheduled',
+      recurrenceRule: null,
+      completedAt: null,
+      notifyBeforeMinutes: null,
+      createdBy: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
