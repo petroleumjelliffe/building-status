@@ -1,4 +1,5 @@
 import { PostHog } from 'posthog-node';
+import { v7 as uuidv7 } from 'uuid';
 import type { ServerEventName, AnalyticsEventProperties } from './analytics-events';
 
 let posthogClient: PostHog | null = null;
@@ -60,7 +61,11 @@ export function getPostHogDistinctId(request: Request, overrideKey?: string): st
 /**
  * Track a server-side analytics event with typed properties.
  * Links to the browser session via PostHog cookie when available.
- * Falls back to property-scoped ID.
+ * Falls back to a random UUID for anonymous requests.
+ *
+ * Session linking:
+ *   - Browser tracing header → uses existing browser session ID
+ *   - No browser session → generates a UUIDv7 session ID
  *
  * Automatically tags every event with the current environment.
  *
@@ -72,14 +77,17 @@ export function trackServerEvent<E extends ServerEventName>(
   properties: AnalyticsEventProperties[E],
 ): void {
   const browserDistinctId = getPostHogDistinctId(request);
-  const propertyId = (properties as Record<string, unknown>).propertyId;
-  const distinctId = browserDistinctId || `property:${propertyId}`;
+  const distinctId = browserDistinctId || uuidv7();
+
+  // Use browser session ID from tracing header, or generate a UUIDv7
+  const sessionId = request.headers.get('x-posthog-session-id') || uuidv7();
 
   getPostHogClient().capture({
     distinctId,
     event,
     properties: {
       ...properties,
+      $session_id: sessionId,
       $lib: 'posthog-node',
       environment: getEnvironment(),
     },
@@ -93,16 +101,14 @@ export function trackServerEvent<E extends ServerEventName>(
  */
 export function identifyProperty(
   request: Request,
-  propertyId: number,
   propertyName: string,
 ): void {
   const browserDistinctId = getPostHogDistinctId(request);
-  const distinctId = browserDistinctId || `property:${propertyId}`;
+  const distinctId = browserDistinctId || uuidv7();
 
   getPostHogClient().identify({
     distinctId,
     properties: {
-      property_id: propertyId,
       property_name: propertyName,
       environment: getEnvironment(),
     },

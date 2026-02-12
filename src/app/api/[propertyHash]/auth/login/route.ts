@@ -39,7 +39,7 @@ export async function POST(
       return errorResponse('Invalid password', 401);
     }
 
-    identifyProperty(request, property.id, property.name);
+    identifyProperty(request, property.name);
     trackServerEvent(request, 'Admin Logged In', {
       propertyHash,
     });
