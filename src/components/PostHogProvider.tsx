@@ -16,6 +16,7 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
       capture_pageview: true,
       capture_pageleave: true,
       persistence: 'cookie',
+      __add_tracing_headers: [window.location.origin],
     });
 
     // Tag every client event with the environment so prod/dev
